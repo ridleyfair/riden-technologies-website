@@ -5,9 +5,6 @@ import { ExternalLink, Link2, Code2, Mail } from "lucide-react";
 const footerLinks = {
   Company: [
     { label: "About", href: "/about" },
-    { label: "Our Work", href: "/our-work" },
-    { label: "Blog", href: "/blog" },
-    { label: "Case Studies", href: "/case-studies" },
     { label: "Contact", href: "/contact" },
   ],
   Solutions: [
@@ -16,13 +13,6 @@ const footerLinks = {
     { label: "Automation", href: "/solutions" },
     { label: "Lead Generation", href: "/solutions" },
     { label: "Analytics", href: "/solutions" },
-  ],
-  Industries: [
-    { label: "Healthcare", href: "/industries" },
-    { label: "Real Estate", href: "/industries" },
-    { label: "E-Commerce", href: "/industries" },
-    { label: "Legal", href: "/industries" },
-    { label: "Finance", href: "/industries" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
@@ -60,7 +50,7 @@ export default function Footer() {
                 { icon: ExternalLink, href: "#" },
                 { icon: Link2, href: "#" },
                 { icon: Code2, href: "#" },
-                { icon: Mail, href: "mailto:hello@ridentechnologies.com" },
+                { icon: Mail, href: "mailto:inquiries@ridentechnologies.com" },
               ].map(({ icon: Icon, href }, i) => (
                 <a
                   key={i}

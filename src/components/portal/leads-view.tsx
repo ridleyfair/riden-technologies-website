@@ -1,44 +1,79 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import {
-  Search,
-  Filter,
-  Plus,
-  TrendingUp,
-  UserPlus,
-  Star,
-  MoreHorizontal,
-} from "lucide-react";
+import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockLeads } from "@/lib/mock-data";
-import { formatCurrency } from "@/lib/utils";
-import type { LeadStatus } from "@/types";
 
-const statusColors: Record<LeadStatus, string> = {
+type Lead = {
+  id: string;
+  name: string;
+  email: string;
+  company: string | null;
+  service: string | null;
+  message: string;
+  status: string;
+  source: string;
+  score: number;
+  createdAt: string;
+};
+
+const statusColors: Record<string, "default" | "violet" | "cyan" | "warning" | "success" | "destructive" | "secondary"> = {
   new: "default",
   contacted: "violet",
   qualified: "cyan",
   proposal: "warning",
-  negotiation: "warning",
   won: "success",
   lost: "destructive",
-} as const;
+};
+
+const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"];
 
 export default function LeadsView() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const filtered = mockLeads.filter((lead) => {
+  const fetchLeads = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/leads");
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch {
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  const updateStatus = async (id: string, status: string) => {
+    setUpdatingId(id);
+    await fetch(`/api/leads/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    await fetchLeads();
+    setUpdatingId(null);
+  };
+
+  const filtered = leads.filter((lead) => {
     const matchSearch =
       lead.name.toLowerCase().includes(search.toLowerCase()) ||
-      lead.company?.toLowerCase().includes(search.toLowerCase()) ||
+      (lead.company?.toLowerCase() ?? "").includes(search.toLowerCase()) ||
       lead.email.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || lead.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const hotLeads = leads.filter((l) => l.score >= 70).length;
+  const wonLeads = leads.filter((l) => l.status === "won").length;
 
   return (
     <div className="space-y-6">
@@ -46,21 +81,30 @@ export default function LeadsView() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-white">Lead Management</h2>
-          <p className="text-sm text-slate-500">{mockLeads.length} total leads in pipeline</p>
+          <p className="text-sm text-slate-500">{leads.length} total leads in pipeline</p>
         </div>
-        <Button variant="gradient" size="sm">
-          <Plus size={14} />
-          Add Lead
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={fetchLeads}>
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          </Button>
+          <Button variant="gradient" size="sm">
+            <Plus size={14} />
+            Add Lead
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Leads", value: mockLeads.length, icon: UserPlus, color: "text-blue-400", bg: "bg-blue-500/10" },
-          { label: "Hot Leads", value: mockLeads.filter(l => l.score >= 80).length, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
-          { label: "Pipeline Value", value: formatCurrency(mockLeads.reduce((s, l) => s + l.value, 0)), icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Won This Month", value: mockLeads.filter(l => l.status === "won").length, icon: Star, color: "text-violet-400", bg: "bg-violet-500/10" },
+          { label: "Total Leads", value: leads.length, icon: UserPlus, color: "text-blue-400", bg: "bg-blue-500/10" },
+          { label: "Hot Leads", value: hotLeads, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
+          { label: "New This Week", value: leads.filter(l => {
+            const d = new Date(l.createdAt);
+            const now = new Date();
+            return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+          }).length, icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { label: "Won", value: wonLeads, icon: Star, color: "text-violet-400", bg: "bg-violet-500/10" },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -92,12 +136,11 @@ export default function LeadsView() {
             className="w-full bg-riden-muted border border-riden-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
           />
         </div>
-
-        <div className="flex items-center gap-2">
-          {["all", "new", "qualified", "proposal", "won"].map((s) => (
+        <div className="flex items-center gap-2 flex-wrap">
+          {statusOptions.map((s) => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s as LeadStatus | "all")}
+              onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 statusFilter === s
                   ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
@@ -108,7 +151,6 @@ export default function LeadsView() {
             </button>
           ))}
         </div>
-
         <Button variant="outline" size="sm">
           <Filter size={14} />
           Filter
@@ -122,64 +164,70 @@ export default function LeadsView() {
         transition={{ delay: 0.2 }}
         className="glass-card rounded-xl border border-riden-border overflow-hidden"
       >
-        {/* Table Header */}
         <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-riden-border bg-riden-surface/50 text-xs font-medium text-slate-500 uppercase tracking-wider">
           <div className="col-span-3">Name</div>
           <div className="col-span-2">Company</div>
-          <div className="col-span-1">Score</div>
+          <div className="col-span-2">Service</div>
           <div className="col-span-2">Status</div>
           <div className="col-span-1">Source</div>
-          <div className="col-span-2">Value</div>
+          <div className="col-span-1">Date</div>
           <div className="col-span-1"></div>
         </div>
 
-        {/* Rows */}
         <div className="divide-y divide-riden-border">
-          {filtered.map((lead) => (
-            <div
-              key={lead.id}
-              className="grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors cursor-pointer items-center"
-            >
-              <div className="col-span-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                  {lead.name[0]}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-white truncate">{lead.name}</div>
-                  <div className="text-xs text-slate-500 truncate">{lead.email}</div>
-                </div>
-              </div>
-              <div className="col-span-2 text-sm text-slate-400 truncate">{lead.company || "—"}</div>
-              <div className="col-span-1">
-                <div className="flex items-center gap-1">
-                  <div
-                    className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500"
-                    style={{ width: `${lead.score}%`, maxWidth: "40px" }}
-                  />
-                  <span className="text-xs text-slate-400">{lead.score}</span>
-                </div>
-              </div>
-              <div className="col-span-2">
-                <Badge variant={statusColors[lead.status] as "default" | "violet" | "cyan" | "warning" | "success" | "destructive"} className="capitalize">
-                  {lead.status}
-                </Badge>
-              </div>
-              <div className="col-span-1 text-xs text-slate-500 capitalize">{lead.source}</div>
-              <div className="col-span-2 text-sm font-medium text-white">{formatCurrency(lead.value)}</div>
-              <div className="col-span-1 flex justify-end">
-                <button className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
-                  <MoreHorizontal size={14} />
-                </button>
-              </div>
+          {loading ? (
+            <div className="py-12 text-center text-slate-500 text-sm">Loading leads...</div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 text-sm">
+              {leads.length === 0
+                ? "No leads yet. Submit the contact form to see them appear here."
+                : "No leads match your filters."}
             </div>
-          ))}
+          ) : (
+            filtered.map((lead) => (
+              <div
+                key={lead.id}
+                className="grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors items-center"
+              >
+                <div className="col-span-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                    {lead.name[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{lead.name}</div>
+                    <div className="text-xs text-slate-500 truncate">{lead.email}</div>
+                  </div>
+                </div>
+                <div className="col-span-2 text-sm text-slate-400 truncate">{lead.company || "—"}</div>
+                <div className="col-span-2 text-xs text-slate-400 truncate">{lead.service || "—"}</div>
+                <div className="col-span-2">
+                  <select
+                    value={lead.status}
+                    disabled={updatingId === lead.id}
+                    onChange={(e) => updateStatus(lead.id, e.target.value)}
+                    className="bg-transparent border-none text-xs cursor-pointer focus:outline-none"
+                  >
+                    {statusOptions.slice(1).map((s) => (
+                      <option key={s} value={s} className="bg-riden-surface">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                    ))}
+                  </select>
+                  <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize pointer-events-none">
+                    {lead.status}
+                  </Badge>
+                </div>
+                <div className="col-span-1 text-xs text-slate-500 capitalize">{lead.source}</div>
+                <div className="col-span-1 text-xs text-slate-500">
+                  {new Date(lead.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </div>
+                <div className="col-span-1 flex justify-end">
+                  <button className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+                    <MoreHorizontal size={14} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
-
-        {filtered.length === 0 && (
-          <div className="py-12 text-center text-slate-500 text-sm">
-            No leads found matching your filters.
-          </div>
-        )}
       </motion.div>
     </div>
   );

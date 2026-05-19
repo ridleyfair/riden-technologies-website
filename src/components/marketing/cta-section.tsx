@@ -75,16 +75,8 @@ export default function CTASection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="flex flex-wrap items-center justify-center gap-6 mt-12 text-sm text-slate-500"
+          className="hidden"
         >
-          {["No credit card required", "14-day free trial", "Cancel anytime", "Setup in 24 hours"].map(
-            (item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                {item}
-              </div>
-            )
-          )}
         </motion.div>
       </div>
     </section>

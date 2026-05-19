@@ -2,30 +2,43 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const contactInfo = [
-  { icon: Mail, label: "Email Us", value: "hello@ridentechnologies.com" },
-  { icon: Phone, label: "Call Us", value: "+1 (555) 000-0000" },
-  { icon: MapPin, label: "Location", value: "San Francisco, CA" },
-  { icon: Calendar, label: "Hours", value: "Mon–Fri, 9am–6pm PST" },
+  { icon: Mail, label: "Email Us", value: "inquiries@ridentechnologies.com" },
+  { icon: MapPin, label: "Location", value: "London, UK" },
 ];
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     company: "",
-    phone: "",
     service: "",
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please email us directly at inquiries@ridentechnologies.com");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -175,27 +188,15 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-2">Company Name</label>
-                      <input
-                        type="text"
-                        value={form.company}
-                        onChange={(e) => setForm({ ...form, company: e.target.value })}
-                        placeholder="Acme Corp"
-                        className="w-full bg-riden-muted border border-riden-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-slate-400 mb-2">Phone Number</label>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        placeholder="+1 (555) 000-0000"
-                        className="w-full bg-riden-muted border border-riden-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm text-slate-400 mb-2">Company Name</label>
+                    <input
+                      type="text"
+                      value={form.company}
+                      onChange={(e) => setForm({ ...form, company: e.target.value })}
+                      placeholder="Acme Corp"
+                      className="w-full bg-riden-muted border border-riden-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                    />
                   </div>
 
                   <div>
@@ -226,9 +227,13 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  <Button type="submit" variant="gradient" size="lg" className="w-full">
+                  {error && (
+                    <p className="text-sm text-rose-400 text-center">{error}</p>
+                  )}
+
+                  <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={loading}>
                     <Send size={16} />
-                    Send Message & Book Strategy Call
+                    {loading ? "Sending..." : "Send Message & Book Strategy Call"}
                   </Button>
 
                   <p className="text-xs text-slate-500 text-center">

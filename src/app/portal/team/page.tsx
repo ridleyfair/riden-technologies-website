@@ -7,12 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const team = [
-  { id: "1", name: "Alex Riden", email: "alex@ridentech.com", role: "owner", status: "active", avatar: "AR", gradient: "from-blue-500 to-violet-600", lastActive: "Active now" },
-  { id: "2", name: "Jordan Chen", email: "jordan@ridentech.com", role: "admin", status: "active", avatar: "JC", gradient: "from-violet-500 to-cyan-500", lastActive: "2h ago" },
-  { id: "3", name: "Maya Williams", email: "maya@ridentech.com", role: "designer", status: "active", avatar: "MW", gradient: "from-cyan-500 to-emerald-500", lastActive: "30m ago" },
-  { id: "4", name: "Sam Patel", email: "sam@ridentech.com", role: "developer", status: "active", avatar: "SP", gradient: "from-emerald-500 to-blue-500", lastActive: "1h ago" },
-  { id: "5", name: "Taylor Kim", email: "taylor@ridentech.com", role: "sales", status: "active", avatar: "TK", gradient: "from-amber-500 to-rose-500", lastActive: "Active now" },
-  { id: "6", name: "Riley Johnson", email: "riley@ridentech.com", role: "support", status: "inactive", avatar: "RJ", gradient: "from-rose-500 to-violet-500", lastActive: "3d ago" },
+  { id: "1", name: "Ridley Fair", email: "ridley@ridentechnologies.com", role: "owner", status: "active", avatar: "RF", gradient: "from-blue-500 to-violet-600", lastActive: "Active now" },
+  { id: "2", name: "Denis Beqiraj", email: "denis@ridentechnologies.com", role: "admin", status: "active", avatar: "DB", gradient: "from-violet-500 to-cyan-500", lastActive: "Active now" },
 ];
 
 const roleColors: Record<string, "default" | "violet" | "cyan" | "success" | "warning" | "secondary"> = {

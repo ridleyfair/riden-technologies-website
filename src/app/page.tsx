@@ -2,8 +2,6 @@ import Navbar from "@/components/marketing/navbar";
 import Footer from "@/components/marketing/footer";
 import Hero from "@/components/marketing/hero";
 import Services from "@/components/marketing/services";
-import Testimonials from "@/components/marketing/testimonials";
-import PricingSection from "@/components/marketing/pricing-section";
 import CTASection from "@/components/marketing/cta-section";
 import TrustedBrands from "@/components/marketing/trusted-brands";
 import ProcessSection from "@/components/marketing/process-section";
@@ -18,8 +16,6 @@ export default function HomePage() {
         <TrustedBrands />
         <Services />
         <ProcessSection />
-        <Testimonials />
-        <PricingSection />
         <FAQSection />
         <CTASection />
       </main>

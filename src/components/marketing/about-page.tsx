@@ -3,8 +3,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Zap, Target, Users, Globe } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 const values = [
   {
@@ -35,15 +33,6 @@ const values = [
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
   },
-];
-
-const team = [
-  { name: "Alex Riden", role: "Founder & CEO", initials: "AR", gradient: "from-blue-500 to-violet-600" },
-  { name: "Jordan Chen", role: "CTO", initials: "JC", gradient: "from-violet-500 to-cyan-500" },
-  { name: "Maya Williams", role: "Head of Design", initials: "MW", gradient: "from-cyan-500 to-emerald-500" },
-  { name: "Sam Patel", role: "Head of AI", initials: "SP", gradient: "from-emerald-500 to-blue-500" },
-  { name: "Taylor Kim", role: "Head of Growth", initials: "TK", gradient: "from-amber-500 to-rose-500" },
-  { name: "Riley Johnson", role: "Lead Engineer", initials: "RJ", gradient: "from-rose-500 to-violet-500" },
 ];
 
 export default function AboutPage() {
@@ -144,53 +133,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
-      <section className="py-24 bg-riden-dark">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl font-bold text-white mb-4"
-            >
-              Meet the <span className="gradient-text">Team</span>
-            </motion.h2>
-            <p className="text-slate-400 max-w-xl mx-auto">
-              A world-class team of engineers, designers, and growth experts obsessed with client success.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {team.map((member, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass-card p-5 rounded-xl border border-riden-border text-center hover:border-white/10 transition-colors"
-              >
-                <div
-                  className={`w-14 h-14 rounded-full bg-gradient-to-br ${member.gradient} flex items-center justify-center text-lg font-bold text-white mx-auto mb-3`}
-                >
-                  {member.initials}
-                </div>
-                <div className="text-sm font-semibold text-white">{member.name}</div>
-                <div className="text-xs text-slate-500">{member.role}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/contact">
-              <Button variant="gradient" size="lg">
-                Work With Us
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
