@@ -1,9 +1,8 @@
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "@prisma/client";
-import ws from "ws";
 
-neonConfig.webSocketConstructor = ws as unknown as typeof WebSocket;
+neonConfig.poolQueryViaFetch = true;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaNeon(pool);
@@ -52,7 +51,7 @@ async function main() {
     });
     console.log(`✓ ${u.email}  →  password: ${u.password}`);
   }
-  console.log("\nUsers seeded. Change passwords after first login.");
+  console.log("\nUsers seeded.");
 }
 
 main()
