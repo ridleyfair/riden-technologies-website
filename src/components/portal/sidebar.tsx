@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -70,6 +70,20 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => setUser(d.user))
+      .catch(() => null);
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  };
 
   return (
     <motion.aside
@@ -166,9 +180,9 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* User */}
       <div className="border-t border-riden-border p-3">
-        <div className={cn("flex items-center gap-3 rounded-lg p-2", !collapsed && "hover:bg-riden-muted transition-colors cursor-pointer")}>
+        <div className={cn("flex items-center gap-3 rounded-lg p-2", !collapsed && "hover:bg-riden-muted transition-colors")}>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
-            A
+            {user?.name?.[0]?.toUpperCase() ?? "?"}
           </div>
           <AnimatePresence>
             {!collapsed && (
@@ -178,13 +192,15 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 exit={{ opacity: 0, x: -10 }}
                 className="flex-1 min-w-0"
               >
-                <div className="text-xs font-medium text-white truncate">Admin User</div>
-                <div className="text-[10px] text-slate-500 truncate">admin@ridentech.com</div>
+                <div className="text-xs font-medium text-white truncate">{user?.name ?? "Loading..."}</div>
+                <div className="text-[10px] text-slate-500 truncate">{user?.email ?? ""}</div>
               </motion.div>
             )}
           </AnimatePresence>
           {!collapsed && (
-            <LogOut size={14} className="text-slate-500 hover:text-white transition-colors flex-shrink-0" />
+            <button onClick={handleLogout} title="Sign out">
+              <LogOut size={14} className="text-slate-500 hover:text-rose-400 transition-colors flex-shrink-0" />
+            </button>
           )}
         </div>
       </div>
