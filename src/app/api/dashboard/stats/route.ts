@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
         type: "invoice",
       })),
   ]
-    .sort((a, b) => 0) // Keep order mixed
+    .sort(() => 0) // Keep order mixed
     .slice(0, 6);
 
   return NextResponse.json({

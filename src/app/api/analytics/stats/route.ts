@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
       })),
       recentEvents: recentEventsRows,
     });
-  } catch (err) {
+  } catch {
     // Tables don't exist yet (migration not run)
     return NextResponse.json(EMPTY_STATS);
   }

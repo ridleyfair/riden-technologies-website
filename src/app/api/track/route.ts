@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch {
     // Silently fail — never block the user's browsing experience
     return NextResponse.json({ ok: true });
   }

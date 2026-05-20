@@ -129,7 +129,7 @@ export default function AnalyticsPage() {
           <p className="text-white font-semibold mb-1">No analytics data yet</p>
           <p className="text-sm text-slate-500 max-w-sm mx-auto">
             The tracking script is installed on your public pages. Visit your website to start recording data,
-            or run <code className="text-blue-400 bg-riden-muted px-1.5 py-0.5 rounded text-xs">POST /api/migrate</code> first if you haven't already.
+            or run <code className="text-blue-400 bg-riden-muted px-1.5 py-0.5 rounded text-xs">POST /api/migrate</code> first if you haven&apos;t already.
           </p>
         </div>
       )}

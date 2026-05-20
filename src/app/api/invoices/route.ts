@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       ORDER BY i."createdAt" DESC
     `;
     return NextResponse.json(invoices);
-  } catch (err) {
+  } catch {
     // If InvoiceLineItem table doesn't exist yet, fall back to plain invoices
     const invoices = await sql`SELECT * FROM "Invoice" ORDER BY "createdAt" DESC`;
     return NextResponse.json(invoices.map((i) => ({ ...i, lineItems: [] })));

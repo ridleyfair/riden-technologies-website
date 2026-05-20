@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         RETURNING *
       `;
       return NextResponse.json(lead, { status: 201 });
-    } catch (e2) {
+    } catch {
       return NextResponse.json({ error: "Failed to create lead" }, { status: 500 });
     }
   }

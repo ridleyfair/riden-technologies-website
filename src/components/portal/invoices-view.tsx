@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   FileText, Plus, DollarSign, Clock, CheckCircle, AlertCircle,
-  MoreHorizontal, Printer, Edit2, Trash2, RefreshCw,
+  Printer, Edit2, Trash2, RefreshCw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
