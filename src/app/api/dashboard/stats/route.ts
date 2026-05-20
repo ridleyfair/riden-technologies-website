@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
               COUNT(*) FILTER (WHERE "createdAt" >= NOW() - INTERVAL '14 days'
                                AND "createdAt" < NOW() - INTERVAL '7 days') AS prev_week
             FROM "Lead"`,
-        sql`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE status = 'active') AS active FROM "Client"`,
+        sql`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE status = 'active') AS active, 0 AS mrr FROM "Client"`,
         sql`SELECT COALESCE(SUM(amount),0) AS total FROM "Invoice" WHERE status = 'paid'`,
         sql`SELECT status, COUNT(*) AS count FROM "Lead" GROUP BY status ORDER BY status`,
         sql`SELECT id, name, company, status, "createdAt" FROM "Lead" ORDER BY "createdAt" DESC LIMIT 5`,

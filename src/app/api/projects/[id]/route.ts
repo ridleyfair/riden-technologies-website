@@ -10,9 +10,6 @@ function inferTierAndRate(notes: string | null): { tier: string; monthlyRate: nu
   if (text.includes("pro+") || text.includes("pro ") || text.includes("500")) {
     return { tier: "growth", monthlyRate: 50 };
   }
-  if (text.includes("starter") || text.includes("150")) {
-    return { tier: "starter", monthlyRate: 25 };
-  }
   return { tier: "starter", monthlyRate: 25 };
 }
 
@@ -33,63 +30,106 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const newStatus = body.status !== undefined ? body.status : ex.status;
     const wasCompleted = ex.status === "completed";
     const justCompleted = newStatus === "completed" && !wasCompleted;
-
     const completedAt = justCompleted ? now : (ex.completedAt ?? null);
 
-    const [updated] = await sql`
-      UPDATE "Project" SET
-        name          = ${body.name        !== undefined ? body.name        : ex.name},
-        "clientName"  = ${body.clientName  !== undefined ? body.clientName  : ex.clientName},
-        status        = ${newStatus},
-        budget        = ${body.budget      !== undefined ? Number(body.budget)   : ex.budget},
-        spent         = ${body.spent       !== undefined ? Number(body.spent)    : ex.spent},
-        progress      = ${body.progress    !== undefined ? Math.min(100, Math.max(0, Number(body.progress))) : ex.progress},
-        "dueDate"     = ${body.dueDate     !== undefined ? body.dueDate     : ex.dueDate},
-        notes         = ${body.notes       !== undefined ? body.notes       : ex.notes},
-        "completedAt" = ${completedAt},
-        "updatedAt"   = ${now}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    const vals = {
+      name:       body.name        !== undefined ? body.name                                    : ex.name,
+      clientName: body.clientName  !== undefined ? body.clientName                              : ex.clientName,
+      status:     newStatus,
+      budget:     body.budget      !== undefined ? Number(body.budget)                          : ex.budget,
+      spent:      body.spent       !== undefined ? Number(body.spent)                           : ex.spent,
+      progress:   body.progress    !== undefined ? Math.min(100, Math.max(0, Number(body.progress))) : ex.progress,
+      dueDate:    body.dueDate     !== undefined ? body.dueDate                                 : ex.dueDate,
+      notes:      body.notes       !== undefined ? body.notes                                   : ex.notes,
+    };
+
+    // Try with completedAt column (requires migration); fall back without it
+    let updated: Record<string, unknown>;
+    try {
+      const [row] = await sql`
+        UPDATE "Project" SET
+          name          = ${vals.name},
+          "clientName"  = ${vals.clientName},
+          status        = ${vals.status},
+          budget        = ${vals.budget},
+          spent         = ${vals.spent},
+          progress      = ${vals.progress},
+          "dueDate"     = ${vals.dueDate},
+          notes         = ${vals.notes},
+          "completedAt" = ${completedAt},
+          "updatedAt"   = ${now}
+        WHERE id = ${id}
+        RETURNING *
+      `;
+      updated = row;
+    } catch {
+      // completedAt column may not exist yet (migration not run)
+      const [row] = await sql`
+        UPDATE "Project" SET
+          name         = ${vals.name},
+          "clientName" = ${vals.clientName},
+          status       = ${vals.status},
+          budget       = ${vals.budget},
+          spent        = ${vals.spent},
+          progress     = ${vals.progress},
+          "dueDate"    = ${vals.dueDate},
+          notes        = ${vals.notes},
+          "updatedAt"  = ${now}
+        WHERE id = ${id}
+        RETURNING *
+      `;
+      updated = row;
+    }
 
     // Auto-create client when project is marked complete
     let newClient = null;
     if (justCompleted) {
       const clientName = String(ex.clientName ?? "");
-      const budget = Number(ex.budget ?? body.budget ?? 0);
-      const spent = Number(ex.spent ?? body.spent ?? 0);
+      const budget = Number(body.budget ?? ex.budget ?? 0);
+      const spent = Number(body.spent ?? ex.spent ?? 0);
       const profit = budget - spent;
-      const { tier, monthlyRate } = inferTierAndRate(String(ex.notes ?? ""));
+      const { tier, monthlyRate } = inferTierAndRate(String(body.notes ?? ex.notes ?? ""));
 
       // Try to find an email from the Lead table
-      const leadRows = await sql`
-        SELECT email FROM "Lead"
-        WHERE LOWER(company) = LOWER(${clientName})
-           OR LOWER(name) = LOWER(${clientName})
-        ORDER BY "createdAt" DESC LIMIT 1
-      `;
-      const email = leadRows[0]?.email ?? null;
+      let email = "";
+      try {
+        const leadRows = await sql`
+          SELECT email FROM "Lead"
+          WHERE LOWER(company) = LOWER(${clientName})
+             OR LOWER(name)    = LOWER(${clientName})
+          ORDER BY "createdAt" DESC LIMIT 1
+        `;
+        email = String(leadRows[0]?.email ?? "");
+      } catch { /* Lead table lookup is best-effort */ }
 
       try {
         const clientId = crypto.randomUUID();
+        // Try with new columns first
         const [client] = await sql`
           INSERT INTO "Client" (
             id, name, email, company, tier, status, revenue, websites,
             "monthlyRate", "activeFrom", profit,
             "createdAt", "updatedAt"
           ) VALUES (
-            ${clientId}, ${clientName}, ${email ?? ""}, ${clientName},
-            ${tier}, 'active',
-            ${profit}, 1,
+            ${clientId}, ${clientName}, ${email}, ${clientName},
+            ${tier}, 'active', ${profit}, 1,
             ${monthlyRate}, ${now}, ${profit},
             ${now}, ${now}
           )
-          ON CONFLICT DO NOTHING
           RETURNING *
         `;
         newClient = client ?? null;
       } catch {
-        // ON CONFLICT DO NOTHING — client may already exist; not a fatal error
+        // Fallback: insert without migration-added columns
+        try {
+          const clientId = crypto.randomUUID();
+          const [client] = await sql`
+            INSERT INTO "Client" (id, name, email, company, tier, status, revenue, websites, "createdAt", "updatedAt")
+            VALUES (${clientId}, ${clientName}, ${email}, ${clientName}, ${tier}, 'active', ${profit}, 1, ${now}, ${now})
+            RETURNING *
+          `;
+          newClient = client ?? null;
+        } catch { /* Client may already exist — not fatal */ }
       }
     }
 
