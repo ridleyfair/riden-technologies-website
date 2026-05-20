@@ -339,9 +339,9 @@ export default function LeadsView() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="glass-card rounded-xl border border-riden-border overflow-hidden hidden md:block"
+        className="glass-card rounded-xl border border-riden-border hidden md:block"
       >
-        <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-riden-border bg-riden-surface/50 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-riden-border bg-riden-surface/50 text-xs font-medium text-slate-500 uppercase tracking-wider rounded-t-xl">
           <div className="col-span-3">Name</div>
           <div className="col-span-2">Company</div>
           <div className="col-span-2">Service</div>
@@ -433,7 +433,7 @@ export default function LeadsView() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="md:hidden glass-card rounded-xl border border-riden-border overflow-hidden"
+        className="md:hidden glass-card rounded-xl border border-riden-border"
       >
         {loading ? (
           <div className="py-12 text-center text-slate-500 text-sm">Loading leads...</div>
