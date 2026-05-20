@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/portal/sidebar";
 import Topbar from "@/components/portal/topbar";
 
@@ -11,6 +11,11 @@ export default function PortalLayout({
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    // Run migrations silently on portal load — all steps use IF NOT EXISTS, safe to repeat
+    fetch("/api/migrate", { method: "POST" }).catch(() => null);
+  }, []);
 
   return (
     <div className="flex h-screen bg-riden-dark overflow-hidden">
