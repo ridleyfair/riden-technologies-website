@@ -231,7 +231,7 @@ function buildResponse(
       .slice(0, 3)
       .map((i) => ({
         action: i.status === "paid" ? "Invoice paid" : "Invoice created",
-        detail: `${i.number} — ${i.clientName} ($${Number(i.amount).toLocaleString()})`,
+        detail: `${i.number} — ${i.clientName} (£${Number(i.amount).toLocaleString()})`,
         time: relativeTime(i.createdAt),
         type: "invoice",
       })),

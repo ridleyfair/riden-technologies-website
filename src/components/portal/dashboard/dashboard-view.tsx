@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  DollarSign, Users, UserPlus, Globe, TrendingUp, TrendingDown,
+  Banknote, Users, UserPlus, RefreshCcw, TrendingUp, TrendingDown,
   ArrowRight, Zap, Activity, Clock, RefreshCw, AlertCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -16,7 +16,7 @@ import { mockAutomations } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
-type KPI = { label: string; value: string; change: number; icon: LucideIcon; color: string; bg: string; border: string };
+type KPI = { label: string; value: string; change: number; icon: LucideIcon; color: string; bg: string; border: string; sublabel?: string };
 type PipelineItem = { name: string; value: number; color: string };
 type RecentLead = { id: string; name: string; company: string | null; status: string; value: number };
 type ChartPoint = { month: string; revenue: number; leads: number; clients: number };
@@ -87,8 +87,9 @@ export default function DashboardView() {
     ? [
         {
           label: "Total Revenue", value: formatCurrency(stats.kpis.totalRevenue),
-          change: stats.kpis.revenueGrowth, icon: DollarSign,
+          change: stats.kpis.revenueGrowth, icon: Banknote,
           color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20",
+          sublabel: (stats.kpis.mrr ?? 0) > 0 ? `incl. ${formatCurrency(stats.kpis.mrr)}/mo recurring` : undefined,
         },
         {
           label: "Active Clients", value: String(stats.kpis.activeClients),
@@ -102,8 +103,9 @@ export default function DashboardView() {
         },
         {
           label: "Monthly Recurring", value: formatCurrency(stats.kpis.mrr ?? 0),
-          change: 0, icon: Globe,
+          change: 0, icon: RefreshCcw,
           color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20",
+          sublabel: (stats.kpis.mrr ?? 0) > 0 ? `auto-added each month` : `no active clients yet`,
         },
       ]
     : [];
@@ -177,6 +179,9 @@ export default function DashboardView() {
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-white mb-0.5 sm:mb-1 leading-tight">{kpi.value}</div>
                 <div className="text-[10px] sm:text-xs text-slate-500 leading-tight">{kpi.label}</div>
+                {kpi.sublabel && (
+                  <div className="text-[9px] sm:text-[10px] text-slate-600 leading-tight mt-0.5 truncate">{kpi.sublabel}</div>
+                )}
               </motion.div>
             ))}
       </div>
@@ -351,7 +356,7 @@ export default function DashboardView() {
                   <div key={i} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-white/[0.02] transition-colors">
                     <div className="w-7 h-7 rounded-lg bg-riden-muted border border-riden-border flex items-center justify-center flex-shrink-0 mt-0.5">
                       {item.type === "lead" && <UserPlus size={13} className="text-blue-400" />}
-                      {item.type === "invoice" && <DollarSign size={13} className="text-emerald-400" />}
+                      {item.type === "invoice" && <Banknote size={13} className="text-emerald-400" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-medium text-white">{item.action}</div>

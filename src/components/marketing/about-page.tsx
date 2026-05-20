@@ -102,7 +102,7 @@ export default function AboutPage() {
               <div className="grid grid-cols-3 gap-3 sm:gap-6">
                 {[
                   { value: "500+", label: "Clients" },
-                  { value: "$50M+", label: "Revenue Generated" },
+                  { value: "UK", label: "Based & Supported" },
                   { value: "98%", label: "Satisfaction" },
                 ].map((stat, i) => (
                   <div key={i} className="text-center glass-card p-4 rounded-xl border border-riden-border">

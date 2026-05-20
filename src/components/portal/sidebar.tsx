@@ -210,7 +210,7 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
       {/* Collapse Toggle - desktop only */}
       <button
         onClick={onToggle}
-        className="hidden md:flex absolute top-5 -right-3 w-6 h-6 rounded-full bg-riden-muted border border-riden-border items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/50 transition-all duration-200 z-10"
+        className="hidden md:flex absolute top-5 -right-3.5 w-7 h-7 rounded-full bg-riden-surface border-2 border-riden-border shadow-lg items-center justify-center text-slate-300 hover:text-white hover:border-blue-500 hover:bg-riden-muted transition-all duration-200 z-20"
       >
         {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>

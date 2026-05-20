@@ -185,7 +185,7 @@ export default function Hero() {
               {/* KPI Row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-6">
                 {[
-                  { label: "Total Revenue", value: "$84,200", change: "+23%", color: "text-emerald-400" },
+                  { label: "Total Revenue", value: "£84,200", change: "+23%", color: "text-emerald-400" },
                   { label: "Active Clients", value: "142", change: "+8%", color: "text-blue-400" },
                   { label: "New Leads", value: "38", change: "+15%", color: "text-violet-400" },
                   { label: "Websites Live", value: "289", change: "+12%", color: "text-cyan-400" },

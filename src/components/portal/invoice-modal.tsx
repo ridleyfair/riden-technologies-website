@@ -119,10 +119,10 @@ function buildPrintHTML(inv: InvoiceData & { number: string; amount: number }) {
   <tbody>${rows}</tbody>
 </table>
 <div class="totals">
-  <div class="row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-  ${inv.taxRate > 0 ? `<div class="row"><span>Tax (${inv.taxRate}%)</span><span>$${taxAmount.toFixed(2)}</span></div>` : ""}
-  ${inv.discount > 0 ? `<div class="row"><span>Discount</span><span>-$${inv.discount.toFixed(2)}</span></div>` : ""}
-  <div class="total-row"><span>Total Due</span><span>$${total.toFixed(2)}</span></div>
+  <div class="row"><span>Subtotal</span><span>£${subtotal.toFixed(2)}</span></div>
+  ${inv.taxRate > 0 ? `<div class="row"><span>Tax (${inv.taxRate}%)</span><span>£${taxAmount.toFixed(2)}</span></div>` : ""}
+  ${inv.discount > 0 ? `<div class="row"><span>Discount</span><span>-£${inv.discount.toFixed(2)}</span></div>` : ""}
+  <div class="total-row"><span>Total Due</span><span>£${total.toFixed(2)}</span></div>
 </div>
 ${inv.notes ? `<div class="notes-section"><h4>Notes</h4><p>${inv.notes}</p></div>` : ""}
 <div class="footer">Thank you for your business — Riden Technologies</div>
@@ -388,7 +388,7 @@ export default function InvoiceModal({ open, mode, initial, onClose, onSave }: I
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1.5">Discount ($)</label>
+                      <label className="block text-xs text-slate-400 mb-1.5">Discount (£)</label>
                       <input
                         type="number" min="0" step="0.01"
                         value={form.discount}

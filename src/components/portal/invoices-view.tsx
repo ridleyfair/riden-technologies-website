@@ -85,10 +85,10 @@ function buildPrintHTML(inv: RawInvoice) {
 <table><thead><tr><th style="text-align:left">Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Amount</th></tr></thead>
 <tbody>${rows}</tbody></table>
 <div class="totals">
-  <div class="row"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
-  ${taxRate > 0 ? `<div class="row"><span>Tax (${taxRate}%)</span><span>$${taxAmount.toFixed(2)}</span></div>` : ""}
-  ${discount > 0 ? `<div class="row"><span>Discount</span><span>-$${discount.toFixed(2)}</span></div>` : ""}
-  <div class="total-row"><span>Total Due</span><span>$${total.toFixed(2)}</span></div>
+  <div class="row"><span>Subtotal</span><span>£${subtotal.toFixed(2)}</span></div>
+  ${taxRate > 0 ? `<div class="row"><span>Tax (${taxRate}%)</span><span>£${taxAmount.toFixed(2)}</span></div>` : ""}
+  ${discount > 0 ? `<div class="row"><span>Discount</span><span>-£${discount.toFixed(2)}</span></div>` : ""}
+  <div class="total-row"><span>Total Due</span><span>£${total.toFixed(2)}</span></div>
 </div>
 ${inv.notes ? `<div style="margin-top:32px;padding:16px;background:#f9fafb;border-radius:8px;font-size:13px"><h4 style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px">Notes</h4><p>${inv.notes}</p></div>` : ""}
 <div class="footer">Thank you for your business — Riden Technologies</div>

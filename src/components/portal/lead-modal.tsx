@@ -105,7 +105,7 @@ export default function LeadModal({ open, onClose, onSave }: LeadModalProps) {
                   <input value={form.service} onChange={(e) => set("service", e.target.value)} placeholder="Website, Automation..." className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Deal Value ($)</label>
+                  <label className="block text-xs text-slate-400 mb-1.5">Deal Value (£)</label>
                   <input type="number" min="0" value={form.value} onChange={(e) => set("value", e.target.value)} placeholder="0" className={inputCls} />
                 </div>
                 <div>
