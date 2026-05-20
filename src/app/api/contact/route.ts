@@ -4,19 +4,77 @@ import { getDb } from "@/lib/db";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, company, service, message } = body;
+    const {
+      name, email, phone, city,
+      company, industry, currentWebsite,
+      servicesOffered, targetCustomers,
+      plan, deadline,
+      brandColours, designStyle,
+      facebook, instagram, tiktok, linkedin,
+      references, notes,
+      // legacy single-step fields
+      service, message,
+    } = body;
 
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: "Name, email and message are required" }, { status: 400 });
+    if (!name || !email) {
+      return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
     }
+
+    // Build a readable intake brief for the message field
+    const planLabel = plan === "starter" ? "Starter (£150–£250 build + £25/mo)"
+      : plan === "pro" ? "Pro+ (From £500 build + £50/mo)"
+      : plan === "enterprise" ? "Enterprise (From £1,000 build + £100/mo)"
+      : service || "";
+
+    const socialParts = [
+      facebook && `FB: ${facebook}`,
+      instagram && `IG: ${instagram}`,
+      tiktok && `TikTok: ${tiktok}`,
+      linkedin && `LinkedIn: ${linkedin}`,
+    ].filter(Boolean).join(" | ");
+
+    const brief = message || [
+      "=== WEBSITE INTAKE BRIEF ===",
+      "",
+      "CONTACT",
+      phone && `Phone: ${phone}`,
+      city && `Location: ${city}`,
+      "",
+      "BUSINESS",
+      industry && `Industry: ${industry}`,
+      currentWebsite && `Current website: ${currentWebsite}`,
+      servicesOffered && `Services/products: ${servicesOffered}`,
+      targetCustomers && `Target customers: ${targetCustomers}`,
+      "",
+      "PLAN",
+      planLabel && `Selected plan: ${planLabel}`,
+      deadline && `Deadline: ${deadline}`,
+      "",
+      "DESIGN",
+      brandColours && `Brand colours: ${brandColours}`,
+      designStyle && `Style preference: ${designStyle}`,
+      socialParts && `Social media: ${socialParts}`,
+      references && `References: ${references}`,
+      "",
+      "NOTES",
+      notes || "None",
+    ].filter((line) => line !== false && line !== undefined && line !== "").join("\n");
 
     const sql = getDb();
     const id = crypto.randomUUID();
     const now = new Date();
 
     await sql`
-      INSERT INTO "Lead" (id, name, email, company, service, message, status, source, score, "createdAt", "updatedAt")
-      VALUES (${id}, ${name}, ${email}, ${company || null}, ${service || null}, ${message}, 'new', 'website', 0, ${now}, ${now})
+      INSERT INTO "Lead" (id, name, email, company, service, message, phone, notes, status, source, score, "createdAt", "updatedAt")
+      VALUES (
+        ${id}, ${name}, ${email},
+        ${company || null},
+        ${planLabel || null},
+        ${brief},
+        ${phone || null},
+        ${[brandColours && `Colours: ${brandColours}`, designStyle && `Style: ${designStyle}`].filter(Boolean).join(" | ") || null},
+        'new', 'website', 0, ${now}, ${now}
+      )
     `;
 
     return NextResponse.json({ success: true, id }, { status: 201 });
