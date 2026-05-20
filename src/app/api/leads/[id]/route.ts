@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { requireAuth, unauthorized } from "@/lib/api-auth";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(req);
+  if (!user) return unauthorized();
+
   try {
     const { id } = await params;
     const body = await req.json();
@@ -33,11 +37,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(req);
+  if (!user) return unauthorized();
+
   try {
     const { id } = await params;
     const sql = getDb();
-    await sql`DELETE FROM "Lead" WHERE id = ${id}`;
+    const result = await sql`DELETE FROM "Lead" WHERE id = ${id} RETURNING id`;
+    if (!result[0]) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Lead delete error:", err);

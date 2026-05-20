@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw, Trash2, X, AlertTriangle, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LeadModal from "@/components/portal/lead-modal";
@@ -20,6 +20,8 @@ type Lead = {
   createdAt: string;
 };
 
+type Toast = { msg: string; type: "success" | "error" };
+
 const statusColors: Record<string, "default" | "violet" | "cyan" | "warning" | "success" | "destructive" | "secondary"> = {
   new: "default",
   contacted: "violet",
@@ -31,6 +33,97 @@ const statusColors: Record<string, "default" | "violet" | "cyan" | "warning" | "
 
 const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"];
 
+function DeleteConfirmModal({
+  lead,
+  onConfirm,
+  onCancel,
+  loading,
+}: {
+  lead: Lead;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.18 }}
+        className="relative w-full max-w-sm glass-card rounded-2xl border border-riden-border p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle size={18} className="text-red-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Delete Lead</h3>
+            <p className="text-xs text-slate-500">This action cannot be undone</p>
+          </div>
+          <button onClick={onCancel} className="ml-auto p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+        <p className="text-sm text-slate-300 mb-6">
+          Are you sure you want to delete <span className="text-white font-medium">{lead.name}</span>
+          {lead.company ? <> from <span className="text-white font-medium">{lead.company}</span></> : ""}? This will permanently remove them from the database.
+        </p>
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={loading}>Cancel</Button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Deleting..." : "Delete Lead"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function LeadMenu({
+  lead,
+  onDelete,
+  onClose,
+}: {
+  lead: Lead;
+  onDelete: (lead: Lead) => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
+
+  return (
+    <div ref={ref} className="absolute right-0 top-8 z-30 min-w-[140px] glass-card rounded-xl border border-riden-border shadow-xl overflow-hidden">
+      <button
+        onClick={() => { onDelete(lead); onClose(); }}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+      >
+        <Trash2 size={13} />
+        Delete Lead
+      </button>
+    </div>
+  );
+}
+
 export default function LeadsView() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +131,15 @@ export default function LeadsView() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = (msg: string, type: Toast["type"]) => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -65,6 +167,22 @@ export default function LeadsView() {
     setUpdatingId(null);
   };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/leads/${deleteTarget.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      setLeads((prev) => prev.filter((l) => l.id !== deleteTarget.id));
+      showToast(`${deleteTarget.name} was deleted.`, "success");
+    } catch {
+      showToast("Failed to delete lead. Please try again.", "error");
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  };
+
   const filtered = leads.filter((lead) => {
     const matchSearch =
       lead.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -79,6 +197,37 @@ export default function LeadsView() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
+              toast.type === "success"
+                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                : "bg-red-500/10 border-red-500/20 text-red-400"
+            }`}
+          >
+            {toast.type === "success" ? <CheckCircle size={15} /> : <AlertTriangle size={15} />}
+            {toast.msg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <DeleteConfirmModal
+            lead={deleteTarget}
+            onConfirm={confirmDelete}
+            onCancel={() => setDeleteTarget(null)}
+            loading={deleting}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-start sm:items-center justify-between gap-3">
         <div>
@@ -203,12 +352,12 @@ export default function LeadsView() {
                 </div>
                 <div className="col-span-2 text-sm text-slate-400 truncate">{lead.company || "—"}</div>
                 <div className="col-span-2 text-xs text-slate-400 truncate">{lead.service || "—"}</div>
-                <div className="col-span-2">
+                <div className="col-span-2 flex items-center gap-2">
                   <select
                     value={lead.status}
                     disabled={updatingId === lead.id}
                     onChange={(e) => updateStatus(lead.id, e.target.value)}
-                    className="bg-transparent border-none text-xs cursor-pointer focus:outline-none"
+                    className="bg-transparent border-none text-xs cursor-pointer focus:outline-none sr-only"
                   >
                     {statusOptions.slice(1).map((s) => (
                       <option key={s} value={s} className="bg-riden-surface">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
@@ -222,10 +371,29 @@ export default function LeadsView() {
                 <div className="col-span-1 text-xs text-slate-500">
                   {new Date(lead.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                 </div>
-                <div className="col-span-1 flex justify-end">
-                  <button className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+                <div className="col-span-1 flex justify-end relative">
+                  <button
+                    onClick={() => setMenuOpenId(menuOpenId === lead.id ? null : lead.id)}
+                    className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
+                  >
                     <MoreHorizontal size={14} />
                   </button>
+                  <AnimatePresence>
+                    {menuOpenId === lead.id && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                        transition={{ duration: 0.12 }}
+                      >
+                        <LeadMenu
+                          lead={lead}
+                          onDelete={setDeleteTarget}
+                          onClose={() => setMenuOpenId(null)}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             ))
@@ -266,9 +434,30 @@ export default function LeadsView() {
                     <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize text-[10px]">
                       {lead.status}
                     </Badge>
-                    <button className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
-                      <MoreHorizontal size={14} />
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setMenuOpenId(menuOpenId === lead.id ? null : lead.id)}
+                        className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+                      >
+                        <MoreHorizontal size={14} />
+                      </button>
+                      <AnimatePresence>
+                        {menuOpenId === lead.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                            transition={{ duration: 0.12 }}
+                          >
+                            <LeadMenu
+                              lead={lead}
+                              onDelete={setDeleteTarget}
+                              onClose={() => setMenuOpenId(null)}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs mb-3">

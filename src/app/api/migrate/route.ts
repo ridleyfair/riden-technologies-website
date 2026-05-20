@@ -88,6 +88,26 @@ export async function POST(req: NextRequest) {
     CREATE INDEX IF NOT EXISTS "ActiveSession_lastSeen_idx" ON "ActiveSession"("lastSeen")
   `);
 
+  // Project table
+  await step("create Project", () => sql`
+    CREATE TABLE IF NOT EXISTS "Project" (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      "clientName" TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'planning',
+      budget FLOAT DEFAULT 0,
+      spent FLOAT DEFAULT 0,
+      progress INTEGER DEFAULT 0,
+      "dueDate" TIMESTAMPTZ,
+      notes TEXT,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+      "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await step("idx Project.createdAt", () => sql`
+    CREATE INDEX IF NOT EXISTS "Project_createdAt_idx" ON "Project"("createdAt")
+  `);
+
   return NextResponse.json({
     ok: true,
     ran,
