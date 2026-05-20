@@ -25,6 +25,18 @@ export async function GET() {
       }
     }
 
+    let prismaOk = false;
+    let prismaError: string | null = null;
+    if (dbConnected) {
+      try {
+        const { prisma } = await import("@/lib/prisma");
+        await prisma.lead.findMany({ take: 1 });
+        prismaOk = true;
+      } catch (err) {
+        prismaError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
     return NextResponse.json({
       cloudflareEnvKeys: envKeys,
       secrets: {
@@ -32,6 +44,7 @@ export async function GET() {
         AUTH_SECRET: !!authSecret,
       },
       db: { connected: dbConnected, error: dbError || (!dbUrl ? "DATABASE_URL not set" : null) },
+      prisma: { ok: prismaOk, error: prismaError },
     });
   } catch (err) {
     return NextResponse.json({
