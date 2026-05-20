@@ -86,7 +86,7 @@ export default function DashboardView() {
   const kpis: KPI[] = stats
     ? [
         {
-          label: "Total Revenue", value: formatCurrency(stats.kpis.totalRevenue),
+          label: "Total Profit", value: formatCurrency(stats.kpis.totalRevenue),
           change: stats.kpis.revenueGrowth, icon: Banknote,
           color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20",
           sublabel: (stats.kpis.mrr ?? 0) > 0 ? `incl. ${formatCurrency(stats.kpis.mrr)}/mo recurring` : undefined,

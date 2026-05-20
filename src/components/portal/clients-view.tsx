@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Search, Plus, Users, DollarSign, Globe, MoreHorizontal, RefreshCw, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search, Plus, Users, Banknote, Globe, MoreHorizontal, RefreshCw, X,
+  Phone, Mail, Building2, Calendar, TrendingUp,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { AnimatePresence } from "framer-motion";
 
 const tierBadge: Record<string, "default" | "violet" | "cyan"> = {
   starter: "default",
@@ -17,9 +19,11 @@ const tierBadge: Record<string, "default" | "violet" | "cyan"> = {
 type Client = {
   id: string; name: string; email: string; company: string;
   tier: string; status: string; revenue: number; websites: number;
-  notes?: string; createdAt: string;
+  notes?: string; createdAt: string; phone?: string;
+  monthlyRate?: number; activeFrom?: string | null; profit?: number;
 };
 
+/* ── Add Client Modal ─────────────────────────────────────────────── */
 function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () => void; onSave: () => void }) {
   const [form, setForm] = useState({ name: "", email: "", company: "", phone: "", tier: "starter", status: "active" });
   const [saving, setSaving] = useState(false);
@@ -32,7 +36,7 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
   const inputCls = "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 
   async function handleSave() {
-    if (!form.name || !form.email || !form.company) { setError("Name, email and company are required."); return; }
+    if (!form.name || !form.company) { setError("Name and company are required."); return; }
     setSaving(true); setError("");
     try {
       const res = await fetch("/api/clients", {
@@ -63,9 +67,9 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "Full Name *", field: "name", placeholder: "Jane Smith" },
-                  { label: "Email *", field: "email", placeholder: "jane@company.com" },
+                  { label: "Email", field: "email", placeholder: "jane@company.com" },
                   { label: "Company *", field: "company", placeholder: "Acme Corp" },
-                  { label: "Phone", field: "phone", placeholder: "+1 555 0100" },
+                  { label: "Phone", field: "phone", placeholder: "+44 7700 900000" },
                 ].map(({ label, field, placeholder }) => (
                   <div key={field}>
                     <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
@@ -99,12 +103,157 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
   );
 }
 
+/* ── Client Detail Modal ──────────────────────────────────────────── */
+function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onClose: () => void; onUpdate: () => void }) {
+  const [status, setStatus] = useState(client.status);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function changeStatus(newStatus: string) {
+    setSaving(true); setError("");
+    try {
+      const res = await fetch(`/api/clients/${client.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) { setError("Failed to update status."); return; }
+      setStatus(newStatus);
+      onUpdate();
+    } catch { setError("Network error."); } finally { setSaving(false); }
+  }
+
+  async function deleteClient() {
+    if (!confirm(`Delete ${client.company}? This cannot be undone.`)) return;
+    await fetch(`/api/clients/${client.id}`, { method: "DELETE" });
+    onUpdate();
+    onClose();
+  }
+
+  const mrr = Number(client.monthlyRate ?? 0);
+  const profit = Number(client.profit ?? client.revenue ?? 0);
+  const activeSince = client.activeFrom ? new Date(client.activeFrom) : null;
+  const monthsActive = activeSince
+    ? Math.max(0, Math.floor((Date.now() - activeSince.getTime()) / (1000 * 60 * 60 * 24 * 30)))
+    : 0;
+  const totalRecurring = mrr * monthsActive;
+
+  const infoRow = (icon: React.ReactNode, label: string, value: string | number | null | undefined) =>
+    value ? (
+      <div className="flex items-center gap-3 py-2.5 border-b border-riden-border/50 last:border-0">
+        <div className="w-7 h-7 rounded-lg bg-riden-muted flex items-center justify-center flex-shrink-0 text-slate-500">{icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] text-slate-500 mb-0.5">{label}</div>
+          <div className="text-sm text-white truncate">{value}</div>
+        </div>
+      </div>
+    ) : null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.2 }}
+        className="relative w-full max-w-lg glass-card rounded-2xl border border-riden-border overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-riden-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-base font-bold text-white">
+              {client.company[0]}
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-white">{client.company}</h2>
+              <div className="flex items-center gap-2 mt-0.5">
+                <Badge variant={tierBadge[client.tier] ?? "default"} className="capitalize text-[10px]">{client.tier}</Badge>
+                <span className={`text-[10px] font-medium capitalize ${status === "active" ? "text-emerald-400" : "text-slate-400"}`}>{status}</span>
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Financials */}
+        <div className="grid grid-cols-3 gap-3 p-4 border-b border-riden-border">
+          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
+            <div className="text-base font-bold text-emerald-400">{formatCurrency(profit)}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Profit</div>
+          </div>
+          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
+            <div className="text-base font-bold text-cyan-400">{formatCurrency(mrr)}<span className="text-xs text-slate-500">/mo</span></div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Monthly Rate</div>
+          </div>
+          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
+            <div className="text-base font-bold text-violet-400">{formatCurrency(totalRecurring)}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">Total Recurring</div>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="px-5 py-3 max-h-64 overflow-y-auto portal-scroll">
+          {infoRow(<Users size={13} />, "Contact", client.name)}
+          {infoRow(<Mail size={13} />, "Email", client.email)}
+          {infoRow(<Phone size={13} />, "Phone", client.phone)}
+          {infoRow(<Building2 size={13} />, "Company", client.company)}
+          {infoRow(<Globe size={13} />, "Websites", client.websites > 0 ? `${client.websites} site${client.websites !== 1 ? "s" : ""} managed` : null)}
+          {infoRow(<Calendar size={13} />, "Active Since", activeSince ? activeSince.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : null)}
+          {infoRow(<TrendingUp size={13} />, "Months Active", monthsActive > 0 ? `${monthsActive} month${monthsActive !== 1 ? "s" : ""}` : null)}
+          {client.notes && infoRow(<Building2 size={13} />, "Notes", client.notes)}
+          <div className="py-2.5">
+            <div className="text-[10px] text-slate-500 mb-0.5">Client since</div>
+            <div className="text-sm text-white">{new Date(client.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</div>
+          </div>
+        </div>
+
+        {/* Status Actions */}
+        <div className="px-5 pb-4 border-t border-riden-border pt-4">
+          <div className="text-xs text-slate-500 mb-2">Update Status</div>
+          <div className="flex gap-2">
+            {["active", "inactive", "churned"].map((s) => (
+              <button
+                key={s}
+                disabled={saving || status === s}
+                onClick={() => changeStatus(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+                  status === s
+                    ? s === "active" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "bg-riden-muted text-slate-300 border border-riden-border"
+                    : "text-slate-500 hover:text-white hover:bg-riden-muted border border-transparent"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {error && <p className="text-xs text-rose-400 mt-2">{error}</p>}
+        </div>
+
+        <div className="flex justify-between px-5 py-3 border-t border-riden-border">
+          <Button variant="ghost" size="sm" className="text-rose-400 hover:text-rose-300" onClick={deleteClient}>
+            Delete Client
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── Main View ────────────────────────────────────────────────────── */
 export default function ClientsView() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [tierFilter, setTierFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [viewClient, setViewClient] = useState<Client | null>(null);
 
   const fetchClients = useCallback(async () => {
     setLoading(true);
@@ -125,7 +274,7 @@ export default function ClientsView() {
     return matchSearch && matchTier;
   });
 
-  const totalRevenue = clients.reduce((s, c) => s + Number(c.revenue), 0);
+  const totalProfit = clients.reduce((s, c) => s + Number(c.profit ?? c.revenue ?? 0), 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -152,7 +301,7 @@ export default function ClientsView() {
         {[
           { label: "Total Clients", value: clients.length, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
           { label: "Active", value: clients.filter((c) => c.status === "active").length, icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Total Revenue", value: formatCurrency(totalRevenue), icon: DollarSign, color: "text-violet-400", bg: "bg-violet-500/10" },
+          { label: "Total Profit", value: formatCurrency(totalProfit), icon: Banknote, color: "text-violet-400", bg: "bg-violet-500/10" },
           { label: "Websites Managed", value: clients.reduce((s, c) => s + (Number(c.websites) || 0), 0), icon: Globe, color: "text-cyan-400", bg: "bg-cyan-500/10" },
         ].map((stat, i) => (
           <motion.div
@@ -232,6 +381,7 @@ export default function ClientsView() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
+              onClick={() => setViewClient(client)}
               className="glass-card rounded-xl border border-riden-border p-5 hover:border-white/10 transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-start justify-between mb-4">
@@ -246,7 +396,10 @@ export default function ClientsView() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={tierBadge[client.tier] ?? "default"} className="capitalize text-[10px]">{client.tier}</Badge>
-                  <button className="p-1 rounded hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+                  <button
+                    className="p-1 rounded hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setViewClient(client); }}
+                  >
                     <MoreHorizontal size={14} />
                   </button>
                 </div>
@@ -254,8 +407,8 @@ export default function ClientsView() {
 
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="text-center p-2 bg-riden-surface rounded-lg border border-riden-border">
-                  <div className="text-sm font-bold text-white">{formatCurrency(Number(client.revenue))}</div>
-                  <div className="text-[10px] text-slate-500">Revenue</div>
+                  <div className="text-sm font-bold text-white">{formatCurrency(Number(client.profit ?? client.revenue ?? 0))}</div>
+                  <div className="text-[10px] text-slate-500">Profit</div>
                 </div>
                 <div className="text-center p-2 bg-riden-surface rounded-lg border border-riden-border">
                   <div className="text-sm font-bold text-white">{client.websites ?? 0}</div>
@@ -270,7 +423,10 @@ export default function ClientsView() {
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-xs text-slate-500 truncate">{client.email}</div>
+                <div className="text-xs text-slate-500 truncate">{client.email || client.phone || "—"}</div>
+                {Number(client.monthlyRate ?? 0) > 0 && (
+                  <div className="text-xs text-cyan-400 flex-shrink-0">{formatCurrency(Number(client.monthlyRate))}/mo</div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -278,6 +434,16 @@ export default function ClientsView() {
       )}
 
       <AddClientModal open={addOpen} onClose={() => setAddOpen(false)} onSave={fetchClients} />
+
+      <AnimatePresence>
+        {viewClient && (
+          <ClientDetailModal
+            client={viewClient}
+            onClose={() => setViewClient(null)}
+            onUpdate={fetchClients}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

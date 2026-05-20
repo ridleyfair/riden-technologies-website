@@ -15,7 +15,6 @@ const pageLabels: Record<string, string> = {
   "/portal/automation": "Automation",
   "/portal/analytics": "Analytics",
   "/portal/invoices": "Invoices",
-  "/portal/messages": "Messages",
   "/portal/team": "Team",
   "/portal/settings": "Settings",
 };

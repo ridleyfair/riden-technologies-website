@@ -14,7 +14,6 @@ import {
   Zap,
   BarChart3,
   FileText,
-  MessageSquare,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -51,7 +50,6 @@ const navItems = [
     items: [
       { label: "Analytics", href: "/portal/analytics", icon: BarChart3 },
       { label: "Invoices", href: "/portal/invoices", icon: FileText },
-      { label: "Messages", href: "/portal/messages", icon: MessageSquare },
     ],
   },
   {
