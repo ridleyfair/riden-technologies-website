@@ -2,21 +2,25 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw, Trash2, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw, Trash2, X, AlertTriangle, CheckCircle, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LeadModal from "@/components/portal/lead-modal";
+import LeadDetailModal from "@/components/portal/lead-detail-modal";
 
 type Lead = {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   company: string | null;
   service: string | null;
   message: string;
+  notes?: string | null;
   status: string;
   source: string;
   score: number;
+  value?: number | null;
   createdAt: string;
 };
 
@@ -94,10 +98,12 @@ function DeleteConfirmModal({
 
 function LeadMenu({
   lead,
+  onView,
   onDelete,
   onClose,
 }: {
   lead: Lead;
+  onView: (lead: Lead) => void;
   onDelete: (lead: Lead) => void;
   onClose: () => void;
 }) {
@@ -112,7 +118,15 @@ function LeadMenu({
   }, [onClose]);
 
   return (
-    <div ref={ref} className="absolute right-0 top-8 z-30 min-w-[140px] glass-card rounded-xl border border-riden-border shadow-xl overflow-hidden">
+    <div ref={ref} className="absolute right-0 top-8 z-30 min-w-[150px] glass-card rounded-xl border border-riden-border shadow-xl overflow-hidden">
+      <button
+        onClick={() => { onView(lead); onClose(); }}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-300 hover:bg-white/5 transition-colors"
+      >
+        <Eye size={13} />
+        View Details
+      </button>
+      <div className="h-px bg-riden-border" />
       <button
         onClick={() => { onDelete(lead); onClose(); }}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
@@ -132,6 +146,7 @@ export default function LeadsView() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [viewLead, setViewLead] = useState<Lead | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -163,7 +178,9 @@ export default function LeadsView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    await fetchLeads();
+    // Keep the detail modal in sync
+    setViewLead((prev) => prev && prev.id === id ? { ...prev, status } : prev);
+    setLeads((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
     setUpdatingId(null);
   };
 
@@ -227,6 +244,14 @@ export default function LeadsView() {
           />
         )}
       </AnimatePresence>
+
+      {/* Lead Detail Modal */}
+      <LeadDetailModal
+        lead={viewLead}
+        onClose={() => setViewLead(null)}
+        onStatusChange={updateStatus}
+        onDelete={(lead) => { setViewLead(null); setDeleteTarget(lead); }}
+      />
 
       {/* Header */}
       <div className="flex items-start sm:items-center justify-between gap-3">
@@ -339,7 +364,8 @@ export default function LeadsView() {
             filtered.map((lead) => (
               <div
                 key={lead.id}
-                className="grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.02] transition-colors items-center"
+                onClick={() => setViewLead(lead)}
+                className="grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.04] transition-colors items-center cursor-pointer"
               >
                 <div className="col-span-3 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
@@ -352,7 +378,7 @@ export default function LeadsView() {
                 </div>
                 <div className="col-span-2 text-sm text-slate-400 truncate">{lead.company || "—"}</div>
                 <div className="col-span-2 text-xs text-slate-400 truncate">{lead.service || "—"}</div>
-                <div className="col-span-2 flex items-center gap-2">
+                <div className="col-span-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <select
                     value={lead.status}
                     disabled={updatingId === lead.id}
@@ -371,7 +397,7 @@ export default function LeadsView() {
                 <div className="col-span-1 text-xs text-slate-500">
                   {new Date(lead.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                 </div>
-                <div className="col-span-1 flex justify-end relative">
+                <div className="col-span-1 flex justify-end relative" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setMenuOpenId(menuOpenId === lead.id ? null : lead.id)}
                     className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
@@ -388,6 +414,7 @@ export default function LeadsView() {
                       >
                         <LeadMenu
                           lead={lead}
+                          onView={setViewLead}
                           onDelete={setDeleteTarget}
                           onClose={() => setMenuOpenId(null)}
                         />
@@ -419,7 +446,7 @@ export default function LeadsView() {
         ) : (
           <div className="divide-y divide-riden-border">
             {filtered.map((lead) => (
-              <div key={lead.id} className="p-4 hover:bg-white/[0.02] transition-colors">
+              <div key={lead.id} onClick={() => setViewLead(lead)} className="p-4 hover:bg-white/[0.04] transition-colors cursor-pointer">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
@@ -430,7 +457,7 @@ export default function LeadsView() {
                       <div className="text-xs text-slate-500 truncate">{lead.email}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize text-[10px]">
                       {lead.status}
                     </Badge>
@@ -451,6 +478,7 @@ export default function LeadsView() {
                           >
                             <LeadMenu
                               lead={lead}
+                              onView={setViewLead}
                               onDelete={setDeleteTarget}
                               onClose={() => setMenuOpenId(null)}
                             />
@@ -480,7 +508,7 @@ export default function LeadsView() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <span className="text-xs text-slate-600">Update status:</span>
                   <select
                     value={lead.status}
