@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     CREATE INDEX IF NOT EXISTS "ActiveSession_lastSeen_idx" ON "ActiveSession"("lastSeen")
   `);
 
-  // Project table
+  // Project table — created by Prisma migration; just ensure extra columns exist
   await step("create Project", () => sql`
     CREATE TABLE IF NOT EXISTS "Project" (
       id TEXT PRIMARY KEY,
@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
       "updatedAt" TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await step("Project.notes", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS notes TEXT`);
   await step("idx Project.createdAt", () => sql`
     CREATE INDEX IF NOT EXISTS "Project_createdAt_idx" ON "Project"("createdAt")
   `);
