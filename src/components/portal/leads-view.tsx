@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import LeadModal from "@/components/portal/lead-modal";
 
 type Lead = {
   id: string;
@@ -36,6 +37,7 @@ export default function LeadsView() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -87,7 +89,7 @@ export default function LeadsView() {
           <Button variant="outline" size="sm" onClick={fetchLeads}>
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </Button>
-          <Button variant="gradient" size="sm">
+          <Button variant="gradient" size="sm" onClick={() => setAddLeadOpen(true)}>
             <Plus size={14} />
             <span className="hidden sm:inline">Add Lead</span>
             <span className="sm:hidden">Add</span>
@@ -307,6 +309,8 @@ export default function LeadsView() {
           </div>
         )}
       </motion.div>
+
+      <LeadModal open={addLeadOpen} onClose={() => setAddLeadOpen(false)} onSave={fetchLeads} />
     </div>
   );
 }

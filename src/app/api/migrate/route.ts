@@ -1,0 +1,97 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/db";
+import { requireAuth, unauthorized } from "@/lib/api-auth";
+
+export async function POST(req: NextRequest) {
+  const user = await requireAuth(req);
+  if (!user) return unauthorized();
+
+  const sql = getDb();
+  const ran: string[] = [];
+  const failed: { step: string; error: string }[] = [];
+
+  async function step(name: string, fn: () => Promise<unknown>) {
+    try {
+      await fn();
+      ran.push(name);
+    } catch (e) {
+      failed.push({ step: name, error: String(e) });
+    }
+  }
+
+  // Lead additions
+  await step("Lead.phone", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS phone TEXT`);
+  await step("Lead.value", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS value FLOAT DEFAULT 0`);
+  await step("Lead.notes", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS notes TEXT`);
+
+  // Client additions
+  await step("Client.phone", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS phone TEXT`);
+  await step("Client.websites", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS websites INTEGER DEFAULT 0`);
+  await step("Client.notes", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS notes TEXT`);
+
+  // Invoice additions
+  await step("Invoice.clientId", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS "clientId" TEXT`);
+  await step("Invoice.clientEmail", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS "clientEmail" TEXT`);
+  await step("Invoice.taxRate", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS "taxRate" FLOAT DEFAULT 0`);
+  await step("Invoice.discount", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS discount FLOAT DEFAULT 0`);
+  await step("Invoice.notes", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS notes TEXT`);
+  await step("Invoice.paidAt", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS "paidAt" TIMESTAMPTZ`);
+  await step("Invoice.sentAt", () => sql`ALTER TABLE "Invoice" ADD COLUMN IF NOT EXISTS "sentAt" TIMESTAMPTZ`);
+
+  // InvoiceLineItem table
+  await step("create InvoiceLineItem", () => sql`
+    CREATE TABLE IF NOT EXISTS "InvoiceLineItem" (
+      id TEXT PRIMARY KEY,
+      "invoiceId" TEXT NOT NULL,
+      description TEXT NOT NULL,
+      quantity FLOAT NOT NULL DEFAULT 1,
+      "unitPrice" FLOAT NOT NULL DEFAULT 0,
+      amount FLOAT NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await step("idx InvoiceLineItem.invoiceId", () => sql`
+    CREATE INDEX IF NOT EXISTS "InvoiceLineItem_invoiceId_idx" ON "InvoiceLineItem"("invoiceId")
+  `);
+
+  // WebEvent table for analytics
+  await step("create WebEvent", () => sql`
+    CREATE TABLE IF NOT EXISTS "WebEvent" (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      path TEXT NOT NULL,
+      referrer TEXT,
+      source TEXT,
+      medium TEXT,
+      campaign TEXT,
+      device TEXT,
+      "sessionId" TEXT,
+      "visitorId" TEXT,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await step("idx WebEvent.type", () => sql`CREATE INDEX IF NOT EXISTS "WebEvent_type_idx" ON "WebEvent"(type)`);
+  await step("idx WebEvent.createdAt", () => sql`CREATE INDEX IF NOT EXISTS "WebEvent_createdAt_idx" ON "WebEvent"("createdAt")`);
+  await step("idx WebEvent.visitorId", () => sql`CREATE INDEX IF NOT EXISTS "WebEvent_visitorId_idx" ON "WebEvent"("visitorId")`);
+
+  // ActiveSession table for live visitor count
+  await step("create ActiveSession", () => sql`
+    CREATE TABLE IF NOT EXISTS "ActiveSession" (
+      "sessionId" TEXT PRIMARY KEY,
+      path TEXT NOT NULL,
+      "lastSeen" TIMESTAMPTZ DEFAULT NOW(),
+      device TEXT,
+      "visitorId" TEXT
+    )
+  `);
+  await step("idx ActiveSession.lastSeen", () => sql`
+    CREATE INDEX IF NOT EXISTS "ActiveSession_lastSeen_idx" ON "ActiveSession"("lastSeen")
+  `);
+
+  return NextResponse.json({
+    ok: true,
+    ran,
+    failed,
+    message: `Migration complete — ${ran.length} steps succeeded, ${failed.length} failed.`,
+  });
+}

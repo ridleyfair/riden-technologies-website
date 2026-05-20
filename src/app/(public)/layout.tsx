@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Navbar from "@/components/marketing/navbar";
 import Footer from "@/components/marketing/footer";
+import Tracker from "@/components/tracking/tracker";
 
 export const metadata: Metadata = {
   title: {
@@ -29,6 +31,9 @@ export default function PublicLayout({
       <Navbar />
       <main>{children}</main>
       <Footer />
+      <Suspense fallback={null}>
+        <Tracker />
+      </Suspense>
     </>
   );
 }
