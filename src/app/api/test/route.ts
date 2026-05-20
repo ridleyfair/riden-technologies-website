@@ -1,22 +1,30 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const dbUrlSet = !!process.env.DATABASE_URL;
-  const authSecretSet = !!process.env.AUTH_SECRET;
+  const dbUrl = process.env.DATABASE_URL;
+  const authSecret = process.env.AUTH_SECRET;
+
+  if (!dbUrl) {
+    return NextResponse.json({
+      env: { DATABASE_URL: false, AUTH_SECRET: !!authSecret },
+      db: { connected: false, error: "DATABASE_URL is not set" },
+    });
+  }
 
   let dbConnected = false;
   let dbError: string | null = null;
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const { neon } = await import("@neondatabase/serverless");
+    const sql = neon(dbUrl);
+    await sql`SELECT 1`;
     dbConnected = true;
   } catch (err) {
     dbError = err instanceof Error ? err.message : String(err);
   }
 
   return NextResponse.json({
-    env: { DATABASE_URL: dbUrlSet, AUTH_SECRET: authSecretSet },
+    env: { DATABASE_URL: true, AUTH_SECRET: !!authSecret },
     db: { connected: dbConnected, error: dbError },
   });
 }
