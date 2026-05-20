@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Phone, Building2, Calendar, Tag, Star, ExternalLink } from "lucide-react";
+import { X, Mail, Phone, Building2, Calendar, Tag, Star, ExternalLink, FolderPlus, CheckCircle, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type Lead = {
   id: string;
@@ -33,28 +34,75 @@ const statusColors: Record<string, "default" | "violet" | "cyan" | "warning" | "
   lost: "destructive",
 };
 
+// ─── Intake brief parser ───────────────────────────────────────────────────────
+
+function parseBriefValue(message: string, key: string): string {
+  const regex = new RegExp(`^${key}:\\s*(.+)$`, "mi");
+  const m = message.match(regex);
+  return m ? m[1].trim() : "";
+}
+
+function estimateBudget(service: string | null, message: string): number {
+  const planLine = service || parseBriefValue(message, "Selected plan");
+  const lower = planLine.toLowerCase();
+  if (lower.includes("enterprise")) return 1000;
+  if (lower.includes("pro")) return 500;
+  if (lower.includes("starter")) return 150;
+  // Fall back to scanning for known price mentions
+  if (lower.includes("1,000") || lower.includes("1000")) return 1000;
+  if (lower.includes("500")) return 500;
+  if (lower.includes("150")) return 150;
+  return 0;
+}
+
+function parseDueDate(message: string): string {
+  const raw = parseBriefValue(message, "Deadline");
+  if (!raw || raw === "None") return "";
+
+  // Try to parse natural language into a date
+  const lower = raw.toLowerCase();
+  const now = new Date();
+
+  if (lower.includes("week")) {
+    const match = lower.match(/(\d+)\s*week/);
+    const weeks = match ? parseInt(match[1]) : 2;
+    const d = new Date(now);
+    d.setDate(d.getDate() + weeks * 7);
+    return d.toISOString().split("T")[0];
+  }
+  if (lower.includes("month")) {
+    const match = lower.match(/(\d+)\s*month/);
+    const months = match ? parseInt(match[1]) : 1;
+    const d = new Date(now);
+    d.setMonth(d.getMonth() + months);
+    return d.toISOString().split("T")[0];
+  }
+  // If it looks like a date already
+  const attempt = new Date(raw);
+  if (!isNaN(attempt.getTime())) return attempt.toISOString().split("T")[0];
+  // Can't parse — return empty, show the raw text as a hint
+  return "";
+}
+
+// ─── Intake brief display ──────────────────────────────────────────────────────
+
 function IntakeBrief({ text }: { text: string }) {
-  // Detect structured intake brief format
   if (!text.includes("=== WEBSITE INTAKE BRIEF ===")) {
-    return (
-      <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{text}</p>
-    );
+    return <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{text}</p>;
   }
 
-  // Parse sections from the brief
   const sections: { heading: string; lines: string[] }[] = [];
   let current: { heading: string; lines: string[] } | null = null;
 
   for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line || line === "=== WEBSITE INTAKE BRIEF ===") continue;
-
     const isHeading = /^[A-Z][A-Z\s&\/]+$/.test(line) && line.length < 30;
     if (isHeading) {
       if (current) sections.push(current);
       current = { heading: line, lines: [] };
-    } else if (current) {
-      if (line) current.lines.push(line);
+    } else if (current && line) {
+      current.lines.push(line);
     }
   }
   if (current) sections.push(current);
@@ -90,6 +138,156 @@ function IntakeBrief({ text }: { text: string }) {
   );
 }
 
+// ─── Create project from lead modal ───────────────────────────────────────────
+
+const inputCls = "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors";
+
+function CreateProjectModal({
+  lead,
+  onClose,
+}: {
+  lead: Lead;
+  onClose: () => void;
+}) {
+  const deadlineRaw = parseBriefValue(lead.message, "Deadline");
+  const estimatedBudget = estimateBudget(lead.service, lead.message);
+
+  const [form, setForm] = useState({
+    name: lead.company ? `${lead.company} Website` : `${lead.name} Website`,
+    clientName: lead.company || lead.name,
+    budget: estimatedBudget > 0 ? String(estimatedBudget) : "",
+    dueDate: parseDueDate(lead.message),
+    notes: [
+      lead.service && `Plan: ${lead.service}`,
+      deadlineRaw && deadlineRaw !== "None" && `Requested deadline: ${deadlineRaw}`,
+      parseBriefValue(lead.message, "Services/products") && `Services: ${parseBriefValue(lead.message, "Services/products")}`,
+      parseBriefValue(lead.message, "Style preference") && `Style: ${parseBriefValue(lead.message, "Style preference")}`,
+      parseBriefValue(lead.message, "Brand colours") && `Colours: ${parseBriefValue(lead.message, "Brand colours")}`,
+    ].filter(Boolean).join("\n"),
+  });
+
+  const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((p) => ({ ...p, [field]: e.target.value }));
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [createdId, setCreatedId] = useState<string | null>(null);
+
+  async function handleCreate() {
+    if (!form.name.trim()) { setError("Project name is required."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          clientName: form.clientName.trim(),
+          status: "in_progress",
+          budget: parseFloat(form.budget) || 0,
+          spent: 0,
+          progress: 0,
+          dueDate: form.dueDate || null,
+          notes: form.notes,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.error ?? "Failed to create project.");
+        return;
+      }
+      const project = await res.json();
+      setCreatedId(project.id);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (createdId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+        <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+          <CheckCircle size={28} className="text-emerald-400" />
+        </div>
+        <h3 className="text-base font-semibold text-white mb-1">Project Created</h3>
+        <p className="text-sm text-slate-400 mb-5">
+          <span className="text-white font-medium">{form.name}</span> is now live in your projects board.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={onClose}>Stay here</Button>
+          <Link href="/portal/projects">
+            <Button variant="gradient" size="sm">
+              View Projects <ArrowRight size={13} />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 py-1">
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="sm:col-span-2">
+          <label className="block text-xs text-slate-400 mb-1.5">Project Name</label>
+          <input value={form.name} onChange={set("name")} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-400 mb-1.5">Client Name</label>
+          <input value={form.clientName} onChange={set("clientName")} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-400 mb-1.5">
+            Budget (£)
+            {estimatedBudget > 0 && (
+              <span className="ml-1.5 text-[10px] text-blue-400">estimated from plan</span>
+            )}
+          </label>
+          <input type="number" min="0" value={form.budget} onChange={set("budget")} placeholder="0" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-400 mb-1.5">
+            Due Date
+            {deadlineRaw && deadlineRaw !== "None" && (
+              <span className="ml-1.5 text-[10px] text-slate-500">({deadlineRaw})</span>
+            )}
+          </label>
+          <input type="date" value={form.dueDate} onChange={set("dueDate")} className={inputCls} />
+        </div>
+        <div className="flex items-center gap-2 bg-riden-surface rounded-xl border border-riden-border px-3 py-2.5">
+          <span className="text-xs text-slate-500">Status</span>
+          <span className="ml-auto text-xs font-medium text-amber-400">In Progress</span>
+        </div>
+        <div className="flex items-center gap-2 bg-riden-surface rounded-xl border border-riden-border px-3 py-2.5">
+          <span className="text-xs text-slate-500">Spent</span>
+          <span className="ml-auto text-xs font-medium text-white">£0</span>
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs text-slate-400 mb-1.5">Notes (pre-filled from intake)</label>
+        <textarea rows={3} value={form.notes} onChange={set("notes")} className={`${inputCls} resize-none`} />
+      </div>
+
+      {error && (
+        <p className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>
+      )}
+
+      <div className="flex justify-end gap-2 pt-1">
+        <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+        <Button variant="gradient" size="sm" onClick={handleCreate} disabled={saving}>
+          <FolderPlus size={13} />
+          {saving ? "Creating..." : "Create Project"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Lead detail modal ─────────────────────────────────────────────────────────
+
 interface LeadDetailModalProps {
   lead: Lead | null;
   onClose: () => void;
@@ -99,6 +297,7 @@ interface LeadDetailModalProps {
 
 export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelete }: LeadDetailModalProps) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(false);
 
   if (!lead) return null;
 
@@ -159,6 +358,32 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
 
             {/* Body — scrollable */}
             <div className="overflow-y-auto flex-1 p-5 space-y-5">
+
+              {/* Create project panel */}
+              <AnimatePresence>
+                {showCreateProject && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.18 }}
+                    className="bg-riden-surface rounded-xl border border-blue-500/20 p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <FolderPlus size={15} className="text-blue-400" />
+                      <span className="text-sm font-semibold text-white">Create Project from Lead</span>
+                      <button
+                        onClick={() => setShowCreateProject(false)}
+                        className="ml-auto p-1 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                    <CreateProjectModal lead={lead} onClose={() => setShowCreateProject(false)} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Key details row */}
               <div className="grid grid-cols-2 gap-3">
                 {lead.company && (
@@ -215,7 +440,7 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
                 )}
               </div>
 
-              {/* Intake brief / message */}
+              {/* Intake brief */}
               {lead.message && (
                 <div>
                   <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Website Intake Brief</div>
@@ -265,9 +490,20 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
               >
                 Delete lead
               </button>
-              <Button variant="outline" size="sm" onClick={onClose}>
-                Close
-              </Button>
+              <div className="flex items-center gap-2">
+                {!showCreateProject && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCreateProject(true)}
+                    className="gap-1.5 text-blue-400 border-blue-500/30 hover:border-blue-500/60"
+                  >
+                    <FolderPlus size={13} />
+                    Create Project
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+              </div>
             </div>
           </motion.div>
         </div>
