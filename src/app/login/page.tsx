@@ -44,7 +44,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-riden-dark flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-hero-gradient" />
       <div className="absolute inset-0 dot-pattern opacity-20" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[min(500px,90vw)] h-[min(500px,90vw)] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -67,7 +67,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="glass-card rounded-2xl border border-riden-border p-8">
+        <div className="glass-card rounded-2xl border border-riden-border p-6 sm:p-8">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-white">Portal Login</h1>
             <p className="text-sm text-slate-500 mt-1">Sign in to access the CRM</p>

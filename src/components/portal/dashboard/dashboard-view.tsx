@@ -93,7 +93,7 @@ export default function DashboardView() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card rounded-2xl border border-riden-border p-6 flex items-center justify-between"
+        className="glass-card rounded-2xl border border-riden-border p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
         style={{
           background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.06) 100%)",
         }}

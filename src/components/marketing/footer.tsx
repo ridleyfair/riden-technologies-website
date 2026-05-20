@@ -25,14 +25,14 @@ export default function Footer() {
   return (
     <footer className="relative border-t border-riden-border">
       <div className="absolute inset-0 bg-gradient-to-b from-riden-dark to-riden-darker" />
-      <div className="relative max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 sm:gap-8 mb-8 sm:mb-12">
           {/* Brand */}
           <div className="col-span-2">
             <Link href="/" className="flex items-center mb-4">
               <div
                 style={{
-                  width: "240px",
+                  width: "min(240px, 55vw)",
                   height: "60px",
                   backgroundImage: "url(/images/RidenLogo.png)",
                   backgroundSize: "200% auto",
@@ -84,7 +84,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 border-t border-riden-border flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="pt-6 sm:pt-8 border-t border-riden-border flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           <p className="text-sm text-slate-500">
             &copy; {new Date().getFullYear()} Riden Technologies. All rights reserved.
           </p>

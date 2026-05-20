@@ -44,16 +44,16 @@ export default function ContactPage() {
   return (
     <div className="pt-20">
       {/* Hero */}
-      <section className="relative py-24 overflow-hidden">
+      <section className="relative py-16 sm:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-hero-gradient" />
         <div className="absolute inset-0 dot-pattern opacity-30" />
-        <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/4 w-[min(400px,80vw)] h-[min(400px,80vw)] bg-blue-600/10 rounded-full blur-[100px]" />
 
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-6xl font-bold text-white mb-6"
+            className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-4 sm:mb-6"
           >
             Let&apos;s Build Something{" "}
             <span className="gradient-text">Extraordinary</span>
@@ -62,7 +62,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-xl text-slate-400 max-w-2xl mx-auto"
+            className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto"
           >
             Book a free strategy call and discover how we can transform your
             business with AI-powered technology.
@@ -71,9 +71,9 @@ export default function ContactPage() {
       </section>
 
       {/* Content */}
-      <section className="py-16 bg-riden-dark">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-5 gap-12">
+      <section className="py-10 sm:py-16 bg-riden-dark">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Left Info */}
             <div className="lg:col-span-2 space-y-8">
               <motion.div
@@ -148,7 +148,7 @@ export default function ContactPage() {
               className="lg:col-span-3"
             >
               {submitted ? (
-                <div className="glass-card rounded-2xl border border-riden-border p-12 text-center h-full flex flex-col items-center justify-center">
+                <div className="glass-card rounded-2xl border border-riden-border p-8 sm:p-12 text-center h-full flex flex-col items-center justify-center">
                   <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
                     <CheckCircle size={32} className="text-emerald-400" />
                   </div>
@@ -161,7 +161,7 @@ export default function ContactPage() {
               ) : (
                 <form
                   onSubmit={handleSubmit}
-                  className="glass-card rounded-2xl border border-riden-border p-8 space-y-5"
+                  className="glass-card rounded-2xl border border-riden-border p-5 sm:p-8 space-y-4 sm:space-y-5"
                 >
                   <div className="grid md:grid-cols-2 gap-5">
                     <div>

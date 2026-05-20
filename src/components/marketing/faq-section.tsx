@@ -39,11 +39,11 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="relative py-32 overflow-hidden">
+    <section className="relative py-16 sm:py-24 md:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-riden-surface/50" />
 
-      <div className="relative max-w-4xl mx-auto px-6">
-        <div className="text-center mb-16">
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -59,7 +59,7 @@ export default function FAQSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
           >
             Got <span className="gradient-text">Questions?</span>
           </motion.h2>
@@ -69,7 +69,7 @@ export default function FAQSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-slate-400"
+            className="text-base sm:text-lg text-slate-400"
           >
             Everything you need to know before getting started.
           </motion.p>

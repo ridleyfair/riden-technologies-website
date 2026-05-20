@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 export default function Pricing() {
   return (
     <div className="pt-20">
-      <div className="py-16 text-center bg-hero-gradient border-b border-riden-border">
-        <h1 className="text-5xl font-bold text-white mb-4">
+      <div className="py-12 sm:py-16 text-center bg-hero-gradient border-b border-riden-border px-4 sm:px-6">
+        <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4">
           Simple, <span className="gradient-text">Transparent Pricing</span>
         </h1>
-        <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto">
           No hidden fees. Scale as you grow. Cancel anytime.
         </p>
       </div>

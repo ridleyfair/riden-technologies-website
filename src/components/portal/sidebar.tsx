@@ -66,9 +66,10 @@ const navItems = [
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onMobileClose?: () => void;
 }
 
-export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
@@ -136,6 +137,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   title={collapsed ? item.label : undefined}
+                  onClick={onMobileClose}
                   className={cn(
                     "flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                     isActive
@@ -205,10 +207,10 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
       </div>
 
-      {/* Collapse Toggle */}
+      {/* Collapse Toggle - desktop only */}
       <button
         onClick={onToggle}
-        className="absolute top-5 -right-3 w-6 h-6 rounded-full bg-riden-muted border border-riden-border flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/50 transition-all duration-200 z-10"
+        className="hidden md:flex absolute top-5 -right-3 w-6 h-6 rounded-full bg-riden-muted border border-riden-border items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/50 transition-all duration-200 z-10"
       >
         {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>

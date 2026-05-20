@@ -38,12 +38,12 @@ export default function Navbar() {
           : "bg-transparent py-5"
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center group">
+        <Link href="/" className="flex items-center group flex-shrink-0">
           <div
             style={{
-              width: "220px",
+              width: "min(220px, 52vw)",
               height: "54px",
               backgroundImage: "url(/images/RidenLogo.png)",
               backgroundSize: "200% auto",
@@ -105,7 +105,7 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
             className="md:hidden glass border-t border-white/5 overflow-hidden"
           >
-            <div className="px-6 py-4 flex flex-col gap-2">
+            <div className="px-4 py-4 flex flex-col gap-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}

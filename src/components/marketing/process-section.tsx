@@ -59,11 +59,11 @@ const steps = [
 
 export default function ProcessSection() {
   return (
-    <section className="relative py-32 overflow-hidden">
+    <section className="relative py-16 sm:py-24 md:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-riden-surface to-riden-dark" />
 
-      <div className="relative max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10 sm:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -79,7 +79,7 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
           >
             From Zero to{" "}
             <span className="gradient-text">Fully Operational</span>
@@ -90,7 +90,7 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-slate-400 max-w-2xl mx-auto"
+            className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto"
           >
             Our proven 5-step process takes your business from strategy to full
             digital transformation in as little as two weeks.
@@ -102,7 +102,7 @@ export default function ProcessSection() {
           {/* Connecting line */}
           <div className="absolute top-12 left-[calc(10%+24px)] right-[calc(10%+24px)] h-px bg-gradient-to-r from-blue-500/50 via-violet-500/50 to-emerald-500/50 hidden lg:block" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {steps.map((step, i) => (
               <motion.div
                 key={i}

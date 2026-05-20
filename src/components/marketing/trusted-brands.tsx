@@ -23,7 +23,7 @@ export default function TrustedBrands() {
     <section className="relative py-16 overflow-hidden border-y border-riden-border">
       <div className="absolute inset-0 bg-riden-surface/50" />
 
-      <div className="relative max-w-7xl mx-auto px-6">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

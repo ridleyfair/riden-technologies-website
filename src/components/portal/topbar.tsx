@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, Plus } from "lucide-react";
+import { Bell, Search, Plus, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const pageLabels: Record<string, string> = {
@@ -20,25 +20,39 @@ const pageLabels: Record<string, string> = {
   "/portal/settings": "Settings",
 };
 
-export default function Topbar() {
+interface TopbarProps {
+  onMobileMenuToggle?: () => void;
+}
+
+export default function Topbar({ onMobileMenuToggle }: TopbarProps) {
   const pathname = usePathname();
   const label = pageLabels[pathname] ?? "Portal";
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-b border-riden-border bg-riden-darker/80 backdrop-blur-sm">
-      <div>
-        <h1 className="text-lg font-semibold text-white">{label}</h1>
-        <p className="text-xs text-slate-500">
-          {new Date().toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+    <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-riden-border bg-riden-darker/80 backdrop-blur-sm">
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Mobile menu button */}
+        <button
+          onClick={onMobileMenuToggle}
+          className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-riden-muted transition-colors flex-shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg font-semibold text-white truncate">{label}</h1>
+          <p className="text-xs text-slate-500 hidden sm:block">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Search */}
         <div className="relative hidden md:block">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />

@@ -27,10 +27,12 @@
   * {
     @apply border-border;
     box-sizing: border-box;
+    max-width: 100%;
   }
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -39,6 +41,7 @@
     font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -85,11 +88,17 @@
 
   .hero-glow {
     position: absolute;
-    width: 600px;
-    height: 600px;
+    width: clamp(200px, 50vw, 600px);
+    height: clamp(200px, 50vw, 600px);
     border-radius: 50%;
-    filter: blur(120px);
+    filter: blur(80px);
     pointer-events: none;
+  }
+
+  @media (min-width: 768px) {
+    .hero-glow {
+      filter: blur(120px);
+    }
   }
 
   .grid-pattern {
