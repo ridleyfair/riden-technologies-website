@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Plus, Users, Banknote, Globe, MoreHorizontal, RefreshCw, X,
-  Phone, Mail, Building2, Calendar, TrendingUp,
+  Phone, Mail, Building2, Calendar, TrendingUp, CheckCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,12 @@ const tierBadge: Record<string, "default" | "violet" | "cyan"> = {
   starter: "default",
   growth: "violet",
   enterprise: "cyan",
+};
+
+const TIER_RATES: Record<string, number> = {
+  starter: 25,
+  growth: 50,
+  enterprise: 100,
 };
 
 type Client = {
@@ -33,6 +39,10 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
     if (open) { setForm({ name: "", email: "", company: "", phone: "", tier: "starter", status: "active" }); setError(""); }
   }, [open]);
 
+  function setField(field: string, value: string) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
   const inputCls = "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 
   async function handleSave() {
@@ -42,7 +52,10 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
       const res = await fetch("/api/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          monthlyRate: TIER_RATES[form.tier] ?? 25,
+        }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to save."); return; }
       onSave(); onClose();
@@ -73,23 +86,28 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
                 ].map(({ label, field, placeholder }) => (
                   <div key={field}>
                     <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
-                    <input value={form[field as keyof typeof form]} onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
+                    <input value={form[field as keyof typeof form]} onChange={(e) => setField(field, e.target.value)}
                       placeholder={placeholder} className={inputCls} />
                   </div>
                 ))}
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Tier</label>
-                  <select value={form.tier} onChange={(e) => setForm((f) => ({ ...f, tier: e.target.value }))} className={inputCls}>
-                    {["starter", "growth", "enterprise"].map((t) => <option key={t} value={t} className="bg-riden-surface capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                  <select value={form.tier} onChange={(e) => setField("tier", e.target.value)} className={inputCls}>
+                    {Object.keys(TIER_RATES).map((t) => (
+                      <option key={t} value={t} className="bg-riden-surface capitalize">
+                        {t.charAt(0).toUpperCase() + t.slice(1)} — £{TIER_RATES[t]}/mo
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Status</label>
-                  <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
+                  <select value={form.status} onChange={(e) => setField("status", e.target.value)} className={inputCls}>
                     {["active", "inactive", "churned"].map((s) => <option key={s} value={s} className="bg-riden-surface capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                   </select>
                 </div>
               </div>
+              <p className="text-xs text-slate-500">Monthly rate auto-set to £{TIER_RATES[form.tier]}/mo based on tier.</p>
               {error && <p className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>}
             </div>
             <div className="flex justify-end gap-2 px-5 py-4 border-t border-riden-border">
@@ -106,21 +124,35 @@ function AddClientModal({ open, onClose, onSave }: { open: boolean; onClose: () 
 /* ── Client Detail Modal ──────────────────────────────────────────── */
 function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onClose: () => void; onUpdate: () => void }) {
   const [status, setStatus] = useState(client.status);
+  const [profit, setProfit] = useState(String(client.profit ?? client.revenue ?? 0));
+  const [monthlyRate, setMonthlyRate] = useState(String(client.monthlyRate ?? TIER_RATES[client.tier] ?? 25));
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
-  async function changeStatus(newStatus: string) {
-    setSaving(true); setError("");
+  async function saveChanges(overrides?: Record<string, unknown>) {
+    setSaving(true); setError(""); setSaved(false);
     try {
       const res = await fetch(`/api/clients/${client.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          status,
+          profit: parseFloat(profit) || 0,
+          monthlyRate: parseFloat(monthlyRate) || 0,
+          ...overrides,
+        }),
       });
-      if (!res.ok) { setError("Failed to update status."); return; }
-      setStatus(newStatus);
+      if (!res.ok) { setError("Failed to update client."); return; }
+      setSaved(true);
       onUpdate();
+      setTimeout(() => setSaved(false), 2000);
     } catch { setError("Network error."); } finally { setSaving(false); }
+  }
+
+  async function changeStatus(newStatus: string) {
+    setStatus(newStatus);
+    await saveChanges({ status: newStatus });
   }
 
   async function deleteClient() {
@@ -130,13 +162,15 @@ function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onCl
     onClose();
   }
 
-  const mrr = Number(client.monthlyRate ?? 0);
-  const profit = Number(client.profit ?? client.revenue ?? 0);
+  const mrr = parseFloat(monthlyRate) || 0;
+  const profitNum = parseFloat(profit) || 0;
   const activeSince = client.activeFrom ? new Date(client.activeFrom) : null;
   const monthsActive = activeSince
     ? Math.max(0, Math.floor((Date.now() - activeSince.getTime()) / (1000 * 60 * 60 * 24 * 30)))
     : 0;
   const totalRecurring = mrr * monthsActive;
+
+  const inputCls = "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors";
 
   const infoRow = (icon: React.ReactNode, label: string, value: string | number | null | undefined) =>
     value ? (
@@ -180,24 +214,68 @@ function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onCl
           </button>
         </div>
 
-        {/* Financials */}
-        <div className="grid grid-cols-3 gap-3 p-4 border-b border-riden-border">
-          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
-            <div className="text-base font-bold text-emerald-400">{formatCurrency(profit)}</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Profit</div>
+        {/* Financials (editable) */}
+        <div className="p-4 border-b border-riden-border space-y-3">
+          <div className="text-xs text-slate-500 mb-1">Financials</div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] text-slate-400 mb-1.5">Project Profit (£)</label>
+              <input
+                type="number" min="0" step="0.01"
+                value={profit}
+                onChange={(e) => setProfit(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] text-slate-400 mb-1.5">Monthly Rate (£/mo)</label>
+              <input
+                type="number" min="0" step="1"
+                value={monthlyRate}
+                onChange={(e) => setMonthlyRate(e.target.value)}
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
-            <div className="text-base font-bold text-cyan-400">{formatCurrency(mrr)}<span className="text-xs text-slate-500">/mo</span></div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Monthly Rate</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center p-2 bg-riden-surface rounded-xl border border-riden-border">
+              <div className="text-sm font-bold text-emerald-400">{formatCurrency(profitNum)}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Profit</div>
+            </div>
+            <div className="text-center p-2 bg-riden-surface rounded-xl border border-riden-border">
+              <div className="text-sm font-bold text-cyan-400">{formatCurrency(mrr)}<span className="text-[10px] text-slate-500">/mo</span></div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Monthly Rate</div>
+            </div>
+            <div className="text-center p-2 bg-riden-surface rounded-xl border border-riden-border">
+              <div className="text-sm font-bold text-violet-400">{formatCurrency(totalRecurring)}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">Recurring{monthsActive > 0 ? ` (${monthsActive}mo)` : ""}</div>
+            </div>
           </div>
-          <div className="text-center p-3 bg-riden-surface rounded-xl border border-riden-border">
-            <div className="text-base font-bold text-violet-400">{formatCurrency(totalRecurring)}</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Total Recurring</div>
+          <div className="flex gap-2 pt-1">
+            <Button variant="gradient" size="sm" className="flex-1" onClick={() => saveChanges()} disabled={saving}>
+              {saved ? <><CheckCircle size={13} className="mr-1" /> Saved</> : saving ? "Saving..." : "Save Changes"}
+            </Button>
+            <div className="flex gap-1">
+              {[25, 50, 100].map((rate) => (
+                <button
+                  key={rate}
+                  onClick={() => setMonthlyRate(String(rate))}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-all border ${
+                    parseFloat(monthlyRate) === rate
+                      ? "bg-blue-600/10 text-blue-400 border-blue-500/20"
+                      : "text-slate-500 border-riden-border hover:text-white hover:bg-riden-muted"
+                  }`}
+                >
+                  £{rate}
+                </button>
+              ))}
+            </div>
           </div>
+          {error && <p className="text-xs text-rose-400">{error}</p>}
         </div>
 
         {/* Details */}
-        <div className="px-5 py-3 max-h-64 overflow-y-auto portal-scroll">
+        <div className="px-5 py-3 max-h-52 overflow-y-auto portal-scroll">
           {infoRow(<Users size={13} />, "Contact", client.name)}
           {infoRow(<Mail size={13} />, "Email", client.email)}
           {infoRow(<Phone size={13} />, "Phone", client.phone)}
@@ -212,7 +290,7 @@ function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onCl
           </div>
         </div>
 
-        {/* Status Actions */}
+        {/* Status */}
         <div className="px-5 pb-4 border-t border-riden-border pt-4">
           <div className="text-xs text-slate-500 mb-2">Update Status</div>
           <div className="flex gap-2">
@@ -232,7 +310,6 @@ function ClientDetailModal({ client, onClose, onUpdate }: { client: Client; onCl
               </button>
             ))}
           </div>
-          {error && <p className="text-xs text-rose-400 mt-2">{error}</p>}
         </div>
 
         <div className="flex justify-between px-5 py-3 border-t border-riden-border">
