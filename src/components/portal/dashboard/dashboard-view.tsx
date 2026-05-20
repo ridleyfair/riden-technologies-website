@@ -118,34 +118,34 @@ export default function DashboardView() {
       </motion.div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {kpis.map((kpi, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="glass-card rounded-xl border border-riden-border p-5 hover:border-white/10 transition-colors"
+            className="glass-card rounded-xl border border-riden-border p-3 sm:p-5 hover:border-white/10 transition-colors"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-10 h-10 rounded-xl ${kpi.bg} border ${kpi.border} flex items-center justify-center`}>
-                <kpi.icon size={18} className={kpi.color} />
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${kpi.bg} border ${kpi.border} flex items-center justify-center`}>
+                <kpi.icon size={16} className={kpi.color} />
               </div>
               <div
-                className={`flex items-center gap-1 text-xs font-medium ${
+                className={`flex items-center gap-0.5 text-xs font-medium ${
                   kpi.change > 0 ? "text-emerald-400" : "text-red-400"
                 }`}
               >
                 {kpi.change > 0 ? (
-                  <TrendingUp size={12} />
+                  <TrendingUp size={11} />
                 ) : (
-                  <TrendingDown size={12} />
+                  <TrendingDown size={11} />
                 )}
                 {Math.abs(kpi.change)}%
               </div>
             </div>
-            <div className="text-2xl font-bold text-white mb-1">{kpi.value}</div>
-            <div className="text-xs text-slate-500">{kpi.label}</div>
+            <div className="text-lg sm:text-2xl font-bold text-white mb-0.5 sm:mb-1 leading-tight">{kpi.value}</div>
+            <div className="text-[10px] sm:text-xs text-slate-500 leading-tight">{kpi.label}</div>
           </motion.div>
         ))}
       </div>
@@ -159,23 +159,24 @@ export default function DashboardView() {
           transition={{ delay: 0.2 }}
           className="lg:col-span-2 glass-card rounded-xl border border-riden-border p-5"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-6">
             <div>
               <h3 className="text-sm font-semibold text-white">Revenue Overview</h3>
               <p className="text-xs text-slate-500">Last 6 months</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                <div className="w-2 h-2 rounded-full bg-blue-400" />
-                Revenue
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-slate-500">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-blue-400" />
+                <span className="hidden sm:inline">Revenue</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                <div className="w-2 h-2 rounded-full bg-violet-400" />
-                Leads
+              <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-slate-500">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-violet-400" />
+                <span className="hidden sm:inline">Leads</span>
               </div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
+          <div className="h-[150px] sm:h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={revenueChartData}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -203,6 +204,7 @@ export default function DashboardView() {
               <Area type="monotone" dataKey="leads" stroke="#8B5CF6" strokeWidth={2} fill="url(#colorLeads)" />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         </motion.div>
 
         {/* Pipeline */}
@@ -215,7 +217,8 @@ export default function DashboardView() {
           <h3 className="text-sm font-semibold text-white mb-1">Lead Pipeline</h3>
           <p className="text-xs text-slate-500 mb-4">38 total leads</p>
           <div className="flex justify-center">
-            <ResponsiveContainer width="100%" height={140}>
+            <div className="h-[110px] sm:h-[140px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={pipelineData}
@@ -241,6 +244,7 @@ export default function DashboardView() {
                 />
               </PieChart>
             </ResponsiveContainer>
+            </div>
           </div>
           <div className="space-y-2 mt-2">
             {pipelineData.map((item, i) => (
@@ -265,7 +269,7 @@ export default function DashboardView() {
           transition={{ delay: 0.35 }}
           className="glass-card rounded-xl border border-riden-border"
         >
-          <div className="flex items-center justify-between p-5 border-b border-riden-border">
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-riden-border">
             <h3 className="text-sm font-semibold text-white">Recent Leads</h3>
             <Link href="/portal/leads" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
               View all <ArrowRight size={12} />
@@ -273,7 +277,7 @@ export default function DashboardView() {
           </div>
           <div className="divide-y divide-riden-border">
             {mockLeads.slice(0, 5).map((lead) => (
-              <div key={lead.id} className="flex items-center gap-4 p-4 hover:bg-white/[0.02] transition-colors">
+              <div key={lead.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-white/[0.02] transition-colors">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                   {lead.name[0]}
                 </div>
@@ -299,7 +303,7 @@ export default function DashboardView() {
           transition={{ delay: 0.4 }}
           className="glass-card rounded-xl border border-riden-border"
         >
-          <div className="flex items-center justify-between p-5 border-b border-riden-border">
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-riden-border">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Activity size={14} className="text-blue-400" />
               Activity Feed
@@ -308,7 +312,7 @@ export default function DashboardView() {
           </div>
           <div className="divide-y divide-riden-border">
             {recentActivity.map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 hover:bg-white/[0.02] transition-colors">
+              <div key={i} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-white/[0.02] transition-colors">
                 <div className="w-7 h-7 rounded-lg bg-riden-muted border border-riden-border flex items-center justify-center flex-shrink-0 mt-0.5">
                   {item.type === "lead" && <UserPlus size={13} className="text-blue-400" />}
                   {item.type === "automation" && <Zap size={13} className="text-violet-400" />}
@@ -337,7 +341,7 @@ export default function DashboardView() {
         transition={{ delay: 0.45 }}
         className="glass-card rounded-xl border border-riden-border"
       >
-        <div className="flex items-center justify-between p-5 border-b border-riden-border">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-riden-border">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
             <Zap size={14} className="text-violet-400" />
             Active Automations
@@ -346,7 +350,7 @@ export default function DashboardView() {
             Manage <ArrowRight size={12} />
           </Link>
         </div>
-        <div className="grid md:grid-cols-3 gap-4 p-5">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 p-3 sm:p-5">
           {mockAutomations.filter(a => a.status === "active").map((automation) => (
             <div key={automation.id} className="bg-riden-surface rounded-xl p-4 border border-riden-border">
               <div className="flex items-center justify-between mb-3">

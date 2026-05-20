@@ -29,21 +29,22 @@ export default function ClientsView() {
   const totalRevenue = mockClients.reduce((s, c) => s + c.revenue, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white">Client Management</h2>
-          <p className="text-sm text-slate-500">{mockClients.filter(c => c.status === "active").length} active clients</p>
+          <h2 className="text-lg sm:text-xl font-bold text-white">Client Management</h2>
+          <p className="text-xs sm:text-sm text-slate-500">{mockClients.filter(c => c.status === "active").length} active clients</p>
         </div>
-        <Button variant="gradient" size="sm">
+        <Button variant="gradient" size="sm" className="flex-shrink-0">
           <Plus size={14} />
-          Add Client
+          <span className="hidden sm:inline">Add Client</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Total Clients", value: mockClients.length, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
           { label: "Active", value: mockClients.filter(c => c.status === "active").length, icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -55,22 +56,22 @@ export default function ClientsView() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
-            className="glass-card rounded-xl border border-riden-border p-4 flex items-center gap-4"
+            className="glass-card rounded-xl border border-riden-border p-3 sm:p-4 flex items-center gap-3 sm:gap-4"
           >
-            <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
-              <stat.icon size={18} className={stat.color} />
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${stat.bg} flex items-center justify-center flex-shrink-0`}>
+              <stat.icon size={16} className={stat.color} />
             </div>
-            <div>
-              <div className="text-lg font-bold text-white">{stat.value}</div>
-              <div className="text-xs text-slate-500">{stat.label}</div>
+            <div className="min-w-0">
+              <div className="text-base sm:text-lg font-bold text-white truncate">{stat.value}</div>
+              <div className="text-[10px] sm:text-xs text-slate-500 leading-tight">{stat.label}</div>
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-48">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3">
+        <div className="relative w-full sm:flex-1 sm:min-w-48">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
@@ -80,11 +81,12 @@ export default function ClientsView() {
             className="w-full bg-riden-muted border border-riden-border rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
           />
         </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 flex-nowrap sm:flex-wrap scrollbar-hide">
         {["all", "starter", "growth", "enterprise"].map((t) => (
           <button
             key={t}
             onClick={() => setTierFilter(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize whitespace-nowrap flex-shrink-0 ${
               tierFilter === t
                 ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
                 : "text-slate-500 hover:text-white hover:bg-riden-muted"
@@ -93,10 +95,11 @@ export default function ClientsView() {
             {t}
           </button>
         ))}
+        </div>
       </div>
 
       {/* Client Cards */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filtered.map((client, i) => (
           <motion.div
             key={client.id}

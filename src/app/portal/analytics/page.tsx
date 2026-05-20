@@ -20,14 +20,14 @@ const tooltipStyle = {
 
 export default function AnalyticsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-white">Analytics</h2>
-        <p className="text-sm text-slate-500">Performance overview — last 6 months</p>
+        <h2 className="text-lg sm:text-xl font-bold text-white">Analytics</h2>
+        <p className="text-xs sm:text-sm text-slate-500">Performance overview — last 6 months</p>
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Total Revenue", value: "$84,200", change: "+23%", color: "text-emerald-400" },
           { label: "Conversion Rate", value: "18.4%", change: "+4.2%", color: "text-blue-400" },
@@ -39,11 +39,11 @@ export default function AnalyticsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
-            className="glass-card rounded-xl border border-riden-border p-5"
+            className="glass-card rounded-xl border border-riden-border p-3 sm:p-5"
           >
-            <div className="text-xs text-slate-500 mb-2">{kpi.label}</div>
-            <div className="text-2xl font-bold text-white mb-1">{kpi.value}</div>
-            <div className={`text-xs font-medium ${kpi.color}`}>{kpi.change} vs last period</div>
+            <div className="text-[10px] sm:text-xs text-slate-500 mb-1 sm:mb-2">{kpi.label}</div>
+            <div className="text-xl sm:text-2xl font-bold text-white mb-0.5 sm:mb-1">{kpi.value}</div>
+            <div className={`text-[10px] sm:text-xs font-medium ${kpi.color}`}>{kpi.change} vs last period</div>
           </motion.div>
         ))}
       </div>
@@ -53,74 +53,80 @@ export default function AnalyticsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="glass-card rounded-xl border border-riden-border p-5"
+        className="glass-card rounded-xl border border-riden-border p-4 sm:p-5"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-3 sm:mb-6">
           <div>
             <h3 className="text-sm font-semibold text-white">Revenue & Lead Growth</h3>
             <p className="text-xs text-slate-500">Monthly performance overview</p>
           </div>
         </div>
-        <ResponsiveContainer width="100%" height={280}>
-          <AreaChart data={revenueChartData}>
-            <defs>
-              <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-            <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <Tooltip {...tooltipStyle} />
-            <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fill="url(#gradRevenue)" name="Revenue ($)" />
-            <Area type="monotone" dataKey="leads" stroke="#8B5CF6" strokeWidth={2} fill="url(#gradLeads)" name="New Leads" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </motion.div>
-
-      {/* Two Charts Row */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="glass-card rounded-xl border border-riden-border p-5"
-        >
-          <h3 className="text-sm font-semibold text-white mb-1">Client Growth</h3>
-          <p className="text-xs text-slate-500 mb-6">New clients per month</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={revenueChartData}>
+        <div className="h-[180px] sm:h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={revenueChartData}>
+              <defs>
+                <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
               <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip {...tooltipStyle} />
-              <Bar dataKey="clients" fill="#06B6D4" radius={[4, 4, 0, 0]} name="Clients" />
-            </BarChart>
+              <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fill="url(#gradRevenue)" name="Revenue ($)" />
+              <Area type="monotone" dataKey="leads" stroke="#8B5CF6" strokeWidth={2} fill="url(#gradLeads)" name="New Leads" />
+            </AreaChart>
           </ResponsiveContainer>
+        </div>
+      </motion.div>
+
+      {/* Two Charts Row */}
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="glass-card rounded-xl border border-riden-border p-4 sm:p-5"
+        >
+          <h3 className="text-sm font-semibold text-white mb-1">Client Growth</h3>
+          <p className="text-xs text-slate-500 mb-3 sm:mb-6">New clients per month</p>
+          <div className="h-[150px] sm:h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={revenueChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} />
+                <Bar dataKey="clients" fill="#06B6D4" radius={[4, 4, 0, 0]} name="Clients" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="glass-card rounded-xl border border-riden-border p-5"
+          className="glass-card rounded-xl border border-riden-border p-4 sm:p-5"
         >
           <h3 className="text-sm font-semibold text-white mb-1">Lead Velocity</h3>
-          <p className="text-xs text-slate-500 mb-6">Leads generated per month</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={revenueChartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip {...tooltipStyle} />
-              <Line type="monotone" dataKey="leads" stroke="#10B981" strokeWidth={2} dot={{ fill: "#10B981", strokeWidth: 0, r: 4 }} name="Leads" />
-            </LineChart>
-          </ResponsiveContainer>
+          <p className="text-xs text-slate-500 mb-3 sm:mb-6">Leads generated per month</p>
+          <div className="h-[150px] sm:h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={revenueChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} />
+                <Line type="monotone" dataKey="leads" stroke="#10B981" strokeWidth={2} dot={{ fill: "#10B981", strokeWidth: 0, r: 4 }} name="Leads" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </motion.div>
       </div>
     </div>

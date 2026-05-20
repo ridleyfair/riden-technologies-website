@@ -13,21 +13,22 @@ export default function AutomationView() {
   const todayRuns = mockAutomations.reduce((s, a) => s + a.runsToday, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white">Automation System</h2>
-          <p className="text-sm text-slate-500">{activeCount} active automations running</p>
+          <h2 className="text-lg sm:text-xl font-bold text-white">Automation System</h2>
+          <p className="text-xs sm:text-sm text-slate-500">{activeCount} active automations running</p>
         </div>
-        <Button variant="gradient" size="sm">
+        <Button variant="gradient" size="sm" className="flex-shrink-0">
           <Plus size={14} />
-          New Automation
+          <span className="hidden sm:inline">New Automation</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Active Flows", value: activeCount, color: "text-emerald-400", bg: "bg-emerald-500/10" },
           { label: "Total Runs", value: totalRuns.toLocaleString(), color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -39,23 +40,23 @@ export default function AutomationView() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
-            className="glass-card rounded-xl border border-riden-border p-4"
+            className="glass-card rounded-xl border border-riden-border p-3 sm:p-4"
           >
-            <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-3`}>
-              <Activity size={18} className={stat.color} />
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${stat.bg} flex items-center justify-center mb-2 sm:mb-3`}>
+              <Activity size={16} className={stat.color} />
             </div>
-            <div className="text-2xl font-bold text-white">{stat.value}</div>
-            <div className="text-xs text-slate-500">{stat.label}</div>
+            <div className="text-xl sm:text-2xl font-bold text-white">{stat.value}</div>
+            <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5">{stat.label}</div>
           </motion.div>
         ))}
       </div>
 
-      {/* Automation List */}
+      {/* Automation Table — desktop only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="glass-card rounded-xl border border-riden-border overflow-hidden"
+        className="glass-card rounded-xl border border-riden-border overflow-hidden hidden md:block"
       >
         <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-riden-border bg-riden-surface/50 text-xs font-medium text-slate-500 uppercase tracking-wider">
           <div className="col-span-1">Status</div>
@@ -114,10 +115,72 @@ export default function AutomationView() {
         </div>
       </motion.div>
 
+      {/* Automation Cards — mobile only */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="md:hidden glass-card rounded-xl border border-riden-border overflow-hidden"
+      >
+        <div className="divide-y divide-riden-border">
+          {mockAutomations.map((auto, i) => (
+            <motion.div
+              key={auto.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-4 hover:bg-white/[0.02] transition-colors"
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 ${auto.status === "active" ? "bg-emerald-400 animate-pulse" : auto.status === "paused" ? "bg-amber-400" : "bg-slate-600"}`} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{auto.name}</div>
+                    <div className="text-xs text-slate-500">{auto.actions} actions in sequence</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button className="p-2 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center">
+                    {auto.status === "active" ? <Pause size={14} /> : <Play size={14} />}
+                  </button>
+                  <button className="p-2 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center">
+                    <MoreHorizontal size={14} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <Badge variant="secondary" className="text-[10px]">{auto.trigger}</Badge>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                  auto.status === "active" ? "bg-emerald-500/10 text-emerald-400" :
+                  auto.status === "paused" ? "bg-amber-500/10 text-amber-400" :
+                  "bg-slate-500/10 text-slate-400"
+                }`}>
+                  {auto.status.charAt(0).toUpperCase() + auto.status.slice(1)}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-xs">
+                <div>
+                  <div className="text-slate-600 mb-0.5">Total Runs</div>
+                  <div className="text-white font-medium">{auto.runsTotal.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div className="text-slate-600 mb-0.5">Today</div>
+                  <div className="text-white font-medium">{auto.runsToday}</div>
+                </div>
+                <div>
+                  <div className="text-slate-600 mb-0.5">Actions</div>
+                  <div className="text-white font-medium">{auto.actions}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Quick Templates */}
       <div>
-        <h3 className="text-sm font-semibold text-white mb-4">Quick Templates</h3>
-        <div className="grid md:grid-cols-3 gap-4">
+        <h3 className="text-sm font-semibold text-white mb-3 sm:mb-4">Quick Templates</h3>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {[
             { name: "Lead Nurture Sequence", desc: "5-email automated follow-up for new leads", trigger: "Lead Created", icon: "📧" },
             { name: "Onboarding Flow", desc: "Welcome new clients with tasks and resources", trigger: "Deal Won", icon: "🚀" },
@@ -125,9 +188,9 @@ export default function AutomationView() {
           ].map((template, i) => (
             <div
               key={i}
-              className="glass-card rounded-xl border border-riden-border p-5 hover:border-blue-500/30 transition-all cursor-pointer group"
+              className="glass-card rounded-xl border border-riden-border p-4 sm:p-5 hover:border-blue-500/30 transition-all cursor-pointer group"
             >
-              <div className="text-2xl mb-3">{template.icon}</div>
+              <div className="text-2xl mb-2 sm:mb-3">{template.icon}</div>
               <div className="text-sm font-semibold text-white mb-1">{template.name}</div>
               <div className="text-xs text-slate-400 mb-3">{template.desc}</div>
               <div className="flex items-center justify-between">
