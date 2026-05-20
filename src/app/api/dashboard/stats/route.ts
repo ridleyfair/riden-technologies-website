@@ -63,7 +63,14 @@ export async function GET(req: NextRequest) {
             COUNT(*) FILTER (WHERE "createdAt" >= NOW() - INTERVAL '30 days') AS new_month,
             COUNT(*) FILTER (WHERE "createdAt" >= NOW() - INTERVAL '60 days'
                              AND "createdAt" < NOW() - INTERVAL '30 days') AS prev_month,
-            COALESCE(SUM(websites),0) AS websites
+            COALESCE(SUM(websites),0) AS websites,
+            COALESCE(SUM("monthlyRate"),0) AS mrr,
+            COALESCE(SUM(profit),0) AS total_profit,
+            COALESCE(SUM(
+              CASE WHEN status = 'active' AND "monthlyRate" > 0 AND "activeFrom" IS NOT NULL
+              THEN "monthlyRate" * GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (NOW() - "activeFrom")) / 2592000))
+              ELSE 0 END
+            ),0) AS accrued_recurring
           FROM "Client"`,
 
       sql`SELECT
@@ -233,7 +240,9 @@ function buildResponse(
   return NextResponse.json({
     user: { name: userName },
     kpis: {
-      totalRevenue: Number((revenueRows[0] as Record<string, unknown>)?.total ?? 0),
+      totalRevenue: Number((revenueRows[0] as Record<string, unknown>)?.total ?? 0)
+        + Number((clientRows[0] as Record<string, unknown>)?.total_profit ?? 0)
+        + Number((clientRows[0] as Record<string, unknown>)?.accrued_recurring ?? 0),
       revenueGrowth: Math.round(revenueGrowth * 10) / 10,
       activeClients: Number((clientRows[0] as Record<string, unknown>)?.active ?? 0),
       clientsGrowth: Math.round(clientsGrowth * 10) / 10,
@@ -241,6 +250,7 @@ function buildResponse(
       leadsGrowth: Math.round(leadsGrowth * 10) / 10,
       websitesLive: Number((clientRows[0] as Record<string, unknown>)?.websites ?? 0),
       overdueInvoices: Number((overdueRows[0] as Record<string, unknown>)?.count ?? 0),
+      mrr: Number((clientRows[0] as Record<string, unknown>)?.mrr ?? 0),
     },
     pipeline,
     recentLeads: recentLeads as Array<{ id: string; name: string; company: string; status: string; value: number }>,

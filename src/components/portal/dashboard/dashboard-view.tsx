@@ -29,6 +29,7 @@ type DashboardStats = {
     activeClients: number; clientsGrowth: number;
     newLeads: number; leadsGrowth: number;
     websitesLive: number; overdueInvoices: number;
+    mrr: number;
   };
   pipeline: PipelineItem[];
   recentLeads: RecentLead[];
@@ -100,7 +101,7 @@ export default function DashboardView() {
           color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20",
         },
         {
-          label: "Websites Live", value: String(stats.kpis.websitesLive),
+          label: "Monthly Recurring", value: formatCurrency(stats.kpis.mrr ?? 0),
           change: 0, icon: Globe,
           color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20",
         },

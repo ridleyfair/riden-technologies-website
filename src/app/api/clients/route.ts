@@ -24,10 +24,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, email, company, phone, tier = "starter", status = "active" } = body;
+    const { name, email = "", company, phone, tier = "starter", status = "active", monthlyRate = 0, profit = 0 } = body;
 
-    if (!name || !email || !company) {
-      return NextResponse.json({ error: "Name, email and company are required" }, { status: 400 });
+    if (!name || !company) {
+      return NextResponse.json({ error: "Name and company are required" }, { status: 400 });
     }
 
     const sql = getDb();
@@ -35,11 +35,13 @@ export async function POST(req: NextRequest) {
     const now = new Date();
 
     const [client] = await sql`
-      INSERT INTO "Client" (id, name, email, company, phone, tier, status, revenue, websites, "createdAt", "updatedAt")
+      INSERT INTO "Client" (id, name, email, company, phone, tier, status, revenue, websites, "monthlyRate", profit, "activeFrom", "createdAt", "updatedAt")
       VALUES (
         ${id}, ${name}, ${email}, ${company},
         ${phone ?? null}, ${tier}, ${status},
-        0, 0, ${now}, ${now}
+        ${profit}, 0, ${Number(monthlyRate)}, ${profit},
+        ${status === "active" ? now : null},
+        ${now}, ${now}
       )
       RETURNING *
     `;

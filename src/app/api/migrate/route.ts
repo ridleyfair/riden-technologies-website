@@ -105,9 +105,15 @@ export async function POST(req: NextRequest) {
     )
   `);
   await step("Project.notes", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS notes TEXT`);
+  await step("Project.completedAt", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMPTZ`);
   await step("idx Project.createdAt", () => sql`
     CREATE INDEX IF NOT EXISTS "Project_createdAt_idx" ON "Project"("createdAt")
   `);
+
+  // Client recurring revenue columns
+  await step("Client.monthlyRate", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "monthlyRate" FLOAT DEFAULT 0`);
+  await step("Client.activeFrom", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "activeFrom" TIMESTAMPTZ`);
+  await step("Client.profit", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS profit FLOAT DEFAULT 0`);
 
   return NextResponse.json({
     ok: true,
