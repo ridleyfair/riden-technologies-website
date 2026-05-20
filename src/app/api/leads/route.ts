@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getDb } from "@/lib/db";
 
 export async function GET() {
   try {
-    const leads = await prisma.lead.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const sql = getDb();
+    const leads = await sql`SELECT * FROM "Lead" ORDER BY "createdAt" DESC`;
     return NextResponse.json(leads);
   } catch (err) {
     console.error("Leads fetch error:", err);

@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getDb } from "@/lib/db";
 import { createToken } from "@/lib/auth";
 import { verifyPassword } from "@/lib/password";
+
+type UserRow = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  passwordHash: string;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +19,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const sql = getDb();
+    const rows = await sql`SELECT * FROM "User" WHERE email = ${email} LIMIT 1`;
+    const user = rows[0] as UserRow | undefined;
+
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
@@ -26,7 +37,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({ success: true });
     response.cookies.set("auth-token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",

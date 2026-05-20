@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getDb } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,20 +10,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name, email and message are required" }, { status: 400 });
     }
 
-    const lead = await prisma.lead.create({
-      data: {
-        name,
-        email,
-        company: company || null,
-        service: service || null,
-        message,
-        status: "new",
-        source: "website",
-        score: 0,
-      },
-    });
+    const sql = getDb();
+    const id = crypto.randomUUID();
+    const now = new Date();
 
-    return NextResponse.json({ success: true, id: lead.id }, { status: 201 });
+    await sql`
+      INSERT INTO "Lead" (id, name, email, company, service, message, status, source, score, "createdAt", "updatedAt")
+      VALUES (${id}, ${name}, ${email}, ${company || null}, ${service || null}, ${message}, 'new', 'website', 0, ${now}, ${now})
+    `;
+
+    return NextResponse.json({ success: true, id }, { status: 201 });
   } catch (err) {
     console.error("Contact form error:", err);
     return NextResponse.json({ error: "Failed to save enquiry" }, { status: 500 });
