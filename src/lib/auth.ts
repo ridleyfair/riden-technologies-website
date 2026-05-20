@@ -1,6 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-
-const secret = () => new TextEncoder().encode(process.env.AUTH_SECRET ?? "dev-secret-change-in-production");
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export type AuthUser = {
   id: string;
@@ -9,16 +8,27 @@ export type AuthUser = {
   role: string;
 };
 
+function getSecret(): Uint8Array {
+  let secret: string | undefined;
+  try {
+    secret = getCloudflareContext().env.AUTH_SECRET;
+  } catch {
+    // local dev
+  }
+  secret ??= process.env.AUTH_SECRET ?? "dev-secret-change-in-production";
+  return new TextEncoder().encode(secret);
+}
+
 export async function createToken(user: AuthUser) {
   return new SignJWT({ ...user })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("7d")
-    .sign(secret());
+    .sign(getSecret());
 }
 
 export async function verifyToken(token: string): Promise<AuthUser | null> {
   try {
-    const { payload } = await jwtVerify(token, secret());
+    const { payload } = await jwtVerify(token, getSecret());
     return payload as unknown as AuthUser;
   } catch {
     return null;
