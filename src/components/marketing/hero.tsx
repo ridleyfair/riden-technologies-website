@@ -7,10 +7,10 @@ import { ArrowRight, Play, Sparkles, TrendingUp, Zap, Globe } from "lucide-react
 import { Button } from "@/components/ui/button";
 
 const stats = [
-  { value: "500+", label: "Businesses Transformed" },
-  { value: "98%", label: "Client Satisfaction" },
-  { value: "3x", label: "Average Revenue Growth" },
-  { value: "24/7", label: "AI-Powered Support" },
+  { value: "7–14", label: "Day Build Time" },
+  { value: "£0", label: "Hidden Fees" },
+  { value: "UK", label: "Based & Supported" },
+  { value: "Free", label: "CRM With Every Build" },
 ];
 
 const floatingCards = [
