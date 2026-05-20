@@ -4,7 +4,7 @@ import CTASection from "@/components/marketing/cta-section";
 
 export const metadata: Metadata = {
   title: "Solutions",
-  description: "AI-powered solutions for websites, CRM, automation, and lead generation.",
+  description: "Websites, CRM dashboards, automation, booking systems, analytics, and ongoing support — everything your business needs to grow online.",
 };
 
 export default function Solutions() {
@@ -15,7 +15,7 @@ export default function Solutions() {
           Our <span className="gradient-text">Solutions</span>
         </h1>
         <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto">
-          A complete suite of AI-powered tools to transform every aspect of your business.
+          Everything your business needs online — built, managed, and supported by our team.
         </p>
       </div>
       <Services />
