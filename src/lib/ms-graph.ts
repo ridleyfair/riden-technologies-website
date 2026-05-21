@@ -229,6 +229,75 @@ export async function deleteTeamsCalendarEvent(eventId: string): Promise<void> {
   }
 }
 
+// ── Shared mailbox accessor ───────────────────────────────────────────────────
+
+export function getSharedMailbox(): string {
+  return getMsConfig().sharedMailbox;
+}
+
+// ── Outlook event type ────────────────────────────────────────────────────────
+
+export type OutlookEvent = {
+  id: string;
+  subject: string;
+  start: { dateTime: string; timeZone: string };
+  end: { dateTime: string; timeZone: string };
+  bodyPreview: string;
+  attendees: Array<{
+    emailAddress: { address: string; name: string };
+    type: string;
+  }>;
+  onlineMeeting?: { joinUrl?: string };
+  onlineMeetingUrl?: string;
+  webLink?: string;
+  isOnlineMeeting?: boolean;
+};
+
+// ── List and get calendar events ──────────────────────────────────────────────
+
+export async function listCalendarEvents(
+  startDate: string,
+  endDate: string
+): Promise<OutlookEvent[]> {
+  const { sharedMailbox } = getMsConfig();
+  if (!sharedMailbox) throw new Error("MICROSOFT_SHARED_MAILBOX is not configured.");
+
+  const params = new URLSearchParams({
+    $select:
+      "id,subject,start,end,bodyPreview,attendees,onlineMeeting,onlineMeetingUrl,webLink,isOnlineMeeting",
+    $filter: `start/dateTime ge '${startDate}T00:00:00' and end/dateTime le '${endDate}T23:59:59'`,
+    $orderby: "start/dateTime asc",
+    $top: "100",
+  });
+
+  const resp = await graphRequest(
+    "GET",
+    `/users/${sharedMailbox}/calendar/events?${params}`
+  );
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Graph list events failed (${resp.status}): ${err}`);
+  }
+
+  const data = (await resp.json()) as { value?: OutlookEvent[] };
+  return data.value ?? [];
+}
+
+export async function getCalendarEvent(eventId: string): Promise<OutlookEvent | null> {
+  const { sharedMailbox } = getMsConfig();
+  const resp = await graphRequest(
+    "GET",
+    `/users/${sharedMailbox}/calendar/events/${eventId}`
+  );
+  if (resp.status === 404) return null;
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Graph get event failed (${resp.status}): ${err}`);
+  }
+  return (await resp.json()) as OutlookEvent;
+}
+
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
 /** Build local ISO start/end strings from date ("YYYY-MM-DD"), time ("HH:mm"), and duration in minutes */

@@ -133,6 +133,24 @@ export async function POST(req: NextRequest) {
   `);
   await step("idx Booking.date", () => sql`CREATE INDEX IF NOT EXISTS "Booking_date_idx" ON "Booking"(date)`);
 
+  // Booking — Outlook/Teams columns
+  await step("Booking.clientEmail", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "clientEmail" TEXT`);
+  await step("Booking.leadId", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "leadId" TEXT`);
+  await step("Booking.startTime", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "startTime" TIMESTAMPTZ`);
+  await step("Booking.endTime", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "endTime" TIMESTAMPTZ`);
+  await step("Booking.timezone", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Europe/London'`);
+  await step("Booking.durationMinutes", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "durationMinutes" INTEGER DEFAULT 30`);
+  await step("Booking.microsoftEventId", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "microsoftEventId" TEXT`);
+  await step("Booking.outlookCalendarEmail", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "outlookCalendarEmail" TEXT`);
+  await step("Booking.teamsJoinUrl", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "teamsJoinUrl" TEXT`);
+  await step("Booking.attendees", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS attendees TEXT DEFAULT '[]'`);
+  await step("Booking.lastSyncedAt", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "lastSyncedAt" TIMESTAMPTZ`);
+  await step("Booking.createdByUserId", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "createdByUserId" TEXT`);
+  await step("idx Booking.microsoftEventId", () => sql`
+    CREATE INDEX IF NOT EXISTS "Booking_microsoftEventId_idx" ON "Booking"("microsoftEventId")
+    WHERE "microsoftEventId" IS NOT NULL
+  `);
+
   // Website table
   await step("create Website", () => sql`
     CREATE TABLE IF NOT EXISTS "Website" (

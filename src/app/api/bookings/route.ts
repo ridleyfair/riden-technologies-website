@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
+import {
+  isMsConfigured,
+  createTeamsCalendarEvent,
+  buildStartEnd,
+  getSharedMailbox,
+} from "@/lib/ms-graph";
 
 export async function GET(req: NextRequest) {
   const user = await requireAuth(req);
@@ -21,10 +27,56 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, client, date, time, duration = "30 min", type = "video", status = "confirmed", notes = "" } = body;
+    const {
+      title,
+      client,
+      clientEmail = "",
+      leadId = null,
+      date,
+      time,
+      duration = "30 min",
+      durationMinutes = 30,
+      type = "video",
+      status = "confirmed",
+      notes = "",
+      timezone = "Europe/London",
+      createTeamsMeeting = false,
+    } = body;
 
     if (!title || !client || !date || !time) {
-      return NextResponse.json({ error: "Title, client, date and time are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title, client, date and time are required" },
+        { status: 400 }
+      );
+    }
+
+    const { startIso, endIso } = buildStartEnd(date, time, Number(durationMinutes));
+    const startTime = new Date(startIso + "Z");
+    const endTime = new Date(endIso + "Z");
+
+    let microsoftEventId: string | null = null;
+    let teamsJoinUrl: string | null = null;
+    let outlookCalendarEmail: string | null = null;
+    let graphError: string | null = null;
+
+    if (createTeamsMeeting && clientEmail && isMsConfigured()) {
+      try {
+        const created = await createTeamsCalendarEvent({
+          leadName: client,
+          leadEmail: clientEmail,
+          title,
+          startIso,
+          endIso,
+          timezone,
+          notes: notes || undefined,
+        });
+        microsoftEventId = created.id;
+        teamsJoinUrl = created.teamsJoinUrl || null;
+        outlookCalendarEmail = getSharedMailbox();
+      } catch (err) {
+        graphError = String(err);
+        console.error("MS Graph booking create error:", err);
+      }
     }
 
     const sql = getDb();
@@ -32,12 +84,25 @@ export async function POST(req: NextRequest) {
     const now = new Date();
 
     await sql`
-      INSERT INTO "Booking" (id, title, client, date, time, duration, type, status, notes, "createdAt", "updatedAt")
-      VALUES (${id}, ${title}, ${client}, ${date}, ${time}, ${duration}, ${type}, ${status}, ${notes}, ${now}, ${now})
+      INSERT INTO "Booking" (
+        id, title, client, "clientEmail", "leadId",
+        date, time, duration, "durationMinutes",
+        type, status, notes, timezone,
+        "startTime", "endTime",
+        "microsoftEventId", "outlookCalendarEmail", "teamsJoinUrl",
+        attendees, "createdByUserId", "createdAt", "updatedAt"
+      ) VALUES (
+        ${id}, ${title}, ${client}, ${clientEmail || null}, ${leadId},
+        ${date}, ${time}, ${duration}, ${Number(durationMinutes)},
+        ${type}, ${status}, ${notes || null}, ${timezone},
+        ${startTime}, ${endTime},
+        ${microsoftEventId}, ${outlookCalendarEmail}, ${teamsJoinUrl},
+        ${"[]"}, ${user.id}, ${now}, ${now}
+      )
     `;
 
     const [booking] = await sql`SELECT * FROM "Booking" WHERE id = ${id}`;
-    return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json({ ...booking, graphError }, { status: 201 });
   } catch (err) {
     console.error("Booking create error:", err);
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
