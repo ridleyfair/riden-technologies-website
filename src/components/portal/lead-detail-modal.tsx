@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Mail, Phone, Building2, Calendar, Tag, Star, ExternalLink,
   FolderPlus, CheckCircle, ArrowRight, Video, Copy, Clock,
-  AlertTriangle, RefreshCw, XCircle, CalendarPlus,
+  AlertTriangle, RefreshCw, XCircle, CalendarPlus, ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -583,9 +583,10 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
   const [localLead, setLocalLead] = useState<Lead | null>(lead);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   // Sync when parent passes a new lead
-  useEffect(() => { setLocalLead(lead); setShowCreateProject(false); }, [lead]);
+  useEffect(() => { setLocalLead(lead); setShowCreateProject(false); setBookingOpen(false); }, [lead]);
 
   if (!localLead) return null;
 
@@ -690,12 +691,34 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
                 )}
               </div>
 
-              {/* ── Booking panel ── */}
+              {/* ── Booking panel (collapsible) ── */}
               <div>
-                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Clock size={10} /> Schedule Teams Meeting
-                </div>
-                <BookingPanel lead={localLead} leadId={localLead.id} />
+                <button
+                  onClick={() => setBookingOpen((o) => !o)}
+                  className="w-full flex items-center justify-between group mb-3"
+                >
+                  <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <Clock size={10} /> Schedule Teams Meeting
+                  </div>
+                  <ChevronDown
+                    size={14}
+                    className={`text-slate-500 group-hover:text-slate-300 transition-all duration-200 ${bookingOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {bookingOpen && (
+                    <motion.div
+                      key="booking-panel"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <BookingPanel lead={localLead} leadId={localLead.id} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Intake brief */}
