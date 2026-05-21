@@ -547,20 +547,21 @@ function BookingCard({ booking, onEdit, onDelete, highlight }: {
               </button>
               {menu && (
                 <div
-                  className="absolute right-0 top-full mt-1 w-36 glass-card rounded-xl border border-riden-border overflow-hidden z-20 shadow-xl"
+                  className="absolute right-0 top-full mt-1 w-36 bg-riden-surface rounded-xl border border-riden-border overflow-hidden z-20 shadow-2xl"
                   onClick={() => setMenu(false)}
                 >
                   <button
                     onClick={onEdit}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-slate-300 hover:bg-riden-muted hover:text-white transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-3 text-xs text-white hover:bg-riden-muted transition-colors font-medium"
                   >
-                    <Edit2 size={12} /> Edit
+                    <Edit2 size={13} className="text-blue-400" /> Edit
                   </button>
+                  <div className="h-px bg-riden-border mx-2" />
                   <button
                     onClick={onDelete}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-xs text-rose-400 hover:bg-riden-muted transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-3 text-xs text-rose-400 hover:bg-riden-muted transition-colors font-medium"
                   >
-                    <Trash2 size={12} /> Delete
+                    <Trash2 size={13} /> Delete
                   </button>
                 </div>
               )}
