@@ -73,18 +73,18 @@
 }
 
 .light .portal-layout {
-  /* Light — premium off-white, not flat white */
-  --riden-dark:    #F1F5F9;
-  --riden-darker:  #E2E8F0;
-  --riden-surface: #FFFFFF;
-  --riden-border:  #CBD5E1;
-  --riden-muted:   #F8FAFC;
-  --riden-fg:          #0F172A;
-  --riden-fg-muted:    #475569;
-  --riden-fg-subtle:   #94A3B8;
+  /* Light — premium SaaS: white sidebar, soft-grey main bg */
+  --riden-dark:    #F1F5F9;  /* main page background */
+  --riden-darker:  #FFFFFF;  /* sidebar — white, separated by border */
+  --riden-surface: #FFFFFF;  /* cards */
+  --riden-border:  #E2E8F0;  /* clean separation between elements */
+  --riden-muted:   #F1F5F9;  /* hover backgrounds — visible on white sidebar */
+  --riden-fg:          #0F172A;  /* near-black primary text */
+  --riden-fg-muted:    #334155;  /* readable secondary text */
+  --riden-fg-subtle:   #64748B;  /* section labels, timestamps — passes AA on white */
   --riden-card-bg:     rgba(255,255,255,0.9);
   --riden-card-bg2:    rgba(255,255,255,0.7);
-  --riden-card-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+  --riden-card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
   --riden-input-bg:    #FFFFFF;
   --riden-scrollbar:   #CBD5E1;
 }
@@ -100,6 +100,9 @@
 .light .portal-layout .text-slate-400 { color: var(--riden-fg-muted) !important; }
 .light .portal-layout .text-slate-500 { color: var(--riden-fg-subtle) !important; }
 .light .portal-layout .text-slate-600 { color: var(--riden-fg-subtle) !important; }
+
+/* Hover text — sidebar nav items use hover:text-white */
+.light .portal-layout .hover\:text-white:hover { color: var(--riden-fg) !important; }
 
 /* Input and placeholder text */
 .light .portal-layout input,
