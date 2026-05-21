@@ -21,6 +21,7 @@ import {
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/theme-context";
 
 const navItems = [
   {
@@ -70,6 +71,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme } = useTheme();
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
@@ -101,7 +103,7 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
             style={{
               width: "180px",
               height: "44px",
-              backgroundImage: "url(/images/RidenLogo.png)",
+              backgroundImage: theme === "light" ? "url(/images/blackridenlogo.png)" : "url(/images/RidenLogo.png)",
               backgroundSize: "200% auto",
               backgroundPosition: "left center",
               backgroundRepeat: "no-repeat",
