@@ -34,28 +34,28 @@ const navItems = [
     section: "CRM",
     items: [
       { label: "Leads", href: "/portal/leads", icon: UserPlus },
-      { label: "Projects", href: "/portal/projects", icon: FolderKanban },
+      { label: "Bookings", href: "/portal/bookings", icon: Calendar },
       { label: "Clients", href: "/portal/clients", icon: Users },
+    ],
+  },
+  {
+    section: "Projects",
+    items: [
+      { label: "Projects", href: "/portal/projects", icon: FolderKanban },
     ],
   },
   {
     section: "Tools",
     items: [
       { label: "Websites", href: "/portal/websites", icon: Globe },
-      { label: "Bookings", href: "/portal/bookings", icon: Calendar },
       { label: "Automation", href: "/portal/automation", icon: Zap },
-    ],
-  },
-  {
-    section: "Business",
-    items: [
       { label: "Analytics", href: "/portal/analytics", icon: BarChart3 },
-      { label: "Invoices", href: "/portal/invoices", icon: FileText },
     ],
   },
   {
     section: "Admin",
     items: [
+      { label: "Invoices", href: "/portal/invoices", icon: FileText },
       { label: "Team", href: "/portal/team", icon: Shield },
       { label: "Settings", href: "/portal/settings", icon: Settings },
     ],
