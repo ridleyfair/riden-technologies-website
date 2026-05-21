@@ -3,6 +3,18 @@ import { requireAuth, unauthorized } from "@/lib/api-auth";
 import { isMsConfigured } from "@/lib/ms-graph";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+function decodeJwtPayload(token: string): Record<string, unknown> {
+  try {
+    const parts = token.split(".");
+    if (parts.length < 2) return {};
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = atob(payload);
+    return JSON.parse(decoded) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
 export async function GET(req: NextRequest) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();
@@ -21,6 +33,7 @@ export async function GET(req: NextRequest) {
   // Get a fresh token
   let fullToken = "";
   let tokenError = "";
+  let tokenClaims: Record<string, unknown> = {};
   try {
     const resp = await fetch(
       `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
@@ -36,12 +49,16 @@ export async function GET(req: NextRequest) {
       }
     );
     const data = await resp.json() as Record<string, unknown>;
-    if (resp.ok) fullToken = data.access_token as string;
-    else tokenError = JSON.stringify(data);
+    if (resp.ok) {
+      fullToken = data.access_token as string;
+      tokenClaims = decodeJwtPayload(fullToken);
+    } else {
+      tokenError = JSON.stringify(data);
+    }
   } catch (e) { tokenError = String(e); }
 
-  // Test 1: list calendars (uses Calendars.ReadWrite — the permission we actually need)
-  let calendarTest: unknown = null;
+  // Test: list calendars (Calendars.ReadWrite)
+  let calendarAccess: unknown = null;
   let calendarError = "";
   if (fullToken) {
     try {
@@ -51,16 +68,16 @@ export async function GET(req: NextRequest) {
       );
       const data = await resp.json() as Record<string, unknown>;
       if (resp.ok) {
-        const calendars = data.value as Array<{ name: string; id: string }>;
-        calendarTest = { count: calendars.length, names: calendars.map(c => c.name) };
+        const calendars = data.value as Array<{ name: string }>;
+        calendarAccess = { count: calendars.length, names: calendars.map(c => c.name) };
       } else {
         calendarError = JSON.stringify(data);
       }
     } catch (e) { calendarError = String(e); }
   }
 
-  // Test 2: user profile (uses User.Read.All)
-  let userTest: unknown = null;
+  // Test: user profile (User.Read.All)
+  let userAccess: unknown = null;
   let userError = "";
   if (fullToken) {
     try {
@@ -70,7 +87,7 @@ export async function GET(req: NextRequest) {
       );
       const data = await resp.json() as Record<string, unknown>;
       if (resp.ok) {
-        userTest = { displayName: data.displayName, mail: data.mail, accountEnabled: data.accountEnabled };
+        userAccess = { displayName: data.displayName, mail: data.mail, accountEnabled: data.accountEnabled };
       } else {
         userError = JSON.stringify(data);
       }
@@ -87,9 +104,12 @@ export async function GET(req: NextRequest) {
     },
     tokenObtained: !!fullToken,
     tokenError: tokenError || null,
-    calendarAccess: calendarTest,
+    tokenTenantId: tokenClaims.tid ?? null,
+    tokenAppId: tokenClaims.appid ?? null,
+    tokenRoles: tokenClaims.roles ?? null,
+    calendarAccess,
     calendarError: calendarError || null,
-    userAccess: userTest,
+    userAccess,
     userError: userError || null,
   });
 }
