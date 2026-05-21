@@ -110,6 +110,7 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
               backgroundPosition: theme === "light" ? "center center" : "left center",
               backgroundRepeat: "no-repeat",
               flexShrink: 0,
+              mixBlendMode: theme === "light" ? "multiply" : "normal",
             }}
             aria-label="Riden Technologies"
           />
