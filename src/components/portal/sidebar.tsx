@@ -101,8 +101,8 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
         ) : (
           <div
             style={{
-              width: "200px",
-              height: "52px",
+              width: "210px",
+              height: "64px",
               backgroundImage: theme === "light"
                 ? "url(/images/blackridenlogo.png)"
                 : "url(/images/RidenLogo.png)",
