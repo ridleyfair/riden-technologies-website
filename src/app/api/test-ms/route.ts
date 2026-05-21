@@ -18,10 +18,8 @@ export async function GET(req: NextRequest) {
   const clientSecret = env.MICROSOFT_CLIENT_SECRET ?? "";
   const sharedMailbox = env.MICROSOFT_SHARED_MAILBOX ?? "";
 
-  const configured = isMsConfigured();
-
-  // Step 1: get token
-  let token = "";
+  // Get a fresh token
+  let fullToken = "";
   let tokenError = "";
   try {
     const resp = await fetch(
@@ -38,63 +36,60 @@ export async function GET(req: NextRequest) {
       }
     );
     const data = await resp.json() as Record<string, unknown>;
-    if (resp.ok) token = (data.access_token as string).slice(0, 20) + "…";
+    if (resp.ok) fullToken = data.access_token as string;
     else tokenError = JSON.stringify(data);
   } catch (e) { tokenError = String(e); }
 
-  // Step 2: check mailbox exists
-  let mailboxCheck: unknown = null;
-  let mailboxError = "";
-  if (token) {
+  // Test 1: list calendars (uses Calendars.ReadWrite — the permission we actually need)
+  let calendarTest: unknown = null;
+  let calendarError = "";
+  if (fullToken) {
     try {
-      const fullToken = await (async () => {
-        const resp = await fetch(
-          `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              grant_type: "client_credentials",
-              client_id: clientId,
-              client_secret: clientSecret,
-              scope: "https://graph.microsoft.com/.default",
-            }),
-          }
-        );
-        const d = await resp.json() as { access_token: string };
-        return d.access_token;
-      })();
+      const resp = await fetch(
+        `https://graph.microsoft.com/v1.0/users/${sharedMailbox}/calendars`,
+        { headers: { Authorization: `Bearer ${fullToken}` } }
+      );
+      const data = await resp.json() as Record<string, unknown>;
+      if (resp.ok) {
+        const calendars = data.value as Array<{ name: string; id: string }>;
+        calendarTest = { count: calendars.length, names: calendars.map(c => c.name) };
+      } else {
+        calendarError = JSON.stringify(data);
+      }
+    } catch (e) { calendarError = String(e); }
+  }
 
+  // Test 2: user profile (uses User.Read.All)
+  let userTest: unknown = null;
+  let userError = "";
+  if (fullToken) {
+    try {
       const resp = await fetch(
         `https://graph.microsoft.com/v1.0/users/${sharedMailbox}`,
         { headers: { Authorization: `Bearer ${fullToken}` } }
       );
       const data = await resp.json() as Record<string, unknown>;
       if (resp.ok) {
-        mailboxCheck = {
-          displayName: data.displayName,
-          mail: data.mail,
-          userPrincipalName: data.userPrincipalName,
-          accountEnabled: data.accountEnabled,
-        };
+        userTest = { displayName: data.displayName, mail: data.mail, accountEnabled: data.accountEnabled };
       } else {
-        mailboxError = JSON.stringify(data);
+        userError = JSON.stringify(data);
       }
-    } catch (e) { mailboxError = String(e); }
+    } catch (e) { userError = String(e); }
   }
 
   return NextResponse.json({
-    configured,
+    configured: isMsConfigured(),
     vars: {
       tenantId: tenantId ? tenantId.slice(0, 8) + "…" : "MISSING",
       clientId: clientId ? clientId.slice(0, 8) + "…" : "MISSING",
       clientSecret: clientSecret ? "SET (hidden)" : "MISSING",
       sharedMailbox: sharedMailbox || "MISSING",
     },
-    tokenObtained: !!token,
-    tokenPreview: token || null,
+    tokenObtained: !!fullToken,
     tokenError: tokenError || null,
-    mailboxCheck: mailboxCheck || null,
-    mailboxError: mailboxError || null,
+    calendarAccess: calendarTest,
+    calendarError: calendarError || null,
+    userAccess: userTest,
+    userError: userError || null,
   });
 }
