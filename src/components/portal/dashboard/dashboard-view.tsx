@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Banknote, Users, UserPlus, RefreshCcw, TrendingUp, TrendingDown,
-  ArrowRight, Zap, Activity, Clock, RefreshCw, AlertCircle,
+  ArrowRight, Zap, Activity, Clock, RefreshCw, AlertCircle, Sun, Moon,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -66,6 +66,17 @@ export default function DashboardView() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [bright, setBright] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("dashboard-bright") === "true";
+  });
+
+  function toggleBright() {
+    setBright((v) => {
+      localStorage.setItem("dashboard-bright", String(!v));
+      return !v;
+    });
+  }
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
@@ -120,8 +131,8 @@ export default function DashboardView() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-blue-500/30 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(139,92,246,0.14) 50%, rgba(6,182,212,0.10) 100%)", boxShadow: "0 0 40px rgba(59,130,246,0.12)" }}
+        className={`rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all duration-300 ${bright ? "border border-blue-500/30" : "glass-card border border-riden-border"}`}
+        style={bright ? { background: "linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(139,92,246,0.14) 50%, rgba(6,182,212,0.10) 100%)", boxShadow: "0 0 40px rgba(59,130,246,0.12)" } : { background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.06) 100%)" }}
       >
         <div>
           <h2 className="text-xl font-bold text-white mb-1">
@@ -135,6 +146,9 @@ export default function DashboardView() {
           </p>
         </div>
         <div className="hidden md:flex items-center gap-3">
+          <button onClick={toggleBright} title={bright ? "Switch to dark" : "Switch to bright"} className="p-2 rounded-lg bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors">
+            {bright ? <Moon size={14} /> : <Sun size={14} />}
+          </button>
           <button onClick={fetchStats} disabled={loading} className="p-2 rounded-lg bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors">
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>
@@ -164,8 +178,8 @@ export default function DashboardView() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`rounded-xl border p-3 sm:p-5 hover:brightness-110 transition-all ${kpi.border}`}
-                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" }}
+                className={`rounded-xl border p-3 sm:p-5 hover:brightness-110 transition-all ${bright ? kpi.border : "border-riden-border glass-card"}`}
+                style={bright ? { background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" } : {}}
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${kpi.bg} border ${kpi.border} flex items-center justify-center`}>
@@ -178,8 +192,8 @@ export default function DashboardView() {
                     </div>
                   )}
                 </div>
-                <div className={`text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1 leading-tight ${kpi.color}`}>{kpi.value}</div>
-                <div className="text-[10px] sm:text-xs text-slate-400 leading-tight font-medium">{kpi.label}</div>
+                <div className={`text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1 leading-tight ${bright ? kpi.color : "text-white"}`}>{kpi.value}</div>
+                <div className={`text-[10px] sm:text-xs leading-tight ${bright ? "text-slate-400 font-medium" : "text-slate-500"}`}>{kpi.label}</div>
                 {kpi.sublabel && (
                   <div className="text-[9px] sm:text-[10px] text-slate-600 leading-tight mt-0.5 truncate">{kpi.sublabel}</div>
                 )}
@@ -194,8 +208,8 @@ export default function DashboardView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2 rounded-xl border border-blue-500/20 p-5"
-          style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" }}
+          className={`lg:col-span-2 rounded-xl p-5 transition-all ${bright ? "border border-blue-500/20" : "glass-card border border-riden-border"}`}
+          style={bright ? { background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" } : {}}
         >
           <div className="flex items-center justify-between mb-3 sm:mb-6">
             <div>
@@ -240,8 +254,8 @@ export default function DashboardView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-xl border border-violet-500/20 p-5"
-          style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" }}
+          className={`rounded-xl p-5 transition-all ${bright ? "border border-violet-500/20" : "glass-card border border-riden-border"}`}
+          style={bright ? { background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" } : {}}
         >
           <h3 className="text-sm font-semibold text-white mb-1">Lead Pipeline</h3>
           <p className="text-xs text-slate-500 mb-4">
