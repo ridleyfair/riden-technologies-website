@@ -106,7 +106,7 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
               backgroundImage: theme === "light"
                 ? "url(/images/blackridenlogo.png)"
                 : "url(/images/RidenLogo.png)",
-              backgroundSize: theme === "light" ? "auto 100%" : "200% auto",
+              backgroundSize: "200% auto",
               backgroundPosition: "left center",
               backgroundRepeat: "no-repeat",
               flexShrink: 0,
