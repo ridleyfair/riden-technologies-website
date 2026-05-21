@@ -180,6 +180,21 @@ export async function POST(req: NextRequest) {
   await step("User.phone", () => sql`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS phone TEXT`);
   await step("User.company", () => sql`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS company TEXT`);
 
+  // Lead — Teams booking columns
+  await step("Lead.bookingStatus", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookingStatus" TEXT DEFAULT 'not_scheduled'`);
+  await step("Lead.meetingTitle", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingTitle" TEXT`);
+  await step("Lead.meetingDate", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingDate" TEXT`);
+  await step("Lead.meetingTime", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingTime" TEXT`);
+  await step("Lead.meetingStartTime", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingStartTime" TIMESTAMPTZ`);
+  await step("Lead.meetingEndTime", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingEndTime" TIMESTAMPTZ`);
+  await step("Lead.meetingTimezone", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingTimezone" TEXT DEFAULT 'Europe/London'`);
+  await step("Lead.meetingDurationMins", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "meetingDurationMins" INTEGER DEFAULT 30`);
+  await step("Lead.microsoftEventId", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "microsoftEventId" TEXT`);
+  await step("Lead.teamsJoinUrl", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "teamsJoinUrl" TEXT`);
+  await step("Lead.inviteSentAt", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "inviteSentAt" TIMESTAMPTZ`);
+  await step("Lead.bookedByUserId", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookedByUserId" TEXT`);
+  await step("Lead.bookingNotes", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookingNotes" TEXT`);
+
   return NextResponse.json({
     ok: true,
     ran,

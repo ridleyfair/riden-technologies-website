@@ -18,14 +18,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const now = new Date();
     const updated = await sql`
       UPDATE "Lead" SET
-        name     = ${body.name     ?? existing.name},
-        email    = ${body.email    ?? existing.email},
-        company  = ${body.company  !== undefined ? body.company  : existing.company},
-        service  = ${body.service  !== undefined ? body.service  : existing.service},
-        message  = ${body.message  ?? existing.message},
-        status   = ${body.status   ?? existing.status},
-        score    = ${body.score    !== undefined ? body.score    : existing.score},
-        "updatedAt" = ${now}
+        name          = ${body.name     ?? existing.name},
+        email         = ${body.email    ?? existing.email},
+        company       = ${body.company  !== undefined ? body.company  : existing.company},
+        service       = ${body.service  !== undefined ? body.service  : existing.service},
+        message       = ${body.message  ?? existing.message},
+        status        = ${body.status   ?? existing.status},
+        score         = ${body.score    !== undefined ? body.score    : existing.score},
+        "bookingStatus" = ${body.bookingStatus !== undefined ? body.bookingStatus : (existing.bookingStatus ?? "not_scheduled")},
+        "updatedAt"   = ${now}
       WHERE id = ${id}
       RETURNING *
     `;
