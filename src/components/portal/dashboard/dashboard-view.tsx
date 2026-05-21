@@ -88,23 +88,23 @@ export default function DashboardView() {
         {
           label: "Total Profit", value: formatCurrency(stats.kpis.totalRevenue),
           change: stats.kpis.revenueGrowth, icon: Banknote,
-          color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20",
+          color: "text-emerald-300", bg: "bg-emerald-500/20", border: "border-emerald-500/30",
           sublabel: (stats.kpis.mrr ?? 0) > 0 ? `incl. ${formatCurrency(stats.kpis.mrr)}/mo recurring` : undefined,
         },
         {
           label: "Active Clients", value: String(stats.kpis.activeClients),
           change: stats.kpis.clientsGrowth, icon: Users,
-          color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20",
+          color: "text-blue-300", bg: "bg-blue-500/20", border: "border-blue-500/30",
         },
         {
           label: "New Leads (7d)", value: String(stats.kpis.newLeads),
           change: stats.kpis.leadsGrowth, icon: UserPlus,
-          color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20",
+          color: "text-violet-300", bg: "bg-violet-500/20", border: "border-violet-500/30",
         },
         {
           label: "Monthly Recurring", value: formatCurrency(stats.kpis.mrr ?? 0),
           change: 0, icon: RefreshCcw,
-          color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20",
+          color: "text-cyan-300", bg: "bg-cyan-500/20", border: "border-cyan-500/30",
           sublabel: (stats.kpis.mrr ?? 0) > 0 ? `auto-added each month` : `no active clients yet`,
         },
       ]
@@ -120,8 +120,8 @@ export default function DashboardView() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card rounded-2xl border border-riden-border p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
-        style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.06) 100%)" }}
+        className="rounded-2xl border border-blue-500/30 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+        style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(139,92,246,0.14) 50%, rgba(6,182,212,0.10) 100%)", boxShadow: "0 0 40px rgba(59,130,246,0.12)" }}
       >
         <div>
           <h2 className="text-xl font-bold text-white mb-1">
@@ -164,7 +164,8 @@ export default function DashboardView() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="glass-card rounded-xl border border-riden-border p-3 sm:p-5 hover:border-white/10 transition-colors"
+                className={`rounded-xl border p-3 sm:p-5 hover:brightness-110 transition-all ${kpi.border}`}
+                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", boxShadow: "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" }}
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${kpi.bg} border ${kpi.border} flex items-center justify-center`}>
@@ -177,8 +178,8 @@ export default function DashboardView() {
                     </div>
                   )}
                 </div>
-                <div className="text-lg sm:text-2xl font-bold text-white mb-0.5 sm:mb-1 leading-tight">{kpi.value}</div>
-                <div className="text-[10px] sm:text-xs text-slate-500 leading-tight">{kpi.label}</div>
+                <div className={`text-lg sm:text-2xl font-bold mb-0.5 sm:mb-1 leading-tight ${kpi.color}`}>{kpi.value}</div>
+                <div className="text-[10px] sm:text-xs text-slate-400 leading-tight font-medium">{kpi.label}</div>
                 {kpi.sublabel && (
                   <div className="text-[9px] sm:text-[10px] text-slate-600 leading-tight mt-0.5 truncate">{kpi.sublabel}</div>
                 )}
@@ -193,7 +194,8 @@ export default function DashboardView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="lg:col-span-2 glass-card rounded-xl border border-riden-border p-5"
+          className="lg:col-span-2 rounded-xl border border-blue-500/20 p-5"
+          style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" }}
         >
           <div className="flex items-center justify-between mb-3 sm:mb-6">
             <div>
@@ -238,7 +240,8 @@ export default function DashboardView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="glass-card rounded-xl border border-riden-border p-5"
+          className="rounded-xl border border-violet-500/20 p-5"
+          style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08) 0%, rgba(255,255,255,0.03) 100%)" }}
         >
           <h3 className="text-sm font-semibold text-white mb-1">Lead Pipeline</h3>
           <p className="text-xs text-slate-500 mb-4">
