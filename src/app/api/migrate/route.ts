@@ -115,6 +115,71 @@ export async function POST(req: NextRequest) {
   await step("Client.activeFrom", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "activeFrom" TIMESTAMPTZ`);
   await step("Client.profit", () => sql`ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS profit FLOAT DEFAULT 0`);
 
+  // Booking table
+  await step("create Booking", () => sql`
+    CREATE TABLE IF NOT EXISTS "Booking" (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      client TEXT NOT NULL,
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      duration TEXT DEFAULT '30 min',
+      type TEXT DEFAULT 'video',
+      status TEXT DEFAULT 'confirmed',
+      notes TEXT,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+      "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await step("idx Booking.date", () => sql`CREATE INDEX IF NOT EXISTS "Booking_date_idx" ON "Booking"(date)`);
+
+  // Website table
+  await step("create Website", () => sql`
+    CREATE TABLE IF NOT EXISTS "Website" (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      client TEXT NOT NULL,
+      "clientId" TEXT,
+      url TEXT NOT NULL,
+      status TEXT DEFAULT 'building',
+      tier TEXT DEFAULT 'starter',
+      template TEXT DEFAULT '',
+      views INTEGER DEFAULT 0,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Automation table
+  await step("create Automation", () => sql`
+    CREATE TABLE IF NOT EXISTS "Automation" (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      trigger TEXT NOT NULL,
+      actions INTEGER DEFAULT 1,
+      status TEXT DEFAULT 'active',
+      "runsTotal" INTEGER DEFAULT 0,
+      "runsToday" INTEGER DEFAULT 0,
+      "lastRun" TIMESTAMPTZ,
+      "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // TeamInvite table
+  await step("create TeamInvite", () => sql`
+    CREATE TABLE IF NOT EXISTS "TeamInvite" (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      role TEXT DEFAULT 'member',
+      status TEXT DEFAULT 'pending',
+      "createdAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // User profile extensions
+  await step("User.phone", () => sql`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS phone TEXT`);
+  await step("User.company", () => sql`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS company TEXT`);
+
   return NextResponse.json({
     ok: true,
     ran,
