@@ -36,14 +36,16 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         riden: {
+          // Brand colours — fixed, never change with theme
           blue: "#3B82F6",
           violet: "#8B5CF6",
           cyan: "#06B6D4",
-          dark: "#080B14",
-          darker: "#04060D",
-          surface: "#0D1117",
-          border: "#1E2A3B",
-          muted: "#1A2332",
+          // Surface tokens — driven by CSS variables so they switch with theme
+          dark: "var(--riden-dark)",
+          darker: "var(--riden-darker)",
+          surface: "var(--riden-surface)",
+          border: "var(--riden-border)",
+          muted: "var(--riden-muted)",
         },
       },
       fontFamily: {

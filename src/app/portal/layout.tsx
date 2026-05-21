@@ -18,7 +18,7 @@ export default function PortalLayout({
   }, []);
 
   return (
-    <div className="flex h-screen bg-riden-dark overflow-hidden">
+    <div className="portal-layout flex h-screen bg-riden-dark overflow-hidden">
       {/* Mobile backdrop */}
       {mobileSidebarOpen && (
         <div

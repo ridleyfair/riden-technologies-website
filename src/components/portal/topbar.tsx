@@ -2,8 +2,9 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { Bell, Search, Plus, Menu } from "lucide-react";
+import { Bell, Search, Plus, Menu, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/lib/theme-context";
 
 const pageLabels: Record<string, string> = {
   "/portal/dashboard": "Dashboard",
@@ -26,6 +27,7 @@ interface TopbarProps {
 export default function Topbar({ onMobileMenuToggle }: TopbarProps) {
   const pathname = usePathname();
   const label = pageLabels[pathname] ?? "Portal";
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-riden-border bg-riden-darker/80 backdrop-blur-sm">
@@ -70,6 +72,15 @@ export default function Topbar({ onMobileMenuToggle }: TopbarProps) {
           <Plus size={14} />
           New
         </Button>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          className="w-9 h-9 rounded-lg bg-riden-muted border border-riden-border flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/50 transition-all"
+        >
+          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
 
         {/* Notifications */}
         <button className="relative w-9 h-9 rounded-lg bg-riden-muted border border-riden-border flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500/50 transition-all">

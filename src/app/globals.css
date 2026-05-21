@@ -50,6 +50,68 @@
   }
 }
 
+/* ── Portal theme tokens ────────────────────────────────────────────────────
+   Scoped to .portal-layout so the public website is never affected.
+   All bg-riden-*, border-riden-* Tailwind utilities resolve these vars.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.portal-layout {
+  /* Dark (default) */
+  --riden-dark:    #080B14;
+  --riden-darker:  #04060D;
+  --riden-surface: #0D1117;
+  --riden-border:  #1E2A3B;
+  --riden-muted:   #1A2332;
+  --riden-fg:          #FFFFFF;
+  --riden-fg-muted:    #94A3B8;
+  --riden-fg-subtle:   #64748B;
+  --riden-card-bg:     rgba(255,255,255,0.04);
+  --riden-card-bg2:    rgba(255,255,255,0.01);
+  --riden-card-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+  --riden-input-bg:    #1A2332;
+  --riden-scrollbar:   #1E2A3B;
+}
+
+.light .portal-layout {
+  /* Light — premium off-white, not flat white */
+  --riden-dark:    #F1F5F9;
+  --riden-darker:  #E2E8F0;
+  --riden-surface: #FFFFFF;
+  --riden-border:  #CBD5E1;
+  --riden-muted:   #F8FAFC;
+  --riden-fg:          #0F172A;
+  --riden-fg-muted:    #475569;
+  --riden-fg-subtle:   #94A3B8;
+  --riden-card-bg:     rgba(255,255,255,0.9);
+  --riden-card-bg2:    rgba(255,255,255,0.7);
+  --riden-card-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,1);
+  --riden-input-bg:    #FFFFFF;
+  --riden-scrollbar:   #CBD5E1;
+}
+
+/* ── Light mode text overrides — neutral palette only ──────────────────── */
+/* Scoped to portal so public pages are unaffected. Accent colours (blue-400,
+   emerald-400 etc.) are intentionally excluded — they look fine on both themes. */
+
+.light .portal-layout .text-white   { color: var(--riden-fg) !important; }
+.light .portal-layout .text-slate-100 { color: var(--riden-fg) !important; }
+.light .portal-layout .text-slate-200 { color: var(--riden-fg) !important; }
+.light .portal-layout .text-slate-300 { color: var(--riden-fg-muted) !important; }
+.light .portal-layout .text-slate-400 { color: var(--riden-fg-muted) !important; }
+.light .portal-layout .text-slate-500 { color: var(--riden-fg-subtle) !important; }
+.light .portal-layout .text-slate-600 { color: var(--riden-fg-subtle) !important; }
+
+/* Input and placeholder text */
+.light .portal-layout input,
+.light .portal-layout textarea,
+.light .portal-layout select {
+  color: var(--riden-fg);
+  background-color: var(--riden-input-bg);
+}
+.light .portal-layout ::placeholder { color: var(--riden-fg-subtle); }
+
+/* ── glass-card — theme-aware ──────────────────────────────────────────── */
+
 @layer components {
   .glass {
     background: rgba(13, 17, 23, 0.8);
@@ -59,11 +121,11 @@
   }
 
   .glass-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    background: linear-gradient(135deg, var(--riden-card-bg, rgba(255,255,255,0.04)) 0%, var(--riden-card-bg2, rgba(255,255,255,0.01)) 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    border: 1px solid var(--riden-border, #1E2A3B);
+    box-shadow: var(--riden-card-shadow, 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04));
   }
 
   .gradient-text {
@@ -133,20 +195,17 @@
   }
 }
 
-/* Custom scrollbar for portal */
+/* Portal scrollbar */
 .portal-scroll::-webkit-scrollbar {
   width: 6px;
 }
-
 .portal-scroll::-webkit-scrollbar-track {
-  background: #080B14;
+  background: var(--riden-dark, #080B14);
 }
-
 .portal-scroll::-webkit-scrollbar-thumb {
-  background: #1E2A3B;
+  background: var(--riden-scrollbar, #1E2A3B);
   border-radius: 3px;
 }
-
 .portal-scroll::-webkit-scrollbar-thumb:hover {
-  background: #2D3F56;
+  background: var(--riden-border, #2D3F56);
 }
