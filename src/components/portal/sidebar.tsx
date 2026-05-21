@@ -99,17 +99,10 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
             <span className="text-white text-sm font-bold">R</span>
           </div>
         ) : (
-          <div
-            style={{
-              width: "180px",
-              height: "44px",
-              backgroundImage: theme === "light" ? "url(/images/blackridenlogo.png)" : "url(/images/RidenLogo.png)",
-              backgroundSize: "200% auto",
-              backgroundPosition: "left center",
-              backgroundRepeat: "no-repeat",
-              flexShrink: 0,
-            }}
-            aria-label="Riden Technologies"
+          <img
+            src={theme === "light" ? "/images/blackridenlogo.png" : "/images/RidenLogo.png"}
+            alt="Riden Technologies"
+            style={{ height: "36px", width: "auto", maxWidth: "160px", objectFit: "contain" }}
           />
         )}
       </div>
