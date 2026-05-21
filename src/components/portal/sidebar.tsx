@@ -102,7 +102,13 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
           <img
             src={theme === "light" ? "/images/blackridenlogo.png" : "/images/RidenLogo.png"}
             alt="Riden Technologies"
-            className="h-9 w-auto max-w-[160px] flex-shrink-0"
+            style={{
+              height: "36px",
+              width: "160px",
+              objectFit: "contain",
+              objectPosition: "left center",
+              flexShrink: 0,
+            }}
           />
         )}
       </div>
