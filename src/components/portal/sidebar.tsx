@@ -101,13 +101,13 @@ export default function Sidebar({ collapsed, onToggle, onMobileClose }: SidebarP
         ) : (
           <div
             style={{
-              width: "180px",
-              height: "44px",
+              width: "200px",
+              height: "52px",
               backgroundImage: theme === "light"
                 ? "url(/images/blackridenlogo.png)"
                 : "url(/images/RidenLogo.png)",
               backgroundSize: theme === "light" ? "contain" : "200% auto",
-              backgroundPosition: "left center",
+              backgroundPosition: theme === "light" ? "center center" : "left center",
               backgroundRepeat: "no-repeat",
               flexShrink: 0,
             }}
