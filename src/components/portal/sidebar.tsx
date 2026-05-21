@@ -32,9 +32,9 @@ const navItems = [
   {
     section: "CRM",
     items: [
-      { label: "Clients", href: "/portal/clients", icon: Users },
       { label: "Leads", href: "/portal/leads", icon: UserPlus },
       { label: "Projects", href: "/portal/projects", icon: FolderKanban },
+      { label: "Clients", href: "/portal/clients", icon: Users },
     ],
   },
   {
