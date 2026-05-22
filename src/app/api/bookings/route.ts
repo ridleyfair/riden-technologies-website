@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
 
     // Send client confirmation email via SendGrid (bypasses blocked shared mailbox IP)
     let emailError: string | null = null;
+    let emailSent = false;
     if (clientEmail && isSendGridConfigured()) {
       try {
         await sendBookingConfirmation({
@@ -120,13 +121,16 @@ export async function POST(req: NextRequest) {
           notes: notes || null,
           timezone,
         });
+        emailSent = true;
       } catch (err) {
         emailError = String(err);
         console.error("SendGrid email error:", err);
       }
+    } else if (clientEmail && !isSendGridConfigured()) {
+      emailError = "SendGrid not configured — SENDGRID_API_KEY missing";
     }
 
-    return NextResponse.json({ ...booking, graphError, emailError }, { status: 201 });
+    return NextResponse.json({ ...booking, graphError, emailError, emailSent }, { status: 201 });
   } catch (err) {
     console.error("Booking create error:", err);
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
