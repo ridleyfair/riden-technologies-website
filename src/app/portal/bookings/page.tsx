@@ -996,7 +996,20 @@ export default function BookingsPage() {
             </Button>
           </div>
         </div>
+      ) : selectedDay ? (
+        // Single-day view — show ALL bookings for this day (past or future)
+        <div className="space-y-3">
+          {agendaBookings.map((b) => (
+            <BookingCard
+              key={b.id} booking={b}
+              highlight={b.date === today}
+              onEdit={() => { setEditBooking(b); setModalOpen(true); }}
+              onDelete={() => setDeleteId(b.id)}
+            />
+          ))}
+        </div>
       ) : (
+        // All-bookings view — grouped by today / upcoming / past
         <div className="space-y-6">
           {grouped.today.length > 0 && (
             <section>
@@ -1032,7 +1045,7 @@ export default function BookingsPage() {
             </section>
           )}
 
-          {grouped.past.length > 0 && !selectedDay && (
+          {grouped.past.length > 0 && (
             <section className="opacity-60">
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
                 Past
