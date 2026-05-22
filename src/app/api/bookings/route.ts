@@ -7,6 +7,7 @@ import {
   buildStartEnd,
   getSharedMailbox,
 } from "@/lib/ms-graph";
+import { isSendGridConfigured, sendBookingConfirmation } from "@/lib/sendgrid";
 
 export async function GET(req: NextRequest) {
   const user = await requireAuth(req);
@@ -102,7 +103,30 @@ export async function POST(req: NextRequest) {
     `;
 
     const [booking] = await sql`SELECT * FROM "Booking" WHERE id = ${id}`;
-    return NextResponse.json({ ...booking, graphError }, { status: 201 });
+
+    // Send client confirmation email via SendGrid (bypasses blocked shared mailbox IP)
+    let emailError: string | null = null;
+    if (clientEmail && isSendGridConfigured()) {
+      try {
+        await sendBookingConfirmation({
+          to: clientEmail,
+          toName: client,
+          title,
+          date,
+          time,
+          duration,
+          meetingType: type,
+          teamsJoinUrl: teamsJoinUrl ?? null,
+          notes: notes || null,
+          timezone,
+        });
+      } catch (err) {
+        emailError = String(err);
+        console.error("SendGrid email error:", err);
+      }
+    }
+
+    return NextResponse.json({ ...booking, graphError, emailError }, { status: 201 });
   } catch (err) {
     console.error("Booking create error:", err);
     return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });

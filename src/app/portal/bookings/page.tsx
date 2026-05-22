@@ -244,7 +244,7 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
   initial?: Booking | null;
   defaultDate?: string | null;
   onClose: () => void;
-  onSave: (graphError?: string | null) => void;
+  onSave: (graphError?: string | null, emailError?: string | null) => void;
 }) {
   const [form, setForm] = useState<BookingForm>(defaultForm());
   const [saving, setSaving] = useState(false);
@@ -291,7 +291,7 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
         return;
       }
       const data = await res.json();
-      onSave(data.graphError ?? null);
+      onSave(data.graphError ?? null, data.emailError ?? null);
       onClose();
     } catch {
       setError("Network error.");
@@ -1071,12 +1071,17 @@ export default function BookingsPage() {
         initial={editBooking}
         defaultDate={editBooking ? undefined : selectedDay}
         onClose={() => { setModalOpen(false); setEditBooking(null); }}
-        onSave={(graphError) => {
+        onSave={(graphError, emailError) => {
           fetchBookings();
           if (graphError) {
             showToast(`Saved — but Teams error: ${graphError.slice(0, 60)}`, false);
+          } else if (emailError) {
+            showToast("Booking saved — but confirmation email failed to send", false);
           } else {
-            showToast(editBooking ? "Booking updated" : "Booking created", true);
+            showToast(
+              editBooking ? "Booking updated" : "Booking created — confirmation email sent",
+              true
+            );
           }
         }}
       />

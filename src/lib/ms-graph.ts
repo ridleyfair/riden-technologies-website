@@ -126,21 +126,16 @@ export async function createTeamsCalendarEvent(input: CreateEventInput): Promise
   const { sharedMailbox } = getMsConfig();
   if (!sharedMailbox) throw new Error("MICROSOFT_SHARED_MAILBOX is not configured.");
 
+  // Client info in the body so it's visible in Outlook without attendees.
+  // Attendees are intentionally omitted — Graph would send the invite via
+  // the shared mailbox's outbound IP (which is blocked). SendGrid handles
+  // client notification instead.
   const bodyText = [
-    `Hi ${input.leadName},`,
-    "",
-    "Thanks for your enquiry with Riden Technologies.",
-    "",
-    "We've scheduled a strategy call to discuss your requirements and how we can best help.",
-    "",
-    input.service ? `Service interested in: ${input.service}` : null,
+    `Client: ${input.leadName} <${input.leadEmail}>`,
     input.company ? `Company: ${input.company}` : null,
+    input.service ? `Service: ${input.service}` : null,
     "",
-    "Please join using the Microsoft Teams link included in this invite.",
-    "",
-    "Kind regards,",
-    "Riden Technologies",
-    "www.ridentechnologies.com",
+    input.notes ? `Notes: ${input.notes}` : null,
   ]
     .filter((l) => l !== null)
     .join("\n");
@@ -151,12 +146,6 @@ export async function createTeamsCalendarEvent(input: CreateEventInput): Promise
     start: { dateTime: input.startIso, timeZone: input.timezone },
     end: { dateTime: input.endIso, timeZone: input.timezone },
     location: { displayName: "Microsoft Teams" },
-    attendees: [
-      {
-        emailAddress: { address: input.leadEmail, name: input.leadName },
-        type: "required",
-      },
-    ],
     isOnlineMeeting: true,
     onlineMeetingProvider: "teamsForBusiness",
   };
