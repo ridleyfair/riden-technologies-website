@@ -98,12 +98,12 @@ function fmtRelative(date: Date): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-function defaultForm(): BookingForm {
+function defaultForm(date?: string): BookingForm {
   return {
     title: "Riden Technologies Strategy Call",
     client: "",
     clientEmail: "",
-    date: todayStr(),
+    date: date ?? todayStr(),
     time: "10:00",
     duration: "30 min",
     durationMinutes: 30,
@@ -238,10 +238,11 @@ function DeleteModal({ open, title, hasOutlook, onClose, onConfirm }: {
 
 // ── Booking Modal ─────────────────────────────────────────────────────────────
 
-function BookingModal({ open, mode, initial, onClose, onSave }: {
+function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
   open: boolean;
   mode: "create" | "edit";
   initial?: Booking | null;
+  defaultDate?: string | null;
   onClose: () => void;
   onSave: (graphError?: string | null) => void;
 }) {
@@ -251,10 +252,10 @@ function BookingModal({ open, mode, initial, onClose, onSave }: {
 
   useEffect(() => {
     if (open) {
-      setForm(initial ? bookingToForm(initial) : defaultForm());
+      setForm(initial ? bookingToForm(initial) : defaultForm(defaultDate ?? undefined));
       setError("");
     }
-  }, [open, initial]);
+  }, [open, initial, defaultDate]);
 
   function set<K extends keyof BookingForm>(field: K, value: BookingForm[K]) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -1055,6 +1056,7 @@ export default function BookingsPage() {
         open={modalOpen}
         mode={editBooking ? "edit" : "create"}
         initial={editBooking}
+        defaultDate={editBooking ? undefined : selectedDay}
         onClose={() => { setModalOpen(false); setEditBooking(null); }}
         onSave={(graphError) => {
           fetchBookings();
