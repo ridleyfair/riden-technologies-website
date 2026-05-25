@@ -204,6 +204,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate spec via Claude
+  const { templateId, themeId } = pickTemplate(body.industry);
   let specJson: string;
   try {
     specJson = await generateSiteSpec(body, apiKey);
