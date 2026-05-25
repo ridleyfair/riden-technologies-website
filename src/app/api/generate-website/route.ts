@@ -96,6 +96,7 @@ The JSON must exactly match this structure:
         { "type": "services", "content": { "headline": "Our Services", "items": [ <3-5 service items based on: ${body.services}> ] } },
         { "type": "about", "content": { "headline": "About Us", "body": "<about paragraph tailored to the business>" } },
         { "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <2-3 plausible testimonials> ] } },
+        ${body.photos && body.photos.length > 0 ? `{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of our recent projects", "items": ${JSON.stringify(body.photos.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } },` : ""}
         { "type": "cta", "content": { "headline": "Ready to Get Started?", "subHeadline": "Contact us today for a free consultation.", "cta": "Call Now", "ctaHref": "tel:${body.phone}" } },
         { "type": "footer", "content": { "tagline": "<short tagline>", "columns": [], "phone": "${body.phone}", "email": "${body.email}", "address": "${body.city}", "copyright": "© ${new Date().getFullYear()} ${body.businessName}. All rights reserved." } }
       ]
@@ -177,27 +178,39 @@ export async function POST(req: NextRequest) {
   let specJson: string;
   try {
     specJson = await generateSiteSpec(body, apiKey);
-    // Validate and inject gallery section if photos provided
+    // Parse and ensure gallery section is present when photos provided
     const spec = JSON.parse(specJson) as Record<string, unknown>;
     if (body.photos && body.photos.length > 0) {
-      const gallerySection = {
-        type: "gallery",
-        content: {
-          headline: "Our Work",
-          subHeadline: "Take a look at some of our recent projects",
-          items: body.photos.map((src, i) => ({
+      const pages = spec.pages as Array<Record<string, unknown>> | undefined;
+      const sections = Array.isArray(pages?.[0]?.sections) ? pages![0].sections as Record<string, unknown>[] : null;
+      if (sections) {
+        const hasGallery = sections.some((s) => s.type === "gallery");
+        if (!hasGallery) {
+          // Claude didn't include it — inject manually
+          const gallerySection = {
+            type: "gallery",
+            content: {
+              headline: "Our Work",
+              subHeadline: "A selection of our recent projects",
+              items: body.photos.map((src, i) => ({
+                src,
+                alt: `${body.businessName} work photo ${i + 1}`,
+                caption: "",
+              })),
+            },
+          };
+          const insertAt = Math.max(0, sections.length - 2);
+          sections.splice(insertAt, 0, gallerySection);
+        } else {
+          // Gallery is present — make sure it has the real photo URLs
+          const gallery = sections.find((s) => s.type === "gallery") as Record<string, unknown>;
+          const content = gallery.content as Record<string, unknown>;
+          content.items = body.photos.map((src, i) => ({
             src,
             alt: `${body.businessName} work photo ${i + 1}`,
             caption: "",
-          })),
-        },
-      };
-      const pages = spec.pages as Array<Record<string, unknown>>;
-      if (pages?.[0]) {
-        const sections = pages[0].sections as unknown[];
-        // Insert gallery before the last 2 sections (before CTA/footer)
-        const insertAt = Math.max(0, sections.length - 2);
-        sections.splice(insertAt, 0, gallerySection);
+          }));
+        }
       }
       specJson = JSON.stringify(spec);
     }
