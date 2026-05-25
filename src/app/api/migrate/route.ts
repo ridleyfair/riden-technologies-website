@@ -219,6 +219,25 @@ export async function POST(req: NextRequest) {
   await step("Booking.attendeeResponseStatus", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "attendeeResponseStatus" TEXT`);
   await step("Booking.outlookResponseUpdatedAt", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "outlookResponseUpdatedAt" TIMESTAMPTZ`);
 
+  // GeneratedSite table for Website Studio
+  await step("create GeneratedSite", () => sql`
+    CREATE TABLE IF NOT EXISTS "GeneratedSite" (
+      id TEXT PRIMARY KEY,
+      "projectId" TEXT,
+      "clientName" TEXT NOT NULL,
+      "businessName" TEXT NOT NULL,
+      industry TEXT DEFAULT 'professional',
+      tier TEXT DEFAULT 'pro_plus',
+      "specJson" TEXT NOT NULL,
+      username TEXT NOT NULL,
+      password TEXT NOT NULL,
+      "previewUrl" TEXT,
+      status TEXT DEFAULT 'ready',
+      "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+      "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   return NextResponse.json({
     ok: true,
     ran,
