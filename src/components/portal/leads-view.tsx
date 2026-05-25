@@ -22,6 +22,14 @@ type Lead = {
   score: number;
   value?: number | null;
   createdAt: string;
+  bookingStatus?: string | null;
+  meetingDate?: string | null;
+};
+
+const bookingBadge: Record<string, { label: string; dot: string; text: string }> = {
+  invite_sent: { label: "Awaiting Response", dot: "bg-yellow-400", text: "text-yellow-400" },
+  accepted:    { label: "Accepted",          dot: "bg-green-400",  text: "text-green-400" },
+  declined:    { label: "Declined",          dot: "bg-red-400",    text: "text-red-400" },
 };
 
 type Toast = { msg: string; type: "success" | "error" };
@@ -143,6 +151,7 @@ export default function LeadsView() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [meetingFilter, setMeetingFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [addLeadOpen, setAddLeadOpen] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -206,7 +215,10 @@ export default function LeadsView() {
       (lead.company?.toLowerCase() ?? "").includes(search.toLowerCase()) ||
       lead.email.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || lead.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchMeeting =
+      meetingFilter === "all" ||
+      (meetingFilter === "no_response" ? !lead.bookingStatus || lead.bookingStatus === "not_scheduled" : lead.bookingStatus === meetingFilter);
+    return matchSearch && matchStatus && matchMeeting;
   });
 
   const hotLeads = leads.filter((l) => l.score >= 70).length;
@@ -334,6 +346,31 @@ export default function LeadsView() {
         </div>
       </div>
 
+      {/* Meeting response filter */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-nowrap">
+        <span className="text-xs text-slate-600 flex-shrink-0">Meeting:</span>
+        {[
+          { key: "all",         label: "All" },
+          { key: "invite_sent", label: "Awaiting Response", dot: "bg-yellow-400" },
+          { key: "accepted",    label: "Accepted",          dot: "bg-green-400" },
+          { key: "declined",    label: "Declined",          dot: "bg-red-400" },
+          { key: "no_response", label: "No Invite Sent",    dot: "bg-slate-500" },
+        ].map(({ key, label, dot }) => (
+          <button
+            key={key}
+            onClick={() => setMeetingFilter(key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+              meetingFilter === key
+                ? "bg-blue-600/10 text-blue-400 border border-blue-500/20"
+                : "text-slate-500 hover:text-white hover:bg-riden-muted"
+            }`}
+          >
+            {dot && <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />}
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Table — desktop only */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -392,6 +429,12 @@ export default function LeadsView() {
                   <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize pointer-events-none">
                     {lead.status}
                   </Badge>
+                  {lead.bookingStatus && bookingBadge[lead.bookingStatus] && (
+                    <span className={`flex items-center gap-1 text-[10px] font-medium ${bookingBadge[lead.bookingStatus].text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${bookingBadge[lead.bookingStatus].dot}`} />
+                      {bookingBadge[lead.bookingStatus].label}
+                    </span>
+                  )}
                 </div>
                 <div className="col-span-1 text-xs text-slate-500 capitalize">{lead.source}</div>
                 <div className="col-span-1 text-xs text-slate-500">
@@ -457,10 +500,16 @@ export default function LeadsView() {
                       <div className="text-xs text-slate-500 truncate">{lead.email}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end" onClick={(e) => e.stopPropagation()}>
                     <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize text-[10px]">
                       {lead.status}
                     </Badge>
+                    {lead.bookingStatus && bookingBadge[lead.bookingStatus] && (
+                      <span className={`flex items-center gap-1 text-[10px] font-medium ${bookingBadge[lead.bookingStatus].text}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${bookingBadge[lead.bookingStatus].dot}`} />
+                        {bookingBadge[lead.bookingStatus].label}
+                      </span>
+                    )}
                     <div className="relative">
                       <button
                         onClick={() => setMenuOpenId(menuOpenId === lead.id ? null : lead.id)}
