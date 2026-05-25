@@ -155,12 +155,13 @@ function ProjectDetailModal({
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
-    url:         string;
-    loading:     boolean;
-    imported:    boolean;
-    error:       string;
-    rating?:     string;
+    url:          string;
+    loading:      boolean;
+    imported:     boolean;
+    error:        string;
+    rating?:      string;
     reviewCount?: number;
+    noProfile?:   boolean;
   }>({
     url:      "",
     loading:  false,
@@ -331,21 +332,29 @@ function ProjectDetailModal({
         setCheckatrade((s) => ({ ...s, loading: false, error: data.error ?? "Failed to fetch page." }));
         return;
       }
-      // Auto-import business info
-      const skillsList  = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
-      const areasList   = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
-      const acredList   = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
-      const tradingInfo = data.tradingYears ? `Trading for ${data.tradingYears} years` : "";
-      const areasInfo   = areasList.length  ? `Areas covered: ${areasList.join(", ")}` : "";
+      // Auto-import all available business info
+      const skillsList = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
+      const areasList  = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
+      const acredList  = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
+
+      const aboutParts = [
+        data.description as string || "",
+        data.tradingYears ? `Established / trading for ${data.tradingYears} years` : "",
+        areasList.length  ? `Areas covered: ${areasList.join(", ")}` : "",
+      ].filter(Boolean);
 
       setBrief((b) => ({
         ...b,
-        phone:          data.phone      || b.phone,
-        city:           data.city       || b.city,
-        postcode:       data.postcode   || b.postcode,
-        services:       skillsList.length ? skillsList.join(", ") : b.services,
-        about:          [data.description || b.about, tradingInfo, areasInfo].filter(Boolean).join("\n") || b.about,
-        accreditations: acredList.length  ? acredList.join(", ")  : b.accreditations,
+        phone:           (data.phone           as string) || b.phone,
+        email:           (data.email           as string) || b.email,
+        city:            (data.city            as string) || b.city,
+        postcode:        (data.postcode        as string) || b.postcode,
+        services:        skillsList.length ? skillsList.join(", ") : b.services,
+        about:           aboutParts.join("\n")            || b.about,
+        accreditations:  acredList.length  ? acredList.join(", ")  : b.accreditations,
+        openingHours:    (data.openingHours    as string) || b.openingHours,
+        socialFacebook:  (data.socialFacebook  as string) || b.socialFacebook,
+        socialInstagram: (data.socialInstagram as string) || b.socialInstagram,
       }));
       // Import reviews
       if (Array.isArray(data.reviews) && data.reviews.length > 0) {
@@ -366,12 +375,14 @@ function ProjectDetailModal({
           return [...prev, ...newPhotos];
         });
       }
+      const found = data._found as { hasNextData?: boolean; hasProfile?: boolean } | undefined;
       setCheckatrade((s) => ({
         ...s,
         loading:     false,
         imported:    true,
         rating:      data.rating      ? String(data.rating)      : s.rating,
         reviewCount: data.reviewCount ? Number(data.reviewCount) : s.reviewCount,
+        noProfile:   found && !found.hasProfile,
       }));
     } catch {
       setCheckatrade((s) => ({ ...s, loading: false, error: "Network error. Please try again." }));
@@ -838,11 +849,16 @@ function ProjectDetailModal({
                   </p>
                 )}
                 {checkatrade.imported && (
-                  <div className="text-xs text-emerald-400 flex flex-col gap-0.5">
-                    <span className="flex items-center gap-1.5"><CheckCircle size={11} /> Business info, skills, and reviews imported.</span>
+                  <div className="text-xs flex flex-col gap-0.5">
+                    <span className={`flex items-center gap-1.5 ${checkatrade.noProfile ? "text-amber-400" : "text-emerald-400"}`}>
+                      <CheckCircle size={11} />
+                      {checkatrade.noProfile
+                        ? "Partial import — some fields pulled from page meta only. Check fields below."
+                        : "Business info, skills, and reviews imported successfully."}
+                    </span>
                     {(checkatrade.rating || photos.length > 0) && (
                       <span className="text-slate-400 pl-4">
-                        {checkatrade.rating && <>{checkatrade.rating}/10 rating · {checkatrade.reviewCount ?? 0} reviews</>}
+                        {checkatrade.rating && <>{checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews</>}
                         {checkatrade.rating && photos.length > 0 && " · "}
                         {photos.length > 0 && <>{photos.length} photos</>}
                       </span>

@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Primitive helpers ─────────────────────────────────────────────────────────
+
+function str(v: unknown): string {
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number") return String(v).trim();
+  return "";
+}
+
+function strArr(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((item) => {
+    const s = str(typeof item === "object" ? ((item as Record<string,unknown>)?.name ?? (item as Record<string,unknown>)?.label ?? (item as Record<string,unknown>)?.title ?? (item as Record<string,unknown>)?.value ?? item) : item);
+    return s ? [s] : [];
+  });
+}
+
+// ── HTML extractors ───────────────────────────────────────────────────────────
 
 function extractNextData(html: string): Record<string, unknown> | null {
-  const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+  const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
   if (!m) return null;
   try { return JSON.parse(m[1]) as Record<string, unknown>; } catch { return null; }
 }
@@ -22,83 +38,31 @@ function extractJsonLd(html: string): Record<string, unknown>[] {
 function metaContent(html: string, name: string): string {
   const m = html.match(new RegExp(`<meta[^>]+(?:name|property)=["']${name}["'][^>]+content=["']([^"']+)["']`, "i"))
     ?? html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:name|property)=["']${name}["']`, "i"));
-  return m?.[1] ?? "";
+  return m?.[1]?.trim() ?? "";
 }
 
-const PHOTO_BLACKLIST = ["icon", "logo", "avatar", "star", "badge", "trusted", "tick", "arrow", "sprite", "pixel", "1x1", "tracking", "blank", "placeholder", "ct-logo", "favicon", "profile-pic", "default-user", "rating"];
-
-function isPhoto(url: string): boolean {
-  const lower = url.toLowerCase();
-  if (PHOTO_BLACKLIST.some((b) => lower.includes(b))) return false;
-  const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
-  const isCdn = lower.includes("checkatrade") || lower.includes("cloudfront") || lower.includes("s3.amazonaws") || lower.includes("imagedelivery") || lower.includes("ctmedia");
-  return hasExt || isCdn;
+function extractH1(html: string): string {
+  const m = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+  return m?.[1]?.trim() ?? "";
 }
 
-function extractPhotosFromHtml(html: string): string[] {
-  const found = new Set<string>();
-
-  // Decode Next.js /_next/image?url=ENCODED
-  const nextRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
-  let m: RegExpExecArray | null;
-  while ((m = nextRe.exec(html)) !== null) {
-    try {
-      const decoded = decodeURIComponent(m[1]);
-      if (decoded.startsWith("http") && isPhoto(decoded)) found.add(decoded);
-    } catch { /* skip */ }
-  }
-
-  // img src / data-src
-  const imgRe = /<img[^>]+>/gi;
-  const attrRe = /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i;
-  while ((m = imgRe.exec(html)) !== null) {
-    const a = attrRe.exec(m[0]);
-    if (a) {
-      const src = a[1].startsWith("//") ? "https:" + a[1] : a[1];
-      if (src.startsWith("http") && isPhoto(src)) found.add(src);
-    }
-  }
-
-  // srcset — pick largest
-  const srcsetRe = /srcset=["']([^"']+)["']/gi;
-  while ((m = srcsetRe.exec(html)) !== null) {
-    const parts = m[1].split(",").map((p) => p.trim().split(/\s+/)[0]);
-    for (const u of parts) {
-      if (u.startsWith("http") && isPhoto(u)) found.add(u);
-    }
-  }
-
-  return [...found].slice(0, 20);
+// Extract first UK phone number from any text block
+function extractPhone(text: string): string {
+  const m = text.match(/(?:(?:\+44\s?)|(?:0))(?:\d[\s-]?){9,10}/);
+  return m ? m[0].replace(/\s+/g, " ").trim() : "";
 }
 
-// Recursively walk an unknown structure and collect all image URLs
-function collectImagesFromObj(obj: unknown, found: Set<string>, depth = 0): void {
-  if (depth > 8 || !obj) return;
-  if (typeof obj === "string") {
-    if ((obj.startsWith("http") || obj.startsWith("//")) && isPhoto(obj)) {
-      found.add(obj.startsWith("//") ? "https:" + obj : obj);
-    }
-    return;
-  }
-  if (Array.isArray(obj)) {
-    for (const item of obj) collectImagesFromObj(item, found, depth + 1);
-    return;
-  }
-  if (typeof obj === "object") {
-    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-      // Prioritise keys that sound like image fields
-      if (/image|photo|picture|gallery|src|url|media|thumb/i.test(k)) {
-        collectImagesFromObj(v, found, depth);
-      } else {
-        collectImagesFromObj(v, found, depth + 1);
-      }
-    }
-  }
+// Extract first UK postcode from any text block
+function extractPostcode(text: string): string {
+  const m = text.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
+  return m ? m[1].toUpperCase() : "";
 }
 
-// Recursively find a value by key name anywhere in the object
+// ── Deep object traversal ─────────────────────────────────────────────────────
+
+// Find the first value of a key anywhere in the object (breadth-first-ish)
 function deepFind(obj: unknown, key: string, depth = 0): unknown {
-  if (depth > 8 || !obj || typeof obj !== "object") return undefined;
+  if (depth > 10 || !obj || typeof obj !== "object") return undefined;
   if (Array.isArray(obj)) {
     for (const item of obj) {
       const r = deepFind(item, key, depth + 1);
@@ -107,7 +71,7 @@ function deepFind(obj: unknown, key: string, depth = 0): unknown {
     return undefined;
   }
   const rec = obj as Record<string, unknown>;
-  if (rec[key] !== undefined) return rec[key];
+  if (key in rec && rec[key] !== null && rec[key] !== undefined && rec[key] !== "") return rec[key];
   for (const v of Object.values(rec)) {
     const r = deepFind(v, key, depth + 1);
     if (r !== undefined) return r;
@@ -115,11 +79,105 @@ function deepFind(obj: unknown, key: string, depth = 0): unknown {
   return undefined;
 }
 
-function str(v: unknown): string {
-  return typeof v === "string" ? v.trim() : "";
+// Find ALL values for a set of candidate key names, returning first non-empty
+function findFirst(obj: unknown, keys: string[]): unknown {
+  for (const key of keys) {
+    const v = deepFind(obj, key);
+    if (v !== undefined && v !== null && v !== "") return v;
+  }
+  return undefined;
 }
 
-// ── POST handler ───────────────────────────────────────────────────────────────
+// Recursively collect image URLs from object
+const PHOTO_BLACKLIST = ["icon","logo","avatar","star","badge","trusted","tick","arrow","sprite","pixel","1x1","tracking","blank","placeholder","ct-logo","favicon","profile-pic","default-user","rating","seal","shield"];
+
+function isPhoto(url: string): boolean {
+  const lower = url.toLowerCase();
+  if (PHOTO_BLACKLIST.some((b) => lower.includes(b))) return false;
+  const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
+  const isCdn  = lower.includes("checkatrade") || lower.includes("cloudfront") || lower.includes("s3.amazonaws") || lower.includes("imagedelivery") || lower.includes("ctmedia");
+  return hasExt || isCdn;
+}
+
+function collectImages(obj: unknown, found: Set<string>, depth = 0): void {
+  if (depth > 10 || !obj) return;
+  if (typeof obj === "string") {
+    if ((obj.startsWith("http") || obj.startsWith("//")) && isPhoto(obj)) {
+      found.add(obj.startsWith("//") ? "https:" + obj : obj);
+    }
+    return;
+  }
+  if (Array.isArray(obj)) { for (const i of obj) collectImages(i, found, depth + 1); return; }
+  if (typeof obj === "object") {
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      if (/image|photo|picture|gallery|src|url|media|thumb|portfolio|work/i.test(k)) {
+        collectImages(v, found, depth);
+      } else {
+        collectImages(v, found, depth + 1);
+      }
+    }
+  }
+}
+
+function extractPhotosFromHtml(html: string): string[] {
+  const found = new Set<string>();
+  const nextRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = nextRe.exec(html)) !== null) {
+    try { const d = decodeURIComponent(m[1]); if (d.startsWith("http") && isPhoto(d)) found.add(d); } catch { /* skip */ }
+  }
+  const imgRe  = /<img[^>]+>/gi;
+  const attrRe = /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i;
+  while ((m = imgRe.exec(html)) !== null) {
+    const a = attrRe.exec(m[0]);
+    if (a) { const src = a[1].startsWith("//") ? "https:" + a[1] : a[1]; if (src.startsWith("http") && isPhoto(src)) found.add(src); }
+  }
+  const srcsetRe = /srcset=["']([^"']+)["']/gi;
+  while ((m = srcsetRe.exec(html)) !== null) {
+    for (const part of m[1].split(",")) {
+      const u = part.trim().split(/\s+/)[0];
+      if (u.startsWith("http") && isPhoto(u)) found.add(u);
+    }
+  }
+  return [...found].slice(0, 20);
+}
+
+// ── Locate the trader profile anywhere in pageProps ───────────────────────────
+
+const PROFILE_KEYS = [
+  "traderProfile","trader","profile","tradeProfile","traderData","tradeData",
+  "company","business","member","trade","tradesperson","contractor","tradesman",
+  "companyProfile","businessProfile","memberProfile","companyData","businessData",
+];
+
+function findProfile(pageProps: Record<string, unknown>): Record<string, unknown> | undefined {
+  // 1. Direct key lookup
+  for (const key of PROFILE_KEYS) {
+    const v = pageProps[key];
+    if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+  }
+  // 2. Deep search — find any object that has a 'name' and at least one of phone/description/city
+  const candidates: Record<string, unknown>[] = [];
+  function hunt(obj: unknown, depth = 0): void {
+    if (depth > 6 || !obj || typeof obj !== "object" || Array.isArray(obj)) return;
+    const rec = obj as Record<string, unknown>;
+    const hasName  = typeof rec.name  === "string" && rec.name.length > 1;
+    const hasPhone = typeof rec.phone === "string" || typeof rec.telephone === "string" || typeof rec.contactNumber === "string";
+    const hasDesc  = typeof rec.description === "string" || typeof rec.about === "string" || typeof rec.summary === "string";
+    if (hasName && (hasPhone || hasDesc)) candidates.push(rec);
+    for (const v of Object.values(rec)) hunt(v, depth + 1);
+  }
+  hunt(pageProps);
+  if (candidates.length > 0) return candidates[0];
+  // 3. Fall back to deep key search
+  for (const key of PROFILE_KEYS) {
+    const v = deepFind(pageProps, key);
+    if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+  }
+  return undefined;
+}
+
+// ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
@@ -133,155 +191,147 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "A valid Checkatrade profile URL is required" }, { status: 400 });
   }
 
+  // Normalise URL
+  if (!url.startsWith("http")) url = "https://" + url;
+
   try {
     const resp = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Accept-Language": "en-GB,en;q=0.9",
-        "Cache-Control": "no-cache",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control":   "no-cache",
+        "Referer":         "https://www.checkatrade.com/",
       },
+      redirect: "follow",
     });
 
     if (!resp.ok) {
       return NextResponse.json(
-        { error: `Could not load Checkatrade page (${resp.status}). Check the URL is correct and the profile is public.` },
+        { error: `Could not load Checkatrade page (HTTP ${resp.status}). Check the URL is correct and the profile is public.` },
         { status: 502 }
       );
     }
 
     const html = await resp.text();
 
-    // ── 1. Try __NEXT_DATA__ (richest source) ─────────────────────────────────
-    const nextData = extractNextData(html);
-    const pageProps = (nextData?.props as Record<string, unknown>)?.pageProps as Record<string, unknown> | undefined;
+    // ── 1. Extract structured sources ─────────────────────────────────────────
+    const nextData  = extractNextData(html);
+    const pageProps = (nextData?.props as Record<string,unknown>)?.pageProps as Record<string,unknown> | undefined;
+    const jsonLds   = extractJsonLd(html);
+    const bizLd     = jsonLds.find((j) => /LocalBusiness|HomeAndConstructionBusiness|Organization/.test(String(j["@type"])))
+                    ?? jsonLds.find((j) => j.name);
 
-    // Find trader profile — Checkatrade uses various key names
-    const profile = (
-      pageProps?.traderProfile
-      ?? pageProps?.trader
-      ?? pageProps?.profile
-      ?? pageProps?.tradeProfile
-      ?? pageProps?.data
-      ?? pageProps?.traderData
-      ?? deepFind(pageProps, "traderProfile")
-      ?? deepFind(pageProps, "trader")
-    ) as Record<string, unknown> | undefined;
+    // ── 2. Find the trader profile object ─────────────────────────────────────
+    const profile = pageProps ? findProfile(pageProps) : undefined;
 
-    // ── 2. JSON-LD fallback ───────────────────────────────────────────────────
-    const jsonLds = extractJsonLd(html);
-    const biz = jsonLds.find(
-      (j) => typeof j["@type"] === "string" && (j["@type"] as string).includes("Business")
-    ) ?? jsonLds.find((j) => j.name);
+    // ── 3. Extract each field — profile → JSON-LD → meta → regex fallback ────
 
-    // ── Extract fields ────────────────────────────────────────────────────────
     const name =
-      str(profile?.name ?? profile?.companyName ?? profile?.businessName)
-      || str(biz?.name)
-      || metaContent(html, "og:title").replace(/ \| Checkatrade.*$/i, "").trim();
+      str(findFirst(profile, ["name","companyName","businessName","tradeName","tradingName"]))
+      || str(bizLd?.name)
+      || extractH1(html)
+      || metaContent(html, "og:title").replace(/\s*[|–-].*$/, "").trim();
 
     const description =
-      str(profile?.description ?? profile?.about ?? profile?.summary ?? profile?.bio)
-      || str(biz?.description)
+      str(findFirst(profile, ["description","about","summary","bio","overview","companyDescription","businessDescription"]))
+      || str(bizLd?.description)
       || metaContent(html, "og:description");
 
     const phone =
-      str(profile?.phone ?? profile?.phoneNumber ?? profile?.telephone ?? profile?.contactNumber)
-      || str(biz?.telephone);
+      str(findFirst(profile, ["phone","phoneNumber","telephone","contactNumber","mobile","tel","contact_phone","mobileNumber"]))
+      || str(bizLd?.telephone)
+      || extractPhone(metaContent(html, "telephone"))
+      || extractPhone(html.replace(/<[^>]+>/g, " ").substring(0, 50000));
 
-    const addr = (profile?.address ?? profile?.location ?? biz?.address) as Record<string, unknown> | undefined;
+    const email =
+      str(findFirst(profile, ["email","emailAddress","contactEmail","email_address"]))
+      || str(bizLd?.email);
+
+    const addrObj = (profile?.address ?? profile?.location ?? bizLd?.address) as Record<string,unknown> | undefined;
     const city =
-      str(addr?.town ?? addr?.city ?? addr?.addressLocality ?? addr?.addressRegion ?? profile?.town ?? profile?.city)
-      || str(biz?.address && (biz.address as Record<string, unknown>)?.addressLocality);
+      str(findFirst(addrObj, ["town","city","addressLocality","addressRegion","region"]))
+      || str(findFirst(profile, ["town","city","addressLocality"]))
+      || str((bizLd?.address as Record<string,unknown>)?.addressLocality);
 
     const postcode =
-      str(addr?.postcode ?? addr?.postalCode ?? profile?.postcode ?? profile?.postalCode)
-      || str(biz?.address && (biz.address as Record<string, unknown>)?.postalCode);
+      str(findFirst(addrObj, ["postcode","postalCode","zip","postCode"]))
+      || str(findFirst(profile, ["postcode","postalCode"]))
+      || str((bizLd?.address as Record<string,unknown>)?.postalCode)
+      || extractPostcode(html.replace(/<[^>]+>/g, " ").substring(0, 50000));
 
-    // Skills / trades / categories
-    const rawSkills =
-      (profile?.skills ?? profile?.trades ?? profile?.categories ?? profile?.serviceTypes ?? profile?.workTypes) as unknown[] | undefined;
-    const skills: string[] = [];
-    if (Array.isArray(rawSkills)) {
-      for (const s of rawSkills) {
-        const label = str(typeof s === "object" ? (s as Record<string, unknown>)?.name ?? (s as Record<string, unknown>)?.label : s);
-        if (label) skills.push(label);
-      }
-    }
+    // Skills / trades
+    const rawSkills = (findFirst(profile, ["skills","trades","categories","serviceTypes","workTypes","services","tradeTypes"]) ?? []) as unknown[];
+    const skills = strArr(rawSkills);
 
-    // Accreditations / certifications
-    const rawCerts =
-      (profile?.accreditations ?? profile?.certifications ?? profile?.memberships ?? profile?.qualifications) as unknown[] | undefined;
-    const accreditations: string[] = [];
-    if (Array.isArray(rawCerts)) {
-      for (const c of rawCerts) {
-        const label = str(typeof c === "object" ? (c as Record<string, unknown>)?.name ?? (c as Record<string, unknown>)?.label ?? (c as Record<string, unknown>)?.title : c);
-        if (label) accreditations.push(label);
-      }
-    }
+    // Accreditations
+    const rawCerts = (findFirst(profile, ["accreditations","certifications","memberships","qualifications","badges","approvals"]) ?? []) as unknown[];
+    const accreditations = strArr(rawCerts);
 
-    // Rating / review count
-    const aggregate = (profile?.aggregateRating ?? profile?.rating ?? biz?.aggregateRating) as Record<string, unknown> | undefined;
-    const rating = str(aggregate?.ratingValue ?? profile?.score ?? profile?.averageRating ?? "");
-    const reviewCount = Number(aggregate?.reviewCount ?? profile?.reviewCount ?? profile?.totalReviews ?? 0);
+    // Rating
+    const aggRating = (profile?.aggregateRating ?? profile?.rating ?? bizLd?.aggregateRating) as Record<string,unknown> | undefined;
+    const rating      = str(findFirst(aggRating, ["ratingValue","score","value"]) ?? findFirst(profile, ["score","averageRating","overallScore","starRating"]));
+    const reviewCount = Number(findFirst(aggRating, ["reviewCount","ratingCount"]) ?? findFirst(profile, ["reviewCount","totalReviews","numberOfReviews","reviewsCount"]) ?? 0);
 
-    // Trading years / established
-    const tradingYears =
-      str(profile?.tradingYears ?? profile?.yearsTrading ?? profile?.yearEstablished ?? profile?.established ?? "");
+    // Trading years
+    const tradingYears = str(findFirst(profile, ["tradingYears","yearsTrading","yearEstablished","established","foundedYear","since","yearFounded"]));
 
     // Areas covered
-    const rawAreas = (profile?.areasServed ?? profile?.coverageAreas ?? profile?.areas) as unknown[] | undefined;
-    const areas: string[] = [];
-    if (Array.isArray(rawAreas)) {
-      for (const a of rawAreas) {
-        const label = str(typeof a === "object" ? (a as Record<string, unknown>)?.name ?? a : a);
-        if (label) areas.push(label);
-      }
-    }
+    const rawAreas = (findFirst(profile, ["areasServed","coverageAreas","areas","coverage","serviceAreas","areasOfWork","workingAreas"]) ?? []) as unknown[];
+    const areas = strArr(rawAreas);
+
+    // Opening hours
+    const rawHours = findFirst(profile, ["openingHours","businessHours","hours","openingTimes","workingHours"]);
+    const openingHours = typeof rawHours === "string" ? rawHours
+      : Array.isArray(rawHours) ? strArr(rawHours).join(", ")
+      : str(bizLd?.openingHours);
+
+    // Social links
+    const sameAs = bizLd?.sameAs;
+    const socialLinks: string[] = Array.isArray(sameAs) ? sameAs.map(str) : typeof sameAs === "string" ? [sameAs] : [];
+    const socialFacebook  = str(findFirst(profile, ["facebook","facebookUrl","socialFacebook"])) || socialLinks.find((s) => s.includes("facebook")) || "";
+    const socialInstagram = str(findFirst(profile, ["instagram","instagramUrl","socialInstagram"])) || socialLinks.find((s) => s.includes("instagram")) || "";
 
     // Reviews
     type RawReview = Record<string, unknown>;
     let rawReviews: RawReview[] = [];
-    const profileReviews = profile?.reviews ?? profile?.testimonials;
+    const profileReviews = findFirst(profile, ["reviews","testimonials","reviewList","customerReviews"]);
     if (Array.isArray(profileReviews)) {
       rawReviews = profileReviews as RawReview[];
     } else {
       for (const block of jsonLds) {
-        if (Array.isArray(block.review)) rawReviews.push(...(block.review as RawReview[]));
-        else if (block["@type"] === "Review") rawReviews.push(block as RawReview);
+        if (Array.isArray(block.review))   rawReviews.push(...(block.review as RawReview[]));
+        if (block["@type"] === "Review")   rawReviews.push(block as RawReview);
       }
-      if (biz?.review && Array.isArray(biz.review)) rawReviews.push(...(biz.review as RawReview[]));
+      if (bizLd?.review && Array.isArray(bizLd.review)) rawReviews.push(...(bizLd.review as RawReview[]));
     }
-
     const reviews = rawReviews.slice(0, 10).map((r) => ({
-      author: str((r.author as Record<string, unknown>)?.name ?? r.author ?? r.reviewerName ?? r.customerName ?? "Customer"),
-      rating: Number((r.reviewRating as Record<string, unknown>)?.ratingValue ?? r.rating ?? r.stars ?? 5),
+      author: str((r.author as Record<string,unknown>)?.name ?? r.author ?? r.reviewerName ?? r.customerName ?? "Customer"),
+      rating: Number((r.reviewRating as Record<string,unknown>)?.ratingValue ?? r.rating ?? r.stars ?? 5),
       body:   str(r.reviewBody ?? r.body ?? r.text ?? r.comment ?? r.description ?? ""),
       date:   str(r.datePublished ?? r.date ?? r.createdAt ?? ""),
-      source: "checkatrade",
+      source: "checkatrade" as const,
     }));
 
-    // Photos — from Next.js data first, then HTML
+    // Photos
     const photoSet = new Set<string>();
-    if (profile) collectImagesFromObj(profile, photoSet);
-    // Also scan full pageProps for image arrays
+    if (profile)    collectImages(profile, photoSet);
     if (pageProps) {
-      const imgKeys = ["images", "photos", "gallery", "media", "portfolioImages", "workImages"];
-      for (const k of imgKeys) {
-        if (pageProps[k]) collectImagesFromObj(pageProps[k], photoSet);
+      for (const k of ["images","photos","gallery","media","portfolioImages","workImages","portfolio","work"]) {
+        if (pageProps[k]) collectImages(pageProps[k], photoSet);
       }
     }
-    // Fallback: HTML extraction
-    if (photoSet.size === 0) {
-      for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
-    }
+    if (photoSet.size === 0) for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
     const photos = [...photoSet].filter(isPhoto).slice(0, 20);
 
+    // ── 4. Return everything ──────────────────────────────────────────────────
     return NextResponse.json({
       ok: true,
       name,
       description,
       phone,
+      email,
       city,
       postcode,
       skills,
@@ -290,8 +340,19 @@ export async function POST(req: NextRequest) {
       areas,
       rating,
       reviewCount,
+      openingHours,
+      socialFacebook,
+      socialInstagram,
       reviews,
       photos,
+      // debug info so we can see what was found
+      _found: {
+        hasNextData:  !!nextData,
+        hasPageProps: !!pageProps,
+        hasProfile:   !!profile,
+        profileKeys:  profile ? Object.keys(profile).slice(0, 30) : [],
+        hasJsonLd:    jsonLds.length > 0,
+      },
     });
   } catch (err) {
     console.error("Checkatrade fetch error:", err);
