@@ -526,7 +526,7 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Date</label>
-                  <input type="date" className={inputCls} value={form.date} onChange={(e) => set("date", e.target.value)} />
+                  <input type="date" lang="en-GB" className={inputCls} value={form.date} onChange={(e) => set("date", e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Time</label>

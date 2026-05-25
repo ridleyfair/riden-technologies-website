@@ -476,7 +476,7 @@ function BookingPanel({ lead, leadId }: { lead: Lead; leadId: string }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">Date *</label>
-                <input type="date" className={inputCls} value={form.date} min={todayStr()} onChange={(e) => setField("date", e.target.value)} />
+                <input type="date" lang="en-GB" className={inputCls} value={form.date} min={todayStr()} onChange={(e) => setField("date", e.target.value)} />
               </div>
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">Time *</label>
