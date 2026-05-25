@@ -173,6 +173,16 @@ function ProjectDetailModal({
     error:   "",
   });
 
+  // Manual photo URL input
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
+
+  function addPhotoByUrl() {
+    const url = photoUrlInput.trim();
+    if (!url || !url.startsWith("http")) return;
+    setPhotos((prev) => (prev.includes(url) ? prev : [...prev, url]));
+    setPhotoUrlInput("");
+  }
+
   // Website generation
   const [generating, setGenerating] = useState(false);
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
@@ -969,17 +979,35 @@ function ProjectDetailModal({
               </div>
 
               {/* Photos */}
-              {photos.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Photos ({photos.length})</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Photos ({photos.length})</h3>
+                  {photos.length > 0 && (
                     <button
                       onClick={() => setPhotos([])}
                       className="text-[10px] text-rose-400 hover:text-rose-300 transition-colors"
                     >
                       Clear all
                     </button>
-                  </div>
+                  )}
+                </div>
+                {/* Add by URL */}
+                <div className="flex gap-2">
+                  <input
+                    value={photoUrlInput}
+                    onChange={(e) => setPhotoUrlInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addPhotoByUrl()}
+                    placeholder="Paste a photo URL and press Enter..."
+                    className={`${inputCls} flex-1 text-xs`}
+                  />
+                  <Button variant="outline" size="sm" onClick={addPhotoByUrl} disabled={!photoUrlInput.trim()}>
+                    Add
+                  </Button>
+                </div>
+                <p className="text-[10px] text-slate-600">
+                  Tip: on a Checkatrade profile, right-click a work photo → &quot;Copy image address&quot; and paste it here.
+                </p>
+                {photos.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
                     {photos.map((src, i) => (
                       <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
@@ -994,8 +1022,8 @@ function ProjectDetailModal({
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Generated URL success panel */}
               {generatedUrl && (

@@ -38,6 +38,22 @@ interface GenerateBody {
   photos?: string[];
 }
 
+// ── Template / theme picker ───────────────────────────────────────────────────
+
+function pickTemplate(industry: string): { templateId: string; themeId: string } {
+  const ind = (industry ?? "").toLowerCase();
+  if (["trades", "automotive", "construction", "plumbing", "electrical", "roofing"].some((k) => ind.includes(k))) {
+    return { templateId: "tradie-bold", themeId: "bold" };
+  }
+  if (["beauty", "salon", "spa", "nails", "hair"].some((k) => ind.includes(k))) {
+    return { templateId: "beauty-elegant", themeId: "elegant" };
+  }
+  if (["health", "medical", "dental", "therapy", "care"].some((k) => ind.includes(k))) {
+    return { templateId: "healthcare-clean", themeId: "minimal" };
+  }
+  return { templateId: "growth-lead-gen", themeId: "modern" };
+}
+
 // ── Claude API call ───────────────────────────────────────────────────────────
 
 async function generateSiteSpec(body: GenerateBody, apiKey: string): Promise<string> {
@@ -45,6 +61,8 @@ async function generateSiteSpec(body: GenerateBody, apiKey: string): Promise<str
     "You are a professional website copywriter for Riden Technologies. " +
     "Generate a complete SiteSpec JSON for a client website based on the business data provided. " +
     "Return ONLY valid JSON, no markdown, no explanation.";
+
+  const { templateId, themeId } = pickTemplate(body.industry);
 
   const userPrompt = `Generate a complete SiteSpec JSON for the following business:
 
@@ -66,8 +84,8 @@ The JSON must exactly match this structure:
   "businessId": "<uuid>",
   "businessName": "${body.businessName}",
   "tier": "${body.tier}",
-  "themeId": "minimal",
-  "templateId": "modern-minimal",
+  "themeId": "${themeId}",
+  "templateId": "${templateId}",
   "enabledModules": [],
   "brand": {
     "palette": {
