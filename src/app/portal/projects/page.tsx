@@ -141,18 +141,14 @@ function ProjectDetailModal({
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
-    postcode: string;
-    category: string;
-    runId: string | null;
-    polling: boolean;
-    results: Record<string, unknown>[];
-    error: string;
+    url:     string;
+    loading: boolean;
+    imported: boolean;
+    error:   string;
   }>({
-    postcode: initialProject.postcode ?? "",
-    category: "Builder",
-    runId:    null,
-    polling:  false,
-    results:  [],
+    url:      "",
+    loading:  false,
+    imported: false,
     error:    "",
   });
 
@@ -180,27 +176,7 @@ function ProjectDetailModal({
   const monthlyRate = inferMonthlyRate(project.notes);
   const cfg         = STATUS_CONFIG[project.status] ?? { label: project.status, color: "text-slate-400", bg: "bg-slate-400" };
 
-  // ── Checkatrade polling ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (!checkatrade.runId || !checkatrade.polling) return;
-    const interval = setInterval(async () => {
-      try {
-        const res  = await fetch(`/api/scrape/status?runId=${checkatrade.runId}`);
-        const data = await res.json();
-        if (data.status === "SUCCEEDED") {
-          clearInterval(interval);
-          setCheckatrade((s) => ({ ...s, polling: false, results: data.items ?? [] }));
-        } else if (data.status === "FAILED") {
-          clearInterval(interval);
-          setCheckatrade((s) => ({ ...s, polling: false, error: "Checkatrade search failed." }));
-        }
-      } catch {
-        clearInterval(interval);
-        setCheckatrade((s) => ({ ...s, polling: false, error: "Failed to check status." }));
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [checkatrade.runId, checkatrade.polling]);
+  // (Checkatrade uses synchronous fetch — no polling needed)
 
   // ── Google Maps polling ───────────────────────────────────────────────────
   useEffect(() => {
@@ -314,25 +290,43 @@ function ProjectDetailModal({
     }
   }
 
-  // ── Checkatrade search ────────────────────────────────────────────────────
-  async function searchCheckatrade() {
-    setCheckatrade((s) => ({ ...s, polling: false, runId: null, results: [], error: "" }));
+  // ── Checkatrade fetch by URL ──────────────────────────────────────────────
+  async function fetchCheckatrade() {
+    setCheckatrade((s) => ({ ...s, loading: true, imported: false, error: "" }));
     try {
-      const res = await fetch("/api/scrape/checkatrade", {
+      const res  = await fetch("/api/scrape/checkatrade", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          location:            checkatrade.postcode,
-          category:            checkatrade.category,
-          maxPages:            2,
-          requirePhoneNumber:  true,
-        }),
+        body:    JSON.stringify({ url: checkatrade.url }),
       });
       const data = await res.json();
-      if (!res.ok) { setCheckatrade((s) => ({ ...s, error: data.error ?? "Search failed." })); return; }
-      setCheckatrade((s) => ({ ...s, runId: data.runId, polling: true }));
+      if (!res.ok || !data.ok) {
+        setCheckatrade((s) => ({ ...s, loading: false, error: data.error ?? "Failed to fetch page." }));
+        return;
+      }
+      // Auto-import business info
+      setBrief((b) => ({
+        ...b,
+        phone:    data.phone    || b.phone,
+        city:     data.city     || b.city,
+        postcode: data.postcode || b.postcode,
+        services: data.services || b.services,
+        about:    data.description || b.about,
+      }));
+      // Import reviews
+      if (Array.isArray(data.reviews) && data.reviews.length > 0) {
+        const imported: Review[] = (data.reviews as Record<string, unknown>[]).map((r) => ({
+          author: String(r.author ?? "Customer"),
+          rating: Number(r.rating ?? 5),
+          body:   String(r.body   ?? ""),
+          source: "checkatrade" as const,
+          date:   String(r.date   ?? ""),
+        }));
+        setReviews((prev) => [...prev, ...imported]);
+      }
+      setCheckatrade((s) => ({ ...s, loading: false, imported: true }));
     } catch {
-      setCheckatrade((s) => ({ ...s, error: "Network error starting search." }));
+      setCheckatrade((s) => ({ ...s, loading: false, error: "Network error. Please try again." }));
     }
   }
 
@@ -353,33 +347,6 @@ function ProjectDetailModal({
     }
   }
 
-  // ── Import Checkatrade result ─────────────────────────────────────────────
-  function importCheckatrade(item: Record<string, unknown>) {
-    const name  = String(item.name  ?? item.businessName ?? "");
-    const phone = String(item.phone ?? item.phoneNumber  ?? "");
-    const about = String(item.description ?? item.about  ?? "");
-    const svc   = String(item.services ?? item.category  ?? "");
-
-    setBrief((b) => ({
-      ...b,
-      phone:    phone || b.phone,
-      about:    about || b.about,
-      services: svc   || b.services,
-    }));
-
-    // Import reviews if present
-    const rawReviews = (item.reviews ?? item.testimonials ?? []) as Record<string, unknown>[];
-    if (Array.isArray(rawReviews) && rawReviews.length > 0) {
-      const imported: Review[] = rawReviews.map((r) => ({
-        author:  String(r.author ?? r.reviewer ?? name),
-        rating:  Number(r.rating ?? r.stars ?? 5),
-        body:    String(r.body   ?? r.text    ?? r.review ?? ""),
-        source:  "checkatrade" as const,
-        date:    String(r.date   ?? r.createdAt ?? ""),
-      }));
-      setReviews((prev) => [...prev, ...imported]);
-    }
-  }
 
   // ── Import Google Maps reviews ────────────────────────────────────────────
   function importGoogleReviews(item: Record<string, unknown>) {
@@ -793,64 +760,37 @@ function ProjectDetailModal({
 
               {/* Checkatrade Finder */}
               <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Find on Checkatrade</h3>
+                <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Import from Checkatrade</h3>
+                <p className="text-[11px] text-slate-500">Paste the client&apos;s Checkatrade profile URL to auto-import their business info and reviews.</p>
                 <div className="flex gap-2">
                   <input
-                    value={checkatrade.postcode}
-                    onChange={(e) => setCheckatrade((s) => ({ ...s, postcode: e.target.value }))}
-                    placeholder="Postcode"
-                    className={`${inputCls} flex-1`}
-                  />
-                  <input
-                    value={checkatrade.category}
-                    onChange={(e) => setCheckatrade((s) => ({ ...s, category: e.target.value }))}
-                    placeholder="Category"
+                    value={checkatrade.url}
+                    onChange={(e) => setCheckatrade((s) => ({ ...s, url: e.target.value, imported: false, error: "" }))}
+                    placeholder="https://www.checkatrade.com/trades/businessname"
                     className={`${inputCls} flex-1`}
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={searchCheckatrade}
-                    disabled={checkatrade.polling || !checkatrade.postcode}
+                    onClick={fetchCheckatrade}
+                    disabled={checkatrade.loading || !checkatrade.url.includes("checkatrade.com")}
                     className="flex-shrink-0"
                   >
-                    {checkatrade.polling ? (
-                      <RefreshCw size={13} className="animate-spin" />
-                    ) : (
-                      <Search size={13} />
-                    )}
+                    {checkatrade.loading ? <RefreshCw size={13} className="animate-spin" /> : <Search size={13} />}
                   </Button>
                 </div>
-                {checkatrade.polling && (
+                {checkatrade.loading && (
                   <p className="text-xs text-slate-400 flex items-center gap-2">
-                    <RefreshCw size={11} className="animate-spin" /> Searching Checkatrade...
+                    <RefreshCw size={11} className="animate-spin" /> Fetching Checkatrade profile...
+                  </p>
+                )}
+                {checkatrade.imported && (
+                  <p className="text-xs text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle size={11} /> Business info and reviews imported successfully.
                   </p>
                 )}
                 {checkatrade.error && (
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
-                )}
-                {checkatrade.results.length > 0 && (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {checkatrade.results.map((item, i) => (
-                      <div key={i} className="bg-riden-surface rounded-lg border border-riden-border p-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="text-xs font-medium text-white truncate">{String(item.name ?? item.businessName ?? "Business")}</div>
-                          {!!(item.phone ?? item.phoneNumber) && (
-                            <div className="text-xs text-slate-500 mt-0.5">{String(item.phone ?? item.phoneNumber)}</div>
-                          )}
-                          {!!(item.rating ?? item.stars) && (
-                            <StarRating rating={Number(item.rating ?? item.stars)} />
-                          )}
-                        </div>
-                        <button
-                          onClick={() => importCheckatrade(item)}
-                          className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex-shrink-0"
-                        >
-                          Import
-                        </button>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
 
