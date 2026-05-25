@@ -144,13 +144,13 @@ function buildHtml(input: BookingEmailInput): string {
               <p style="margin:0 0 12px;font-size:13px;color:#94a3b8;text-align:center;">Please confirm your attendance:</p>
               <table width="100%" cellpadding="0" cellspacing="0"><tr>
                 <td width="50%" style="padding-right:6px;" align="right">
-                  <a href="https://ridentechnologies.com/invite-response?token=${input.responseToken}&action=accept"
+                  <a href="https://ridentechnologies.com/api/invite-response?token=${input.responseToken}&action=accept"
                      style="display:inline-block;background:#16a34a;color:#ffffff;font-size:13px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;">
                     ✓ Accept
                   </a>
                 </td>
                 <td width="50%" style="padding-left:6px;" align="left">
-                  <a href="https://ridentechnologies.com/invite-response?token=${input.responseToken}&action=decline"
+                  <a href="https://ridentechnologies.com/api/invite-response?token=${input.responseToken}&action=decline"
                      style="display:inline-block;background:#475569;color:#ffffff;font-size:13px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;">
                     ✗ Decline
                   </a>
