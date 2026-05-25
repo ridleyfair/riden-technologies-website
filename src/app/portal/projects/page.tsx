@@ -333,14 +333,21 @@ function ProjectDetailModal({
         return;
       }
       // Auto-import all available business info
-      const skillsList = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
-      const areasList  = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
-      const acredList  = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
+      const skillsList   = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
+      const areasList    = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
+      const acredList    = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
+      const capsList     = Array.isArray(data.capabilities)   ? (data.capabilities   as string[]) : [];
 
+      // Build a rich about section from all company facts
       const aboutParts = [
         data.description as string || "",
-        data.tradingYears ? `Established / trading for ${data.tradingYears} years` : "",
-        areasList.length  ? `Areas covered: ${areasList.join(", ")}` : "",
+        data.owner             ? `Owner: ${data.owner}` : "",
+        data.companyType       ? `Company type: ${data.companyType}` : "",
+        data.vatRegistered     ? String(data.vatRegistered) : "",
+        data.yearsOnCheckatrade ? `${data.yearsOnCheckatrade} years on Checkatrade` : "",
+        data.tradingYears      ? `Trading for ${data.tradingYears} years` : "",
+        capsList.length        ? `Capabilities: ${capsList.join(", ")}` : "",
+        areasList.length       ? `Areas covered: ${areasList.join(", ")}` : "",
       ].filter(Boolean);
 
       setBrief((b) => ({
