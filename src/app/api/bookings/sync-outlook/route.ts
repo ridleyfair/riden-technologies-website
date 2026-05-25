@@ -31,64 +31,81 @@ export async function POST(req: NextRequest) {
   let statusUpdated = 0;
   const now = new Date();
 
+  const errors: string[] = [];
+
   for (const event of events) {
-    const existing = (
-      await sql`SELECT id, status FROM "Booking" WHERE "microsoftEventId" = ${event.id} LIMIT 1`
-    )[0];
+    try {
+      const existing = (
+        await sql`SELECT id, status FROM "Booking" WHERE "microsoftEventId" = ${event.id} LIMIT 1`
+      )[0];
 
-    // Parse Graph datetime: "2026-05-21T10:00:00.0000000"
-    const dtStr = event.start.dateTime;
-    const datePart = dtStr.slice(0, 10);
-    const timePart = dtStr.slice(11, 16);
+      // Parse Graph datetime: "2026-05-21T10:00:00.0000000"
+      const dtStr = event.start.dateTime;
+      const datePart = dtStr.slice(0, 10);
+      const timePart = dtStr.slice(11, 16);
 
-    const firstAttendee = event.attendees?.find((a) => a.type === "required");
-    const clientName = firstAttendee?.emailAddress.name ?? "Unknown";
-    const clientEmail = firstAttendee?.emailAddress.address ?? "";
-    const teamsJoinUrl = event.onlineMeeting?.joinUrl ?? event.onlineMeetingUrl ?? null;
+      const firstAttendee = event.attendees?.find((a) => a.type === "required");
+      const clientName = firstAttendee?.emailAddress.name ?? "Unknown";
+      const clientEmail = firstAttendee?.emailAddress.address ?? "";
+      const teamsJoinUrl = event.onlineMeeting?.joinUrl ?? event.onlineMeetingUrl ?? null;
 
-    // Map Outlook RSVP → CRM status
-    const attendeeResponse = firstAttendee?.status?.response;
-    const crmStatus = graphResponseToCrmStatus(attendeeResponse);
+      // Map Outlook RSVP → CRM status (attendees may be absent if invite was sent via SendGrid)
+      const attendeeResponse = firstAttendee?.status?.response;
+      const crmStatus = graphResponseToCrmStatus(attendeeResponse);
 
-    if (!existing) {
-      const id = crypto.randomUUID();
-      await sql`
-        INSERT INTO "Booking" (
-          id, title, client, "clientEmail",
-          date, time, duration, "durationMinutes",
-          type, status, "attendeeResponseStatus", notes, timezone,
-          "microsoftEventId", "outlookCalendarEmail", "teamsJoinUrl",
-          attendees, "outlookResponseUpdatedAt", "lastSyncedAt", "createdByUserId", "createdAt", "updatedAt"
-        ) VALUES (
-          ${id}, ${event.subject}, ${clientName}, ${clientEmail},
-          ${datePart}, ${timePart}, ${"30 min"}, ${30},
-          ${"video"}, ${crmStatus}, ${attendeeResponse ?? null}, ${event.bodyPreview ?? ""}, ${"Europe/London"},
-          ${event.id}, ${mailbox}, ${teamsJoinUrl},
-          ${"[]"}, ${now}, ${now}, ${user.id}, ${now}, ${now}
-        )
-      `;
-      created++;
-    } else {
-      const previousStatus = existing.status as string;
-      const statusChanged = crmStatus !== previousStatus &&
-        // Don't overwrite a manually set cancelled/completed status from Outlook
-        previousStatus !== "cancelled" &&
-        previousStatus !== "completed" &&
-        previousStatus !== "no_show";
+      if (!existing) {
+        const id = crypto.randomUUID();
+        await sql`
+          INSERT INTO "Booking" (
+            id, title, client, "clientEmail",
+            date, time, duration, "durationMinutes",
+            type, status, "attendeeResponseStatus", notes, timezone,
+            "microsoftEventId", "outlookCalendarEmail", "teamsJoinUrl",
+            attendees, "lastSyncedAt", "createdByUserId", "createdAt", "updatedAt"
+          ) VALUES (
+            ${id}, ${event.subject}, ${clientName}, ${clientEmail},
+            ${datePart}, ${timePart}, ${"30 min"}, ${30},
+            ${"video"}, ${crmStatus}, ${attendeeResponse ?? null}, ${event.bodyPreview ?? ""}, ${"Europe/London"},
+            ${event.id}, ${mailbox}, ${teamsJoinUrl},
+            ${"[]"}, ${now}, ${user.id}, ${now}, ${now}
+          )
+        `;
+        created++;
+      } else {
+        const previousStatus = existing.status as string;
+        const statusChanged = crmStatus !== previousStatus &&
+          // Don't overwrite a manually set cancelled/completed status from Outlook
+          previousStatus !== "cancelled" &&
+          previousStatus !== "completed" &&
+          previousStatus !== "no_show";
 
-      await sql`
-        UPDATE "Booking" SET
-          title                      = ${event.subject},
-          "teamsJoinUrl"             = ${teamsJoinUrl},
-          "attendeeResponseStatus"   = ${attendeeResponse ?? null},
-          status                     = ${statusChanged ? crmStatus : previousStatus},
-          "outlookResponseUpdatedAt" = ${statusChanged ? now : sql`"outlookResponseUpdatedAt"`},
-          "lastSyncedAt"             = ${now},
-          "updatedAt"                = ${now}
-        WHERE "microsoftEventId" = ${event.id}
-      `;
-      if (statusChanged) statusUpdated++;
-      updated++;
+        if (statusChanged) {
+          await sql`
+            UPDATE "Booking" SET
+              title                      = ${event.subject},
+              "teamsJoinUrl"             = ${teamsJoinUrl},
+              "attendeeResponseStatus"   = ${attendeeResponse ?? null},
+              status                     = ${crmStatus},
+              "outlookResponseUpdatedAt" = ${now},
+              "lastSyncedAt"             = ${now},
+              "updatedAt"                = ${now}
+            WHERE "microsoftEventId" = ${event.id}
+          `;
+          statusUpdated++;
+        } else {
+          await sql`
+            UPDATE "Booking" SET
+              title          = ${event.subject},
+              "teamsJoinUrl" = ${teamsJoinUrl},
+              "lastSyncedAt" = ${now},
+              "updatedAt"    = ${now}
+            WHERE "microsoftEventId" = ${event.id}
+          `;
+        }
+        updated++;
+      }
+    } catch (err) {
+      errors.push(`Event ${event.id}: ${err}`);
     }
   }
 
@@ -98,6 +115,7 @@ export async function POST(req: NextRequest) {
     created,
     updated,
     statusUpdated,
+    errors,
     dateRange: { start, end },
   });
 }

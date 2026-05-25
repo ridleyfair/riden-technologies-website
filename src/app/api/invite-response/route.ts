@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   const sql = getDb();
-  const rows = await sql`SELECT id, "bookingStatus" FROM "Lead" WHERE "responseToken" = ${token} LIMIT 1`;
+  const rows = await sql`SELECT id, "bookingStatus", "microsoftEventId" FROM "Lead" WHERE "responseToken" = ${token} LIMIT 1`;
   const lead = rows[0];
 
   if (!lead) {
@@ -19,13 +19,27 @@ export async function GET(req: NextRequest) {
   }
 
   const newStatus = action === "accept" ? "accepted" : "declined";
+  const bookingStatus = action === "accept" ? "approved" : "declined";
+  const now = new Date();
 
   await sql`
     UPDATE "Lead" SET
       "bookingStatus" = ${newStatus},
-      "updatedAt"     = ${new Date()}
+      "updatedAt"     = ${now}
     WHERE "responseToken" = ${token}
   `;
+
+  // Also update the linked Booking record if one exists for the same Outlook event
+  if (lead.microsoftEventId) {
+    await sql`
+      UPDATE "Booking" SET
+        status                     = ${bookingStatus},
+        "outlookResponseUpdatedAt" = ${now},
+        "updatedAt"                = ${now}
+      WHERE "microsoftEventId"    = ${lead.microsoftEventId}
+        AND status NOT IN ('cancelled', 'completed', 'no_show')
+    `;
+  }
 
   return NextResponse.redirect(new URL(`/invite-response?status=${newStatus}`, req.url));
 }
