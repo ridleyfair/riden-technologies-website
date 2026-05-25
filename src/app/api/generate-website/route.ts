@@ -137,8 +137,10 @@ Return ONLY the JSON object.`;
   const data = (await resp.json()) as {
     content: Array<{ type: string; text: string }>;
   };
-  const text = data.content.find((c) => c.type === "text")?.text ?? "";
+  let text = data.content.find((c) => c.type === "text")?.text ?? "";
   if (!text) throw new Error("Claude returned empty response");
+  // Strip markdown code fences if present
+  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
   return text;
 }
 
