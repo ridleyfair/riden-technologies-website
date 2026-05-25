@@ -34,12 +34,25 @@ interface GenerateBody {
   tier: string;
   username: string;
   password: string;
+  templateId?: string;
   heroImage?: string;
   notes?: string;
   photos?: string[];
 }
 
 // ── Template / theme picker ───────────────────────────────────────────────────
+
+const TEMPLATE_THEMES: Record<string, string> = {
+  "starter-simple":          "minimal",
+  "starter-landing":         "modern",
+  "modern-minimal":          "minimal",
+  "tradie-bold":             "bold",
+  "healthcare-clean":        "minimal",
+  "beauty-elegant":          "elegant",
+  "luxury-premium":          "elegant",
+  "corporate-professional":  "modern",
+  "legal-authority":         "classic",
+};
 
 function pickTemplate(industry: string): { templateId: string; themeId: string } {
   const ind = (industry ?? "").toLowerCase();
@@ -203,8 +216,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Generate spec via Claude
-  const { templateId, themeId } = pickTemplate(body.industry);
+  // Generate spec via Claude — use manual template selection if provided
+  const { templateId, themeId } = body.templateId && TEMPLATE_THEMES[body.templateId]
+    ? { templateId: body.templateId, themeId: TEMPLATE_THEMES[body.templateId] }
+    : pickTemplate(body.industry);
   let specJson: string;
   try {
     specJson = await generateSiteSpec(body, apiKey);
