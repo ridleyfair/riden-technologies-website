@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 
-// Extract all JSON-LD blocks from HTML
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function extractNextData(html: string): Record<string, unknown> | null {
+  const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]) as Record<string, unknown>; } catch { return null; }
+}
+
 function extractJsonLd(html: string): Record<string, unknown>[] {
   const results: Record<string, unknown>[] = [];
-  const regex = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+  const re = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
   let m: RegExpExecArray | null;
-  while ((m = regex.exec(html)) !== null) {
-    try { results.push(JSON.parse(m[1])); } catch { /* skip malformed */ }
+  while ((m = re.exec(html)) !== null) {
+    try { results.push(JSON.parse(m[1])); } catch { /* skip */ }
   }
   return results;
 }
@@ -18,66 +25,110 @@ function metaContent(html: string, name: string): string {
   return m?.[1] ?? "";
 }
 
-const PHOTO_BLACKLIST = ["icon", "logo", "avatar", "star", "badge", "trusted", "tick", "arrow", "sprite", "pixel", "1x1", "tracking", "blank", "placeholder", "ct-logo", "favicon"];
+const PHOTO_BLACKLIST = ["icon", "logo", "avatar", "star", "badge", "trusted", "tick", "arrow", "sprite", "pixel", "1x1", "tracking", "blank", "placeholder", "ct-logo", "favicon", "profile-pic", "default-user", "rating"];
 
-function extractPhotos(html: string): string[] {
+function isPhoto(url: string): boolean {
+  const lower = url.toLowerCase();
+  if (PHOTO_BLACKLIST.some((b) => lower.includes(b))) return false;
+  const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
+  const isCdn = lower.includes("checkatrade") || lower.includes("cloudfront") || lower.includes("s3.amazonaws") || lower.includes("imagedelivery") || lower.includes("ctmedia");
+  return hasExt || isCdn;
+}
+
+function extractPhotosFromHtml(html: string): string[] {
   const found = new Set<string>();
 
-  // 1. Decode Next.js /_next/image?url=ENCODED wrappers to get actual src
-  const nextImgRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
+  // Decode Next.js /_next/image?url=ENCODED
+  const nextRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
   let m: RegExpExecArray | null;
-  while ((m = nextImgRe.exec(html)) !== null) {
+  while ((m = nextRe.exec(html)) !== null) {
     try {
       const decoded = decodeURIComponent(m[1]);
-      if (decoded.startsWith("http")) found.add(decoded);
+      if (decoded.startsWith("http") && isPhoto(decoded)) found.add(decoded);
     } catch { /* skip */ }
   }
 
-  // 2. Raw src / data-src attributes on img tags
+  // img src / data-src
   const imgRe = /<img[^>]+>/gi;
   const attrRe = /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i;
   while ((m = imgRe.exec(html)) !== null) {
-    const attr = attrRe.exec(m[0]);
-    if (attr) {
-      const src = attr[1];
-      if (src.startsWith("http")) found.add(src);
-      else if (src.startsWith("//")) found.add("https:" + src);
+    const a = attrRe.exec(m[0]);
+    if (a) {
+      const src = a[1].startsWith("//") ? "https:" + a[1] : a[1];
+      if (src.startsWith("http") && isPhoto(src)) found.add(src);
     }
   }
 
-  // 3. srcset (pick the largest variant)
+  // srcset — pick largest
   const srcsetRe = /srcset=["']([^"']+)["']/gi;
   while ((m = srcsetRe.exec(html)) !== null) {
     const parts = m[1].split(",").map((p) => p.trim().split(/\s+/)[0]);
     for (const u of parts) {
-      if (u.startsWith("http")) found.add(u);
+      if (u.startsWith("http") && isPhoto(u)) found.add(u);
     }
   }
 
-  // Filter out non-photo URLs
-  return [...found]
-    .filter((url) => {
-      const lower = url.toLowerCase();
-      if (PHOTO_BLACKLIST.some((b) => lower.includes(b))) return false;
-      // Must look like an image (extension or known CDN path)
-      const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
-      const isCdn  = lower.includes("checkatrade") || lower.includes("cloudfront") || lower.includes("s3.amazonaws") || lower.includes("imagedelivery");
-      return hasExt || isCdn;
-    })
-    .slice(0, 20);
+  return [...found].slice(0, 20);
 }
+
+// Recursively walk an unknown structure and collect all image URLs
+function collectImagesFromObj(obj: unknown, found: Set<string>, depth = 0): void {
+  if (depth > 8 || !obj) return;
+  if (typeof obj === "string") {
+    if ((obj.startsWith("http") || obj.startsWith("//")) && isPhoto(obj)) {
+      found.add(obj.startsWith("//") ? "https:" + obj : obj);
+    }
+    return;
+  }
+  if (Array.isArray(obj)) {
+    for (const item of obj) collectImagesFromObj(item, found, depth + 1);
+    return;
+  }
+  if (typeof obj === "object") {
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      // Prioritise keys that sound like image fields
+      if (/image|photo|picture|gallery|src|url|media|thumb/i.test(k)) {
+        collectImagesFromObj(v, found, depth);
+      } else {
+        collectImagesFromObj(v, found, depth + 1);
+      }
+    }
+  }
+}
+
+// Recursively find a value by key name anywhere in the object
+function deepFind(obj: unknown, key: string, depth = 0): unknown {
+  if (depth > 8 || !obj || typeof obj !== "object") return undefined;
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const r = deepFind(item, key, depth + 1);
+      if (r !== undefined) return r;
+    }
+    return undefined;
+  }
+  const rec = obj as Record<string, unknown>;
+  if (rec[key] !== undefined) return rec[key];
+  for (const v of Object.values(rec)) {
+    const r = deepFind(v, key, depth + 1);
+    if (r !== undefined) return r;
+  }
+  return undefined;
+}
+
+function str(v: unknown): string {
+  return typeof v === "string" ? v.trim() : "";
+}
+
+// ── POST handler ───────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();
 
   let url: string;
-  try {
-    ({ url } = await req.json());
-  } catch {
+  try { ({ url } = await req.json()); } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
-
   if (!url || !url.includes("checkatrade.com")) {
     return NextResponse.json({ error: "A valid Checkatrade profile URL is required" }, { status: 400 });
   }
@@ -86,82 +137,145 @@ export async function POST(req: NextRequest) {
     const resp = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
         "Accept-Language": "en-GB,en;q=0.9",
+        "Cache-Control": "no-cache",
       },
     });
 
     if (!resp.ok) {
-      return NextResponse.json({ error: `Could not fetch Checkatrade page (${resp.status}). The page may be private or the URL may be wrong.` }, { status: 502 });
+      return NextResponse.json(
+        { error: `Could not load Checkatrade page (${resp.status}). Check the URL is correct and the profile is public.` },
+        { status: 502 }
+      );
     }
 
     const html = await resp.text();
-    const jsonLds = extractJsonLd(html);
 
-    // Find LocalBusiness schema
+    // ── 1. Try __NEXT_DATA__ (richest source) ─────────────────────────────────
+    const nextData = extractNextData(html);
+    const pageProps = (nextData?.props as Record<string, unknown>)?.pageProps as Record<string, unknown> | undefined;
+
+    // Find trader profile — Checkatrade uses various key names
+    const profile = (
+      pageProps?.traderProfile
+      ?? pageProps?.trader
+      ?? pageProps?.profile
+      ?? pageProps?.tradeProfile
+      ?? pageProps?.data
+      ?? pageProps?.traderData
+      ?? deepFind(pageProps, "traderProfile")
+      ?? deepFind(pageProps, "trader")
+    ) as Record<string, unknown> | undefined;
+
+    // ── 2. JSON-LD fallback ───────────────────────────────────────────────────
+    const jsonLds = extractJsonLd(html);
     const biz = jsonLds.find(
       (j) => typeof j["@type"] === "string" && (j["@type"] as string).includes("Business")
     ) ?? jsonLds.find((j) => j.name);
 
-    // Find Review/AggregateRating schema
-    const reviewBlocks = jsonLds.filter(
-      (j) => j["@type"] === "Review" || Array.isArray(j.review)
-    );
+    // ── Extract fields ────────────────────────────────────────────────────────
+    const name =
+      str(profile?.name ?? profile?.companyName ?? profile?.businessName)
+      || str(biz?.name)
+      || metaContent(html, "og:title").replace(/ \| Checkatrade.*$/i, "").trim();
 
-    const name = (biz?.name as string) ?? metaContent(html, "og:title") ?? "";
-    const description = (biz?.description as string) ?? metaContent(html, "og:description") ?? "";
-    const phone = (biz?.telephone as string) ?? "";
+    const description =
+      str(profile?.description ?? profile?.about ?? profile?.summary ?? profile?.bio)
+      || str(biz?.description)
+      || metaContent(html, "og:description");
 
-    const aggregate = biz?.aggregateRating as Record<string, unknown> | undefined;
-    const ratingValue = aggregate?.ratingValue ?? aggregate?.ratingCount ?? null;
-    const reviewCount = aggregate?.reviewCount ?? null;
+    const phone =
+      str(profile?.phone ?? profile?.phoneNumber ?? profile?.telephone ?? profile?.contactNumber)
+      || str(biz?.telephone);
 
-    // Collect reviews
-    type RawReview = Record<string, unknown>;
-    let rawReviews: RawReview[] = [];
+    const addr = (profile?.address ?? profile?.location ?? biz?.address) as Record<string, unknown> | undefined;
+    const city =
+      str(addr?.town ?? addr?.city ?? addr?.addressLocality ?? addr?.addressRegion ?? profile?.town ?? profile?.city)
+      || str(biz?.address && (biz.address as Record<string, unknown>)?.addressLocality);
 
-    if (biz?.review && Array.isArray(biz.review)) {
-      rawReviews = biz.review as RawReview[];
-    } else {
-      for (const block of reviewBlocks) {
-        if (Array.isArray(block.review)) rawReviews.push(...(block.review as RawReview[]));
-        else if (block["@type"] === "Review") rawReviews.push(block);
+    const postcode =
+      str(addr?.postcode ?? addr?.postalCode ?? profile?.postcode ?? profile?.postalCode)
+      || str(biz?.address && (biz.address as Record<string, unknown>)?.postalCode);
+
+    // Skills / trades / categories
+    const rawSkills =
+      (profile?.skills ?? profile?.trades ?? profile?.categories ?? profile?.serviceTypes ?? profile?.workTypes) as unknown[] | undefined;
+    const skills: string[] = [];
+    if (Array.isArray(rawSkills)) {
+      for (const s of rawSkills) {
+        const label = str(typeof s === "object" ? (s as Record<string, unknown>)?.name ?? (s as Record<string, unknown>)?.label : s);
+        if (label) skills.push(label);
       }
     }
 
-    const reviews = rawReviews.slice(0, 10).map((r) => {
-      const rating = Number(
-        (r.reviewRating as Record<string, unknown>)?.ratingValue ?? r.ratingValue ?? 5
-      );
-      const author =
-        (r.author as Record<string, unknown>)?.name as string
-        ?? (r.author as string)
-        ?? "Customer";
-      const body =
-        (r.reviewBody as string)
-        ?? (r.description as string)
-        ?? "";
-      const date = (r.datePublished as string) ?? "";
-      return { author, rating, body, date, source: "checkatrade" };
-    });
-
-    // Services — try itemListElement or description splitting
-    let services = "";
-    const itemList = jsonLds.find((j) => j["@type"] === "ItemList");
-    if (itemList?.itemListElement && Array.isArray(itemList.itemListElement)) {
-      services = (itemList.itemListElement as RawReview[])
-        .map((i) => (i.name as string) ?? "")
-        .filter(Boolean)
-        .join(", ");
+    // Accreditations / certifications
+    const rawCerts =
+      (profile?.accreditations ?? profile?.certifications ?? profile?.memberships ?? profile?.qualifications) as unknown[] | undefined;
+    const accreditations: string[] = [];
+    if (Array.isArray(rawCerts)) {
+      for (const c of rawCerts) {
+        const label = str(typeof c === "object" ? (c as Record<string, unknown>)?.name ?? (c as Record<string, unknown>)?.label ?? (c as Record<string, unknown>)?.title : c);
+        if (label) accreditations.push(label);
+      }
     }
 
-    // Address
-    const addr = biz?.address as Record<string, unknown> | undefined;
-    const city = (addr?.addressLocality as string) ?? (addr?.addressRegion as string) ?? "";
-    const postcode = (addr?.postalCode as string) ?? "";
+    // Rating / review count
+    const aggregate = (profile?.aggregateRating ?? profile?.rating ?? biz?.aggregateRating) as Record<string, unknown> | undefined;
+    const rating = str(aggregate?.ratingValue ?? profile?.score ?? profile?.averageRating ?? "");
+    const reviewCount = Number(aggregate?.reviewCount ?? profile?.reviewCount ?? profile?.totalReviews ?? 0);
 
-    // Photos
-    const photos = extractPhotos(html);
+    // Trading years / established
+    const tradingYears =
+      str(profile?.tradingYears ?? profile?.yearsTrading ?? profile?.yearEstablished ?? profile?.established ?? "");
+
+    // Areas covered
+    const rawAreas = (profile?.areasServed ?? profile?.coverageAreas ?? profile?.areas) as unknown[] | undefined;
+    const areas: string[] = [];
+    if (Array.isArray(rawAreas)) {
+      for (const a of rawAreas) {
+        const label = str(typeof a === "object" ? (a as Record<string, unknown>)?.name ?? a : a);
+        if (label) areas.push(label);
+      }
+    }
+
+    // Reviews
+    type RawReview = Record<string, unknown>;
+    let rawReviews: RawReview[] = [];
+    const profileReviews = profile?.reviews ?? profile?.testimonials;
+    if (Array.isArray(profileReviews)) {
+      rawReviews = profileReviews as RawReview[];
+    } else {
+      for (const block of jsonLds) {
+        if (Array.isArray(block.review)) rawReviews.push(...(block.review as RawReview[]));
+        else if (block["@type"] === "Review") rawReviews.push(block as RawReview);
+      }
+      if (biz?.review && Array.isArray(biz.review)) rawReviews.push(...(biz.review as RawReview[]));
+    }
+
+    const reviews = rawReviews.slice(0, 10).map((r) => ({
+      author: str((r.author as Record<string, unknown>)?.name ?? r.author ?? r.reviewerName ?? r.customerName ?? "Customer"),
+      rating: Number((r.reviewRating as Record<string, unknown>)?.ratingValue ?? r.rating ?? r.stars ?? 5),
+      body:   str(r.reviewBody ?? r.body ?? r.text ?? r.comment ?? r.description ?? ""),
+      date:   str(r.datePublished ?? r.date ?? r.createdAt ?? ""),
+      source: "checkatrade",
+    }));
+
+    // Photos — from Next.js data first, then HTML
+    const photoSet = new Set<string>();
+    if (profile) collectImagesFromObj(profile, photoSet);
+    // Also scan full pageProps for image arrays
+    if (pageProps) {
+      const imgKeys = ["images", "photos", "gallery", "media", "portfolioImages", "workImages"];
+      for (const k of imgKeys) {
+        if (pageProps[k]) collectImagesFromObj(pageProps[k], photoSet);
+      }
+    }
+    // Fallback: HTML extraction
+    if (photoSet.size === 0) {
+      for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
+    }
+    const photos = [...photoSet].filter(isPhoto).slice(0, 20);
 
     return NextResponse.json({
       ok: true,
@@ -170,8 +284,11 @@ export async function POST(req: NextRequest) {
       phone,
       city,
       postcode,
-      services,
-      rating: ratingValue,
+      skills,
+      accreditations,
+      tradingYears,
+      areas,
+      rating,
       reviewCount,
       reviews,
       photos,
@@ -179,7 +296,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Checkatrade fetch error:", err);
     return NextResponse.json(
-      { error: "Failed to fetch Checkatrade page. The site may have blocked the request." },
+      { error: "Failed to load Checkatrade page. The site may be blocking automated access." },
       { status: 500 }
     );
   }

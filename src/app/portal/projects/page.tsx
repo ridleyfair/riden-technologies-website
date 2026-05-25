@@ -145,10 +145,12 @@ function ProjectDetailModal({
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
-    url:     string;
-    loading: boolean;
-    imported: boolean;
-    error:   string;
+    url:         string;
+    loading:     boolean;
+    imported:    boolean;
+    error:       string;
+    rating?:     string;
+    reviewCount?: number;
   }>({
     url:      "",
     loading:  false,
@@ -310,13 +312,20 @@ function ProjectDetailModal({
         return;
       }
       // Auto-import business info
+      const skillsList  = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
+      const areasList   = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
+      const acredList   = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
+      const tradingInfo = data.tradingYears ? `Trading for ${data.tradingYears} years` : "";
+      const areasInfo   = areasList.length  ? `Areas covered: ${areasList.join(", ")}` : "";
+
       setBrief((b) => ({
         ...b,
-        phone:    data.phone    || b.phone,
-        city:     data.city     || b.city,
-        postcode: data.postcode || b.postcode,
-        services: data.services || b.services,
-        about:    data.description || b.about,
+        phone:          data.phone      || b.phone,
+        city:           data.city       || b.city,
+        postcode:       data.postcode   || b.postcode,
+        services:       skillsList.length ? skillsList.join(", ") : b.services,
+        about:          [data.description || b.about, tradingInfo, areasInfo].filter(Boolean).join("\n") || b.about,
+        accreditations: acredList.length  ? acredList.join(", ")  : b.accreditations,
       }));
       // Import reviews
       if (Array.isArray(data.reviews) && data.reviews.length > 0) {
@@ -337,7 +346,13 @@ function ProjectDetailModal({
           return [...prev, ...newPhotos];
         });
       }
-      setCheckatrade((s) => ({ ...s, loading: false, imported: true }));
+      setCheckatrade((s) => ({
+        ...s,
+        loading:     false,
+        imported:    true,
+        rating:      data.rating      ? String(data.rating)      : s.rating,
+        reviewCount: data.reviewCount ? Number(data.reviewCount) : s.reviewCount,
+      }));
     } catch {
       setCheckatrade((s) => ({ ...s, loading: false, error: "Network error. Please try again." }));
     }
@@ -387,20 +402,22 @@ function ProjectDetailModal({
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          projectId:     project.id,
-          businessName:  project.name,
-          clientName:    project.clientName,
-          industry:      brief.industry || "trades",
-          city:          brief.city     || "",
-          phone:         brief.phone    || "",
-          email:         brief.email    || "",
-          services:      brief.services || "",
-          about:         brief.about    || "",
+          projectId:      project.id,
+          businessName:   project.name,
+          clientName:     project.clientName,
+          industry:       brief.industry || "trades",
+          city:           brief.city     || "",
+          phone:          brief.phone    || "",
+          email:          brief.email    || "",
+          services:       brief.services || "",
+          about:          brief.about    || "",
           accreditations: brief.accreditations || "",
-          notes:         [brief.about, brief.accreditations, brief.openingHours].filter(Boolean).join("\n"),
-          tier:          "pro_plus",
-          username:      project.clientName.toLowerCase().replace(/\s+/g, "-"),
-          password:      Math.random().toString(36).slice(2, 10),
+          rating:         checkatrade.rating,
+          reviewCount:    checkatrade.reviewCount,
+          notes:          [brief.openingHours].filter(Boolean).join("\n"),
+          tier:           "pro_plus",
+          username:       project.clientName.toLowerCase().replace(/\s+/g, "-"),
+          password:       Math.random().toString(36).slice(2, 10),
           reviews,
           photos,
         }),
@@ -799,9 +816,16 @@ function ProjectDetailModal({
                   </p>
                 )}
                 {checkatrade.imported && (
-                  <p className="text-xs text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle size={11} /> Business info and reviews imported successfully.
-                  </p>
+                  <div className="text-xs text-emerald-400 flex flex-col gap-0.5">
+                    <span className="flex items-center gap-1.5"><CheckCircle size={11} /> Business info, skills, and reviews imported.</span>
+                    {(checkatrade.rating || photos.length > 0) && (
+                      <span className="text-slate-400 pl-4">
+                        {checkatrade.rating && <>{checkatrade.rating}/10 rating · {checkatrade.reviewCount ?? 0} reviews</>}
+                        {checkatrade.rating && photos.length > 0 && " · "}
+                        {photos.length > 0 && <>{photos.length} photos</>}
+                      </span>
+                    )}
+                  </div>
                 )}
                 {checkatrade.error && (
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>

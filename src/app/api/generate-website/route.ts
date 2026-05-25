@@ -27,6 +27,10 @@ interface GenerateBody {
   phone: string;
   email: string;
   services: string;
+  about?: string;
+  accreditations?: string;
+  rating?: string;
+  reviewCount?: number;
   tier: string;
   username: string;
   password: string;
@@ -49,9 +53,12 @@ Industry: ${body.industry}
 City/Location: ${body.city}
 Phone: ${body.phone}
 Email: ${body.email}
-Services: ${body.services}
+Services/Trades: ${body.services}
+${body.about ? `About the Business: ${body.about}` : ""}
+${body.accreditations ? `Accreditations & Certifications: ${body.accreditations}` : ""}
+${body.rating ? `Customer Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}
 Tier: ${body.tier}
-${body.notes ? `Notes/Brief: ${body.notes}` : ""}
+${body.notes ? `Additional Notes: ${body.notes}` : ""}
 
 The JSON must exactly match this structure:
 {
@@ -94,7 +101,7 @@ The JSON must exactly match this structure:
       "sections": [
         { "type": "hero", "content": { "tagline": "<compelling tagline>", "subHeadline": "<sub headline>", "cta": "Get a Free Quote", "ctaHref": "tel:${body.phone}" } },
         { "type": "services", "content": { "headline": "Our Services", "items": [ <3-5 service items based on: ${body.services}> ] } },
-        { "type": "about", "content": { "headline": "About Us", "body": "<about paragraph tailored to the business>" } },
+        { "type": "about", "content": { "headline": "About Us", "body": "<about paragraph tailored to the business — use the About the Business info if provided, otherwise write a compelling paragraph based on the industry and city>" } },
         { "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <2-3 plausible testimonials> ] } },
         ${body.photos && body.photos.length > 0 ? `{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of our recent projects", "items": ${JSON.stringify(body.photos.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } },` : ""}
         { "type": "cta", "content": { "headline": "Ready to Get Started?", "subHeadline": "Contact us today for a free consultation.", "cta": "Call Now", "ctaHref": "tel:${body.phone}" } },
