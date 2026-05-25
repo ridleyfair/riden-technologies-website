@@ -37,6 +37,7 @@ type Project = {
   socialInstagram?: string;
   openingHours?: string;
   reviewsJson?: string;
+  photosJson?: string;
 };
 
 type Review = {
@@ -138,6 +139,9 @@ function ProjectDetailModal({
   const [reviews, setReviews] = useState<Review[]>(() => {
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
+  const [photos, setPhotos] = useState<string[]>(() => {
+    try { return JSON.parse(initialProject.photosJson ?? "[]"); } catch { return []; }
+  });
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
@@ -215,6 +219,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
+          photosJson:  JSON.stringify(photos),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -234,7 +239,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify(photos) }),
     });
   }
 
@@ -324,6 +329,14 @@ function ProjectDetailModal({
         }));
         setReviews((prev) => [...prev, ...imported]);
       }
+      // Import photos
+      if (Array.isArray(data.photos) && data.photos.length > 0) {
+        setPhotos((prev) => {
+          const existing = new Set(prev);
+          const newPhotos = (data.photos as string[]).filter((p) => !existing.has(p));
+          return [...prev, ...newPhotos];
+        });
+      }
       setCheckatrade((s) => ({ ...s, loading: false, imported: true }));
     } catch {
       setCheckatrade((s) => ({ ...s, loading: false, error: "Network error. Please try again." }));
@@ -389,6 +402,7 @@ function ProjectDetailModal({
           username:      project.clientName.toLowerCase().replace(/\s+/g, "-"),
           password:      Math.random().toString(36).slice(2, 10),
           reviews,
+          photos,
         }),
       });
       const data = await res.json();
@@ -929,6 +943,35 @@ function ProjectDetailModal({
                   ))}
                 </div>
               </div>
+
+              {/* Photos */}
+              {photos.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Photos ({photos.length})</h3>
+                    <button
+                      onClick={() => setPhotos([])}
+                      className="text-[10px] text-rose-400 hover:text-rose-300 transition-colors"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {photos.map((src, i) => (
+                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setPhotos((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Generated URL success panel */}
               {generatedUrl && (

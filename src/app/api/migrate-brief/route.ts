@@ -27,6 +27,7 @@ export async function GET() {
   await step("Project.socialInstagram", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "socialInstagram" TEXT`);
   await step("Project.openingHours", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "openingHours" TEXT`);
   await step("Project.reviewsJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "reviewsJson" TEXT DEFAULT '[]'`);
+  await step("Project.photosJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "photosJson" TEXT DEFAULT '[]'`);
 
   return NextResponse.json({
     ok: true,

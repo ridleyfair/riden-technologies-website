@@ -18,6 +18,55 @@ function metaContent(html: string, name: string): string {
   return m?.[1] ?? "";
 }
 
+const PHOTO_BLACKLIST = ["icon", "logo", "avatar", "star", "badge", "trusted", "tick", "arrow", "sprite", "pixel", "1x1", "tracking", "blank", "placeholder", "ct-logo", "favicon"];
+
+function extractPhotos(html: string): string[] {
+  const found = new Set<string>();
+
+  // 1. Decode Next.js /_next/image?url=ENCODED wrappers to get actual src
+  const nextImgRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = nextImgRe.exec(html)) !== null) {
+    try {
+      const decoded = decodeURIComponent(m[1]);
+      if (decoded.startsWith("http")) found.add(decoded);
+    } catch { /* skip */ }
+  }
+
+  // 2. Raw src / data-src attributes on img tags
+  const imgRe = /<img[^>]+>/gi;
+  const attrRe = /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i;
+  while ((m = imgRe.exec(html)) !== null) {
+    const attr = attrRe.exec(m[0]);
+    if (attr) {
+      const src = attr[1];
+      if (src.startsWith("http")) found.add(src);
+      else if (src.startsWith("//")) found.add("https:" + src);
+    }
+  }
+
+  // 3. srcset (pick the largest variant)
+  const srcsetRe = /srcset=["']([^"']+)["']/gi;
+  while ((m = srcsetRe.exec(html)) !== null) {
+    const parts = m[1].split(",").map((p) => p.trim().split(/\s+/)[0]);
+    for (const u of parts) {
+      if (u.startsWith("http")) found.add(u);
+    }
+  }
+
+  // Filter out non-photo URLs
+  return [...found]
+    .filter((url) => {
+      const lower = url.toLowerCase();
+      if (PHOTO_BLACKLIST.some((b) => lower.includes(b))) return false;
+      // Must look like an image (extension or known CDN path)
+      const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
+      const isCdn  = lower.includes("checkatrade") || lower.includes("cloudfront") || lower.includes("s3.amazonaws") || lower.includes("imagedelivery");
+      return hasExt || isCdn;
+    })
+    .slice(0, 20);
+}
+
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();
@@ -111,6 +160,9 @@ export async function POST(req: NextRequest) {
     const city = (addr?.addressLocality as string) ?? (addr?.addressRegion as string) ?? "";
     const postcode = (addr?.postalCode as string) ?? "";
 
+    // Photos
+    const photos = extractPhotos(html);
+
     return NextResponse.json({
       ok: true,
       name,
@@ -122,6 +174,7 @@ export async function POST(req: NextRequest) {
       rating: ratingValue,
       reviewCount,
       reviews,
+      photos,
     });
   } catch (err) {
     console.error("Checkatrade fetch error:", err);

@@ -53,6 +53,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       socialInstagram: body.socialInstagram !== undefined ? body.socialInstagram                              : ex.socialInstagram,
       openingHours:    body.openingHours    !== undefined ? body.openingHours                                 : ex.openingHours,
       reviewsJson:     body.reviewsJson     !== undefined ? body.reviewsJson                                  : ex.reviewsJson,
+      photosJson:      body.photosJson      !== undefined ? body.photosJson                                   : ex.photosJson,
     };
 
     // Try with completedAt + brief columns (requires migration); fall back without them
@@ -81,6 +82,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           "socialInstagram" = ${vals.socialInstagram},
           "openingHours"    = ${vals.openingHours},
           "reviewsJson"     = ${vals.reviewsJson},
+          "photosJson"      = ${vals.photosJson},
           "updatedAt"       = ${now}
         WHERE id = ${id}
         RETURNING *
