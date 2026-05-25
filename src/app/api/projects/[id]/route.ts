@@ -33,52 +33,96 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const completedAt = justCompleted ? now : (ex.completedAt ?? null);
 
     const vals = {
-      name:       body.name        !== undefined ? body.name                                    : ex.name,
-      clientName: body.clientName  !== undefined ? body.clientName                              : ex.clientName,
-      status:     newStatus,
-      budget:     body.budget      !== undefined ? Number(body.budget)                          : ex.budget,
-      spent:      body.spent       !== undefined ? Number(body.spent)                           : ex.spent,
-      progress:   body.progress    !== undefined ? Math.min(100, Math.max(0, Number(body.progress))) : ex.progress,
-      dueDate:    body.dueDate     !== undefined ? body.dueDate                                 : ex.dueDate,
-      notes:      body.notes       !== undefined ? body.notes                                   : ex.notes,
+      name:            body.name            !== undefined ? body.name                                         : ex.name,
+      clientName:      body.clientName      !== undefined ? body.clientName                                   : ex.clientName,
+      status:          newStatus,
+      budget:          body.budget          !== undefined ? Number(body.budget)                               : ex.budget,
+      spent:           body.spent           !== undefined ? Number(body.spent)                                : ex.spent,
+      progress:        body.progress        !== undefined ? Math.min(100, Math.max(0, Number(body.progress))) : ex.progress,
+      dueDate:         body.dueDate         !== undefined ? body.dueDate                                      : ex.dueDate,
+      notes:           body.notes           !== undefined ? body.notes                                        : ex.notes,
+      phone:           body.phone           !== undefined ? body.phone                                        : ex.phone,
+      email:           body.email           !== undefined ? body.email                                        : ex.email,
+      city:            body.city            !== undefined ? body.city                                         : ex.city,
+      postcode:        body.postcode        !== undefined ? body.postcode                                     : ex.postcode,
+      industry:        body.industry        !== undefined ? body.industry                                     : ex.industry,
+      services:        body.services        !== undefined ? body.services                                     : ex.services,
+      about:           body.about           !== undefined ? body.about                                        : ex.about,
+      accreditations:  body.accreditations  !== undefined ? body.accreditations                               : ex.accreditations,
+      socialFacebook:  body.socialFacebook  !== undefined ? body.socialFacebook                               : ex.socialFacebook,
+      socialInstagram: body.socialInstagram !== undefined ? body.socialInstagram                              : ex.socialInstagram,
+      openingHours:    body.openingHours    !== undefined ? body.openingHours                                 : ex.openingHours,
+      reviewsJson:     body.reviewsJson     !== undefined ? body.reviewsJson                                  : ex.reviewsJson,
     };
 
-    // Try with completedAt column (requires migration); fall back without it
+    // Try with completedAt + brief columns (requires migration); fall back without them
     let updated: Record<string, unknown>;
     try {
       const [row] = await sql`
         UPDATE "Project" SET
-          name          = ${vals.name},
-          "clientName"  = ${vals.clientName},
-          status        = ${vals.status},
-          budget        = ${vals.budget},
-          spent         = ${vals.spent},
-          progress      = ${vals.progress},
-          "dueDate"     = ${vals.dueDate},
-          notes         = ${vals.notes},
-          "completedAt" = ${completedAt},
-          "updatedAt"   = ${now}
+          name              = ${vals.name},
+          "clientName"      = ${vals.clientName},
+          status            = ${vals.status},
+          budget            = ${vals.budget},
+          spent             = ${vals.spent},
+          progress          = ${vals.progress},
+          "dueDate"         = ${vals.dueDate},
+          notes             = ${vals.notes},
+          "completedAt"     = ${completedAt},
+          phone             = ${vals.phone},
+          email             = ${vals.email},
+          city              = ${vals.city},
+          postcode          = ${vals.postcode},
+          industry          = ${vals.industry},
+          services          = ${vals.services},
+          about             = ${vals.about},
+          accreditations    = ${vals.accreditations},
+          "socialFacebook"  = ${vals.socialFacebook},
+          "socialInstagram" = ${vals.socialInstagram},
+          "openingHours"    = ${vals.openingHours},
+          "reviewsJson"     = ${vals.reviewsJson},
+          "updatedAt"       = ${now}
         WHERE id = ${id}
         RETURNING *
       `;
       updated = row;
     } catch {
-      // completedAt column may not exist yet (migration not run)
-      const [row] = await sql`
-        UPDATE "Project" SET
-          name         = ${vals.name},
-          "clientName" = ${vals.clientName},
-          status       = ${vals.status},
-          budget       = ${vals.budget},
-          spent        = ${vals.spent},
-          progress     = ${vals.progress},
-          "dueDate"    = ${vals.dueDate},
-          notes        = ${vals.notes},
-          "updatedAt"  = ${now}
-        WHERE id = ${id}
-        RETURNING *
-      `;
-      updated = row;
+      // brief columns may not exist yet (migration not run) — fall back to base columns
+      try {
+        const [row] = await sql`
+          UPDATE "Project" SET
+            name          = ${vals.name},
+            "clientName"  = ${vals.clientName},
+            status        = ${vals.status},
+            budget        = ${vals.budget},
+            spent         = ${vals.spent},
+            progress      = ${vals.progress},
+            "dueDate"     = ${vals.dueDate},
+            notes         = ${vals.notes},
+            "completedAt" = ${completedAt},
+            "updatedAt"   = ${now}
+          WHERE id = ${id}
+          RETURNING *
+        `;
+        updated = row;
+      } catch {
+        // completedAt column may not exist yet either
+        const [row] = await sql`
+          UPDATE "Project" SET
+            name         = ${vals.name},
+            "clientName" = ${vals.clientName},
+            status       = ${vals.status},
+            budget       = ${vals.budget},
+            spent        = ${vals.spent},
+            progress     = ${vals.progress},
+            "dueDate"    = ${vals.dueDate},
+            notes        = ${vals.notes},
+            "updatedAt"  = ${now}
+          WHERE id = ${id}
+          RETURNING *
+        `;
+        updated = row;
+      }
     }
 
     // Auto-create client when project is marked complete
