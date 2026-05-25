@@ -34,6 +34,7 @@ interface GenerateBody {
   tier: string;
   username: string;
   password: string;
+  heroImage?: string;
   notes?: string;
   photos?: string[];
 }
@@ -203,15 +204,24 @@ export async function POST(req: NextRequest) {
   let specJson: string;
   try {
     specJson = await generateSiteSpec(body, apiKey);
-    // Parse and ensure gallery section is present when photos provided
     const spec = JSON.parse(specJson) as Record<string, unknown>;
-    if (body.photos && body.photos.length > 0) {
-      const pages = spec.pages as Array<Record<string, unknown>> | undefined;
-      const sections = Array.isArray(pages?.[0]?.sections) ? pages![0].sections as Record<string, unknown>[] : null;
-      if (sections) {
+    const pages = spec.pages as Array<Record<string, unknown>> | undefined;
+    const sections = Array.isArray(pages?.[0]?.sections) ? pages![0].sections as Record<string, unknown>[] : null;
+
+    if (sections) {
+      // Inject hero background image
+      if (body.heroImage) {
+        const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
+        if (heroSection) {
+          const heroContent = heroSection.content as Record<string, unknown>;
+          heroContent.backgroundImage = body.heroImage;
+        }
+      }
+
+      // Ensure gallery section is present when work photos provided
+      if (body.photos && body.photos.length > 0) {
         const hasGallery = sections.some((s) => s.type === "gallery");
         if (!hasGallery) {
-          // Claude didn't include it — inject manually
           const gallerySection = {
             type: "gallery",
             content: {
@@ -224,10 +234,8 @@ export async function POST(req: NextRequest) {
               })),
             },
           };
-          const insertAt = Math.max(0, sections.length - 2);
-          sections.splice(insertAt, 0, gallerySection);
+          sections.splice(Math.max(0, sections.length - 2), 0, gallerySection);
         } else {
-          // Gallery is present — make sure it has the real photo URLs
           const gallery = sections.find((s) => s.type === "gallery") as Record<string, unknown>;
           const content = gallery.content as Record<string, unknown>;
           content.items = body.photos.map((src, i) => ({
@@ -237,8 +245,9 @@ export async function POST(req: NextRequest) {
           }));
         }
       }
-      specJson = JSON.stringify(spec);
     }
+
+    specJson = JSON.stringify(spec);
   } catch (e) {
     return NextResponse.json(
       { error: `Failed to generate site spec: ${String(e)}` },

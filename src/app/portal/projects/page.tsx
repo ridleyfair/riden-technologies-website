@@ -139,9 +139,18 @@ function ProjectDetailModal({
   const [reviews, setReviews] = useState<Review[]>(() => {
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
-  const [photos, setPhotos] = useState<string[]>(() => {
-    try { return JSON.parse(initialProject.photosJson ?? "[]"); } catch { return []; }
-  });
+
+  // photosJson stores { hero: string, gallery: string[] } or legacy plain string[]
+  const parsedPhotos = (() => {
+    try {
+      const raw = JSON.parse(initialProject.photosJson ?? "{}");
+      if (Array.isArray(raw)) return { hero: "", gallery: raw as string[] };
+      return { hero: String(raw.hero ?? ""), gallery: Array.isArray(raw.gallery) ? raw.gallery as string[] : [] };
+    } catch { return { hero: "", gallery: [] }; }
+  })();
+
+  const [heroPhoto, setHeroPhoto] = useState<string>(parsedPhotos.hero);
+  const [photos, setPhotos] = useState<string[]>(parsedPhotos.gallery);
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
@@ -231,7 +240,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify(photos),
+          photosJson:  JSON.stringify({ hero: heroPhoto, gallery: photos }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -251,7 +260,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify(photos) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ hero: heroPhoto, gallery: photos }) }),
     });
   }
 
@@ -429,6 +438,7 @@ function ProjectDetailModal({
           username:       project.clientName.toLowerCase().replace(/\s+/g, "-"),
           password:       Math.random().toString(36).slice(2, 10),
           reviews,
+          heroImage: heroPhoto || undefined,
           photos,
         }),
       });
@@ -978,10 +988,35 @@ function ProjectDetailModal({
                 </div>
               </div>
 
-              {/* Photos */}
+              {/* Hero Photo */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hero Photo</h3>
+                <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
+                {heroPhoto ? (
+                  <div className="relative rounded-xl overflow-hidden border border-riden-border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={heroPhoto} alt="Hero" className="w-full h-36 object-cover" />
+                    <button
+                      onClick={() => setHeroPhoto("")}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    value={heroPhoto}
+                    onChange={(e) => setHeroPhoto(e.target.value)}
+                    placeholder="Paste a photo URL..."
+                    className={`${inputCls} text-xs`}
+                  />
+                )}
+              </div>
+
+              {/* Work Photos (Gallery) */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Photos ({photos.length})</h3>
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Our Work Photos ({photos.length})</h3>
                   {photos.length > 0 && (
                     <button
                       onClick={() => setPhotos([])}
@@ -991,6 +1026,7 @@ function ProjectDetailModal({
                     </button>
                   )}
                 </div>
+                <p className="text-[11px] text-slate-500">These appear in the gallery section on the website. Right-click a Checkatrade work photo → &quot;Copy image address&quot; and paste below.</p>
                 {/* Add by URL */}
                 <div className="flex gap-2">
                   <input
@@ -1004,9 +1040,6 @@ function ProjectDetailModal({
                     Add
                   </Button>
                 </div>
-                <p className="text-[10px] text-slate-600">
-                  Tip: on a Checkatrade profile, right-click a work photo → &quot;Copy image address&quot; and paste it here.
-                </p>
                 {photos.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
                     {photos.map((src, i) => (
