@@ -30,6 +30,7 @@ const bookingBadge: Record<string, { label: string; dot: string; text: string }>
   invite_sent: { label: "Awaiting Response", dot: "bg-yellow-400", text: "text-yellow-400" },
   accepted:    { label: "Accepted",          dot: "bg-green-400",  text: "text-green-400" },
   declined:    { label: "Declined",          dot: "bg-red-400",    text: "text-red-400" },
+  cancelled:   { label: "Cancelled",         dot: "bg-slate-500",  text: "text-slate-500" },
 };
 
 type Toast = { msg: string; type: "success" | "error" };
@@ -354,7 +355,8 @@ export default function LeadsView() {
           { key: "invite_sent", label: "Awaiting Response", dot: "bg-yellow-400" },
           { key: "accepted",    label: "Accepted",          dot: "bg-green-400" },
           { key: "declined",    label: "Declined",          dot: "bg-red-400" },
-          { key: "no_response", label: "No Invite Sent",    dot: "bg-slate-500" },
+          { key: "cancelled",   label: "Cancelled",         dot: "bg-slate-500" },
+          { key: "no_response", label: "No Invite Sent",    dot: "bg-slate-600" },
         ].map(({ key, label, dot }) => (
           <button
             key={key}

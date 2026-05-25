@@ -116,5 +116,19 @@ export async function DELETE(
   }
 
   await sql`DELETE FROM "Booking" WHERE id = ${id}`;
+
+  // Keep the matching Lead in sync
+  if (existing?.microsoftEventId) {
+    await sql`
+      UPDATE "Lead" SET
+        "bookingStatus"    = 'cancelled',
+        "microsoftEventId" = NULL,
+        "teamsJoinUrl"     = NULL,
+        "updatedAt"        = ${new Date()}
+      WHERE "microsoftEventId" = ${existing.microsoftEventId as string}
+        AND "bookingStatus" NOT IN ('not_scheduled', 'cancelled')
+    `.catch(() => {});
+  }
+
   return NextResponse.json({ ok: true });
 }

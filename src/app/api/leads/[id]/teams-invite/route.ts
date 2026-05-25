@@ -259,6 +259,7 @@ export async function DELETE(
 
     const now = new Date();
     const sql = getDb();
+
     await sql`
       UPDATE "Lead" SET
         "bookingStatus"    = 'cancelled',
@@ -267,6 +268,17 @@ export async function DELETE(
         "updatedAt"        = ${now}
       WHERE id = ${id}
     `;
+
+    // Also cancel the matching Booking so the calendar stays in sync
+    if (lead.microsoftEventId) {
+      await sql`
+        UPDATE "Booking" SET
+          status     = 'cancelled',
+          "updatedAt" = ${now}
+        WHERE "microsoftEventId" = ${lead.microsoftEventId as string}
+          AND status NOT IN ('completed', 'no_show')
+      `.catch(() => { /* non-critical — Booking table may not have this event */ });
+    }
 
     return NextResponse.json({ success: true, bookingStatus: "cancelled" });
   } catch (err) {
