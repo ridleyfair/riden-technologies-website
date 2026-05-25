@@ -105,6 +105,7 @@ export async function POST(
     const now = new Date();
     const startDt = new Date(`${date}T${time}:00`);
     const endDt = new Date(startDt.getTime() + durationMinutes * 60_000);
+    const responseToken = crypto.randomUUID();
 
     const sql = getDb();
     await sql`
@@ -122,6 +123,7 @@ export async function POST(
         "inviteSentAt"       = ${now},
         "bookingNotes"       = ${notes},
         "bookedByUserId"     = ${user.id},
+        "responseToken"      = ${responseToken},
         status               = 'contacted',
         "updatedAt"          = ${now}
       WHERE id = ${id}
@@ -144,6 +146,7 @@ export async function POST(
           teamsJoinUrl: event.teamsJoinUrl,
           notes: notes || null,
           timezone,
+          responseToken,
         });
       } catch (e) {
         emailError = e instanceof Error ? e.message : "Failed to send confirmation email";

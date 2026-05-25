@@ -212,6 +212,7 @@ export async function POST(req: NextRequest) {
   await step("Lead.inviteSentAt", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "inviteSentAt" TIMESTAMPTZ`);
   await step("Lead.bookedByUserId", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookedByUserId" TEXT`);
   await step("Lead.bookingNotes", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookingNotes" TEXT`);
+  await step("Lead.responseToken", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "responseToken" TEXT`);
 
   return NextResponse.json({
     ok: true,

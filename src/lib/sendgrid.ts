@@ -40,6 +40,7 @@ export type BookingEmailInput = {
   teamsJoinUrl?: string | null;
   notes?: string | null;
   timezone?: string;
+  responseToken?: string | null;
 };
 
 function fmtDateLong(dateStr: string): string {
@@ -135,6 +136,26 @@ function buildHtml(input: BookingEmailInput): string {
                  style="display:inline-block;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#ffffff;font-size:14px;font-weight:600;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:0.01em;">
                 Join Microsoft Teams Meeting
               </a>
+            </td></tr></table>` : ""}
+
+            ${input.responseToken ? `
+            <!-- Accept / Decline -->
+            <table width="100%" style="margin-bottom:24px;"><tr><td>
+              <p style="margin:0 0 12px;font-size:13px;color:#94a3b8;text-align:center;">Please confirm your attendance:</p>
+              <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td width="50%" style="padding-right:6px;" align="right">
+                  <a href="https://www.ridentechnologies.com/invite-response?token=${input.responseToken}&action=accept"
+                     style="display:inline-block;background:#16a34a;color:#ffffff;font-size:13px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;">
+                    ✓ Accept
+                  </a>
+                </td>
+                <td width="50%" style="padding-left:6px;" align="left">
+                  <a href="https://www.ridentechnologies.com/invite-response?token=${input.responseToken}&action=decline"
+                     style="display:inline-block;background:#475569;color:#ffffff;font-size:13px;font-weight:600;padding:12px 28px;border-radius:10px;text-decoration:none;">
+                    ✗ Decline
+                  </a>
+                </td>
+              </tr></table>
             </td></tr></table>` : ""}
 
             ${input.notes ? `

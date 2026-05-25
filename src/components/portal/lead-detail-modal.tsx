@@ -52,10 +52,12 @@ const statusColors: Record<string, "default" | "violet" | "cyan" | "warning" | "
 };
 
 const bookingStatusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  not_scheduled: { label: "Not Scheduled", color: "text-slate-400", bg: "bg-slate-500/10", dot: "bg-slate-500" },
+  not_scheduled: { label: "Not Scheduled", color: "text-slate-400",   bg: "bg-slate-500/10",   dot: "bg-slate-500" },
   invite_sent:   { label: "Invite Sent",   color: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400" },
-  completed:     { label: "Completed",     color: "text-violet-400", bg: "bg-violet-500/10", dot: "bg-violet-400" },
-  cancelled:     { label: "Cancelled",     color: "text-slate-500", bg: "bg-slate-500/10", dot: "bg-slate-600" },
+  accepted:      { label: "Accepted",      color: "text-green-400",   bg: "bg-green-500/10",   dot: "bg-green-400" },
+  declined:      { label: "Declined",      color: "text-red-400",     bg: "bg-red-500/10",     dot: "bg-red-400" },
+  completed:     { label: "Completed",     color: "text-violet-400",  bg: "bg-violet-500/10",  dot: "bg-violet-400" },
+  cancelled:     { label: "Cancelled",     color: "text-slate-500",   bg: "bg-slate-500/10",   dot: "bg-slate-600" },
 };
 
 // ── Shared input style ────────────────────────────────────────────────────────
