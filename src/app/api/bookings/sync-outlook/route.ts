@@ -51,7 +51,20 @@ export async function POST(req: NextRequest) {
 
       // Map Outlook RSVP → CRM status (attendees may be absent if invite was sent via SendGrid)
       const attendeeResponse = firstAttendee?.status?.response;
-      const crmStatus = graphResponseToCrmStatus(attendeeResponse);
+      let crmStatus = graphResponseToCrmStatus(attendeeResponse);
+
+      // If Graph has no attendee data, fall back to any matching Lead's bookingStatus
+      if (crmStatus === "awaiting_response") {
+        const leadRows = await sql`
+          SELECT "bookingStatus" FROM "Lead"
+          WHERE "microsoftEventId" = ${event.id}
+            AND "bookingStatus" IN ('accepted', 'declined')
+          LIMIT 1
+        `;
+        if (leadRows[0]) {
+          crmStatus = leadRows[0].bookingStatus === "accepted" ? "approved" : "declined";
+        }
+      }
 
       if (!existing) {
         const id = crypto.randomUUID();
