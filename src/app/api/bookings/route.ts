@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     let teamsJoinUrl: string | null = null;
     let outlookCalendarEmail: string | null = null;
     let graphError: string | null = null;
+    let inviteSentAt: Date | null = null;
 
     if (createTeamsMeeting && clientEmail && isMsConfigured()) {
       try {
@@ -74,11 +75,15 @@ export async function POST(req: NextRequest) {
         microsoftEventId = created.id;
         teamsJoinUrl = created.teamsJoinUrl || null;
         outlookCalendarEmail = getSharedMailbox();
+        inviteSentAt = new Date();
       } catch (err) {
         graphError = String(err);
         console.error("MS Graph booking create error:", err);
       }
     }
+
+    // Teams invite sent → awaiting response; manual booking → use whatever was passed
+    const finalStatus = (createTeamsMeeting && microsoftEventId) ? "awaiting_response" : status;
 
     const sql = getDb();
     const id = crypto.randomUUID();
@@ -91,14 +96,14 @@ export async function POST(req: NextRequest) {
         type, status, notes, timezone,
         "startTime", "endTime",
         "microsoftEventId", "outlookCalendarEmail", "teamsJoinUrl",
-        attendees, "createdByUserId", "createdAt", "updatedAt"
+        "inviteSentAt", attendees, "createdByUserId", "createdAt", "updatedAt"
       ) VALUES (
         ${id}, ${title}, ${client}, ${clientEmail || null}, ${leadId},
         ${date}, ${time}, ${duration}, ${Number(durationMinutes)},
-        ${type}, ${status}, ${notes || null}, ${timezone},
+        ${type}, ${finalStatus}, ${notes || null}, ${timezone},
         ${startTime}, ${endTime},
         ${microsoftEventId}, ${outlookCalendarEmail}, ${teamsJoinUrl},
-        ${"[]"}, ${user.id}, ${now}, ${now}
+        ${inviteSentAt}, ${"[]"}, ${user.id}, ${now}, ${now}
       )
     `;
 

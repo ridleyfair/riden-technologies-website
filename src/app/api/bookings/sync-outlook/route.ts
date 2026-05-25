@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
-import { isMsConfigured, listCalendarEvents, getSharedMailbox } from "@/lib/ms-graph";
+import { isMsConfigured, listCalendarEvents, getSharedMailbox, graphResponseToCrmStatus } from "@/lib/ms-graph";
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
@@ -28,11 +28,12 @@ export async function POST(req: NextRequest) {
   const mailbox = getSharedMailbox();
   let created = 0;
   let updated = 0;
+  let statusUpdated = 0;
   const now = new Date();
 
   for (const event of events) {
     const existing = (
-      await sql`SELECT id FROM "Booking" WHERE "microsoftEventId" = ${event.id} LIMIT 1`
+      await sql`SELECT id, status FROM "Booking" WHERE "microsoftEventId" = ${event.id} LIMIT 1`
     )[0];
 
     // Parse Graph datetime: "2026-05-21T10:00:00.0000000"
@@ -43,8 +44,11 @@ export async function POST(req: NextRequest) {
     const firstAttendee = event.attendees?.find((a) => a.type === "required");
     const clientName = firstAttendee?.emailAddress.name ?? "Unknown";
     const clientEmail = firstAttendee?.emailAddress.address ?? "";
-    const teamsJoinUrl =
-      event.onlineMeeting?.joinUrl ?? event.onlineMeetingUrl ?? null;
+    const teamsJoinUrl = event.onlineMeeting?.joinUrl ?? event.onlineMeetingUrl ?? null;
+
+    // Map Outlook RSVP → CRM status
+    const attendeeResponse = firstAttendee?.status?.response;
+    const crmStatus = graphResponseToCrmStatus(attendeeResponse);
 
     if (!existing) {
       const id = crypto.randomUUID();
@@ -52,27 +56,38 @@ export async function POST(req: NextRequest) {
         INSERT INTO "Booking" (
           id, title, client, "clientEmail",
           date, time, duration, "durationMinutes",
-          type, status, notes, timezone,
+          type, status, "attendeeResponseStatus", notes, timezone,
           "microsoftEventId", "outlookCalendarEmail", "teamsJoinUrl",
-          attendees, "lastSyncedAt", "createdByUserId", "createdAt", "updatedAt"
+          attendees, "outlookResponseUpdatedAt", "lastSyncedAt", "createdByUserId", "createdAt", "updatedAt"
         ) VALUES (
           ${id}, ${event.subject}, ${clientName}, ${clientEmail},
           ${datePart}, ${timePart}, ${"30 min"}, ${30},
-          ${"video"}, ${"confirmed"}, ${event.bodyPreview ?? ""}, ${"Europe/London"},
+          ${"video"}, ${crmStatus}, ${attendeeResponse ?? null}, ${event.bodyPreview ?? ""}, ${"Europe/London"},
           ${event.id}, ${mailbox}, ${teamsJoinUrl},
-          ${"[]"}, ${now}, ${user.id}, ${now}, ${now}
+          ${"[]"}, ${now}, ${now}, ${user.id}, ${now}, ${now}
         )
       `;
       created++;
     } else {
+      const previousStatus = existing.status as string;
+      const statusChanged = crmStatus !== previousStatus &&
+        // Don't overwrite a manually set cancelled/completed status from Outlook
+        previousStatus !== "cancelled" &&
+        previousStatus !== "completed" &&
+        previousStatus !== "no_show";
+
       await sql`
         UPDATE "Booking" SET
-          title = ${event.subject},
-          "teamsJoinUrl" = ${teamsJoinUrl},
-          "lastSyncedAt" = ${now},
-          "updatedAt" = ${now}
+          title                      = ${event.subject},
+          "teamsJoinUrl"             = ${teamsJoinUrl},
+          "attendeeResponseStatus"   = ${attendeeResponse ?? null},
+          status                     = ${statusChanged ? crmStatus : previousStatus},
+          "outlookResponseUpdatedAt" = ${statusChanged ? now : sql`"outlookResponseUpdatedAt"`},
+          "lastSyncedAt"             = ${now},
+          "updatedAt"                = ${now}
         WHERE "microsoftEventId" = ${event.id}
       `;
+      if (statusChanged) statusUpdated++;
       updated++;
     }
   }
@@ -82,6 +97,7 @@ export async function POST(req: NextRequest) {
     synced: events.length,
     created,
     updated,
+    statusUpdated,
     dateRange: { start, end },
   });
 }

@@ -32,6 +32,9 @@ type Booking = {
   outlookCalendarEmail?: string | null;
   teamsJoinUrl?: string | null;
   attendees?: string | null;
+  inviteSentAt?: string | null;
+  attendeeResponseStatus?: string | null;
+  outlookResponseUpdatedAt?: string | null;
   lastSyncedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -56,11 +59,24 @@ type ViewMode = "month" | "agenda";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const STATUS_COLORS = {
-  confirmed: "success",
-  pending: "warning",
-  cancelled: "secondary",
-} as const;
+type BadgeVariant = "success" | "warning" | "destructive" | "secondary" | "violet" | "cyan" | "default";
+
+const STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant; dot: string; calDot: string }> = {
+  awaiting_response: { label: "Awaiting Response", variant: "warning",     dot: "bg-yellow-400",  calDot: "bg-yellow-400" },
+  approved:          { label: "Approved",           variant: "success",     dot: "bg-green-400",   calDot: "bg-green-400"  },
+  declined:          { label: "Declined",           variant: "destructive", dot: "bg-red-400",     calDot: "bg-red-400"    },
+  tentative:         { label: "Tentative",          variant: "violet",      dot: "bg-violet-400",  calDot: "bg-violet-400" },
+  cancelled:         { label: "Cancelled",          variant: "secondary",   dot: "bg-slate-500",   calDot: "bg-slate-500"  },
+  completed:         { label: "Completed",          variant: "violet",      dot: "bg-violet-400",  calDot: "bg-violet-500" },
+  no_show:           { label: "No Show",            variant: "warning",     dot: "bg-orange-400",  calDot: "bg-orange-400" },
+  // legacy values — kept for existing data
+  confirmed:         { label: "Confirmed",          variant: "success",     dot: "bg-green-400",   calDot: "bg-blue-400"   },
+  pending:           { label: "Pending",            variant: "warning",     dot: "bg-yellow-400",  calDot: "bg-yellow-400" },
+};
+
+function getStatusConfig(status: string) {
+  return STATUS_CONFIG[status] ?? { label: status, variant: "secondary" as BadgeVariant, dot: "bg-slate-500", calDot: "bg-slate-500" };
+}
 
 const DURATION_MINS: Record<string, number> = {
   "15 min": 15, "30 min": 30, "45 min": 45, "60 min": 60, "90 min": 90,
@@ -140,7 +156,7 @@ function defaultForm(date?: string): BookingForm {
     duration: "30 min",
     durationMinutes: 30,
     type: "video",
-    status: "confirmed",
+    status: "awaiting_response",
     notes: "",
     timezone: "Europe/London",
     createTeamsMeeting: true,
@@ -324,8 +340,8 @@ function BookingDetailModal({ booking, onClose, onEdit, onDelete }: {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5">Status</div>
-                  <Badge variant={STATUS_COLORS[booking.status as keyof typeof STATUS_COLORS] ?? "secondary"} className="capitalize">
-                    {booking.status}
+                  <Badge variant={getStatusConfig(booking.status).variant} className="capitalize">
+                    {getStatusConfig(booking.status).label}
                   </Badge>
                 </div>
                 <div>
@@ -336,6 +352,32 @@ function BookingDetailModal({ booking, onClose, onEdit, onDelete }: {
                   </div>
                 </div>
               </div>
+
+              {/* Outlook RSVP response block */}
+              {booking.microsoftEventId && (
+                <div className="rounded-lg border border-riden-border bg-riden-muted/50 px-4 py-3 space-y-1.5">
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Outlook Response</div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusConfig(booking.status).dot)} />
+                    <span className="text-sm text-slate-200 font-medium">{getStatusConfig(booking.status).label}</span>
+                  </div>
+                  {booking.inviteSentAt && (
+                    <div className="text-xs text-slate-500">
+                      Invite sent {new Date(booking.inviteSentAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                  )}
+                  {booking.outlookResponseUpdatedAt && (
+                    <div className="text-xs text-slate-500">
+                      Response updated {new Date(booking.outlookResponseUpdatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  )}
+                  {booking.lastSyncedAt && (
+                    <div className="text-xs text-slate-600">
+                      Last synced {new Date(booking.lastSyncedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {booking.teamsJoinUrl && booking.status !== "cancelled" && (
                 <div>
@@ -355,13 +397,6 @@ function BookingDetailModal({ booking, onClose, onEdit, onDelete }: {
                 <div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Notes</div>
                   <div className="text-sm text-slate-300 leading-relaxed">{booking.notes}</div>
-                </div>
-              )}
-
-              {booking.microsoftEventId && (
-                <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
-                  <CheckCircle size={12} />
-                  Synced with Outlook calendar
                 </div>
               )}
             </div>
@@ -517,9 +552,13 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Status</label>
                 <select className={inputCls} value={form.status} onChange={(e) => set("status", e.target.value)}>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="pending">Pending</option>
+                  <option value="awaiting_response">Awaiting Response</option>
+                  <option value="approved">Approved</option>
+                  <option value="tentative">Tentative</option>
+                  <option value="declined">Declined</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                  <option value="no_show">No Show</option>
                 </select>
               </div>
               {mode === "create" && (
@@ -716,10 +755,10 @@ function BookingCard({ booking, highlight, onView, onEdit, onDelete, onSync }: {
           {/* Status + menu trigger */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Badge
-              variant={STATUS_COLORS[booking.status as keyof typeof STATUS_COLORS] ?? "secondary"}
-              className="text-[10px] hidden sm:flex capitalize"
+              variant={getStatusConfig(booking.status).variant}
+              className="text-[10px] hidden sm:flex"
             >
-              {booking.status}
+              {getStatusConfig(booking.status).label}
             </Badge>
             <button
               ref={btnRef}
@@ -903,21 +942,27 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
 
               {dayBookings.length > 0 && (
                 <div className="mt-0.5 w-full flex-1 space-y-0.5 overflow-hidden">
-                  {dayBookings.slice(0, 2).map((b) => (
-                    <div
-                      key={b.id}
-                      className={cn(
-                        "hidden sm:block text-[9px] truncate px-1 rounded leading-[14px]",
-                        b.status === "confirmed"
-                          ? "bg-blue-500/20 text-blue-300"
-                          : b.status === "pending"
-                            ? "bg-yellow-500/20 text-yellow-300"
-                            : "bg-slate-600/30 text-slate-400"
-                      )}
-                    >
-                      {b.title.replace("Riden Technologies ", "RT ")}
-                    </div>
-                  ))}
+                  {dayBookings.slice(0, 2).map((b) => {
+                    const cfg = getStatusConfig(b.status);
+                    const isActive = b.status === "approved" || b.status === "confirmed";
+                    return (
+                      <div
+                        key={b.id}
+                        className={cn(
+                          "hidden sm:block text-[9px] truncate px-1 rounded leading-[14px]",
+                          isActive
+                            ? "bg-blue-500/20 text-blue-300"
+                            : b.status === "awaiting_response" || b.status === "tentative" || b.status === "pending"
+                              ? "bg-yellow-500/20 text-yellow-300"
+                              : b.status === "declined"
+                                ? "bg-red-500/20 text-red-300"
+                                : "bg-slate-600/30 text-slate-400"
+                        )}
+                      >
+                        {b.title.replace("Riden Technologies ", "RT ")}
+                      </div>
+                    );
+                  })}
                   {dayBookings.length > 2 && (
                     <div className="hidden sm:block text-[9px] text-slate-500 px-1">
                       +{dayBookings.length - 2} more
@@ -925,13 +970,7 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
                   )}
                   <div className="sm:hidden flex gap-0.5 px-0.5 mt-1">
                     {dayBookings.slice(0, 3).map((b) => (
-                      <div
-                        key={b.id}
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full",
-                          b.status === "confirmed" ? "bg-blue-400" : b.status === "pending" ? "bg-yellow-400" : "bg-slate-500"
-                        )}
-                      />
+                      <div key={b.id} className={cn("w-1.5 h-1.5 rounded-full", getStatusConfig(b.status).calDot)} />
                     ))}
                   </div>
                 </div>

@@ -214,6 +214,11 @@ export async function POST(req: NextRequest) {
   await step("Lead.bookingNotes", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "bookingNotes" TEXT`);
   await step("Lead.responseToken", () => sql`ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "responseToken" TEXT`);
 
+  // Booking — RSVP / status tracking columns
+  await step("Booking.inviteSentAt", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "inviteSentAt" TIMESTAMPTZ`);
+  await step("Booking.attendeeResponseStatus", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "attendeeResponseStatus" TEXT`);
+  await step("Booking.outlookResponseUpdatedAt", () => sql`ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "outlookResponseUpdatedAt" TIMESTAMPTZ`);
+
   return NextResponse.json({
     ok: true,
     ran,

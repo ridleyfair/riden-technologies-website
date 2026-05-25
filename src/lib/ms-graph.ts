@@ -235,12 +235,23 @@ export type OutlookEvent = {
   attendees: Array<{
     emailAddress: { address: string; name: string };
     type: string;
+    status?: { response: string; time?: string };
   }>;
   onlineMeeting?: { joinUrl?: string };
   onlineMeetingUrl?: string;
   webLink?: string;
   isOnlineMeeting?: boolean;
 };
+
+export function graphResponseToCrmStatus(response: string | undefined | null): string {
+  switch (response?.toLowerCase()) {
+    case "accepted":            return "approved";
+    case "declined":            return "declined";
+    case "tentativelyaccepted":
+    case "tentative":           return "tentative";
+    default:                    return "awaiting_response";
+  }
+}
 
 // ── List and get calendar events ──────────────────────────────────────────────
 
