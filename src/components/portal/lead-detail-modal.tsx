@@ -477,6 +477,11 @@ function BookingPanel({ lead, leadId }: { lead: Lead; leadId: string }) {
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">Date *</label>
                 <input type="date" lang="en-GB" className={inputCls} value={form.date} min={todayStr()} onChange={(e) => setField("date", e.target.value)} />
+                {form.date && (
+                  <p className="text-[10px] text-slate-500 mt-1 pl-0.5">
+                    {new Date(form.date + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">Time *</label>
