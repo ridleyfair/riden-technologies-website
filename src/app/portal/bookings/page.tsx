@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar, Clock, Plus, Video, User, MoreHorizontal, X,
   Phone, RefreshCw, Trash2, Edit2, CheckCircle, ChevronLeft,
-  ChevronRight, ExternalLink, AlertCircle, MapPin,
+  ChevronRight, ExternalLink, AlertCircle, MapPin, Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,22 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function getTomorrow(today: string): string {
+  const d = new Date(today + "T00:00:00");
+  d.setDate(d.getDate() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function fmtDateLong(dateStr: string): string {
+  try {
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 function fmtDate(dateStr: string): string {
   try {
     return new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
@@ -89,6 +105,16 @@ function fmtDate(dateStr: string): string {
   }
 }
 
+function fmtGroupHeader(dateStr: string, today: string): string {
+  const tomorrow = getTomorrow(today);
+  const longDate = new Date(dateStr + "T00:00:00").toLocaleDateString("en-GB", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+  if (dateStr === today) return `TODAY — ${longDate}`;
+  if (dateStr === tomorrow) return `TOMORROW — ${longDate}`;
+  return longDate.toUpperCase();
+}
+
 function fmtRelative(date: Date): string {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
   if (mins < 1) return "just now";
@@ -96,6 +122,11 @@ function fmtRelative(date: Date): string {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
+}
+
+function clientLabel(raw: string | undefined | null): string {
+  if (!raw || raw.trim() === "" || raw.toLowerCase() === "unknown") return "No client linked";
+  return raw;
 }
 
 function defaultForm(date?: string): BookingForm {
@@ -142,25 +173,16 @@ function getMonthCells(year: number, month: number) {
     const d = prevDays - i + 1;
     const pm = month === 0 ? 11 : month - 1;
     const py = month === 0 ? year - 1 : year;
-    cells.push({
-      dateStr: `${py}-${String(pm + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
-      day: d, cur: false,
-    });
+    cells.push({ dateStr: `${py}-${String(pm + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`, day: d, cur: false });
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({
-      dateStr: `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
-      day: d, cur: true,
-    });
+    cells.push({ dateStr: `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`, day: d, cur: true });
   }
   let nd = 1;
   while (cells.length % 7 !== 0) {
     const nm = month === 11 ? 0 : month + 1;
     const ny = month === 11 ? year + 1 : year;
-    cells.push({
-      dateStr: `${ny}-${String(nm + 1).padStart(2, "0")}-${String(nd).padStart(2, "0")}`,
-      day: nd++, cur: false,
-    });
+    cells.push({ dateStr: `${ny}-${String(nm + 1).padStart(2, "0")}-${String(nd).padStart(2, "0")}`, day: nd++, cur: false });
   }
   return cells;
 }
@@ -236,6 +258,128 @@ function DeleteModal({ open, title, hasOutlook, onClose, onConfirm }: {
   );
 }
 
+// ── Booking Detail Modal ──────────────────────────────────────────────────────
+
+function BookingDetailModal({ booking, onClose, onEdit, onDelete }: {
+  booking: Booking | null;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const TypeIcon = booking?.type === "video" ? Video : booking?.type === "call" ? Phone : MapPin;
+
+  return (
+    <AnimatePresence>
+      {booking && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="relative w-full sm:max-w-md glass-card rounded-t-2xl sm:rounded-2xl border border-riden-border flex flex-col max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-riden-border" />
+            </div>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-riden-border flex-shrink-0">
+              <h2 className="text-base font-semibold text-white">Booking Details</h2>
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5 overflow-y-auto portal-scroll flex-1">
+              <div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Meeting</div>
+                <div className="text-sm font-semibold text-white">{booking.title}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Date</div>
+                  <div className="text-sm text-slate-200">{fmtDate(booking.date)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Time</div>
+                  <div className="text-sm text-slate-200">{booking.time.slice(0, 5)} · {booking.duration}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Client</div>
+                <div className="text-sm text-slate-200">{clientLabel(booking.client)}</div>
+                {booking.clientEmail && (
+                  <div className="text-xs text-slate-500 mt-0.5">{booking.clientEmail}</div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5">Status</div>
+                  <Badge variant={STATUS_COLORS[booking.status as keyof typeof STATUS_COLORS] ?? "secondary"} className="capitalize">
+                    {booking.status}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Type</div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-200">
+                    <TypeIcon size={13} className="text-slate-400" />
+                    {booking.type === "video" ? "Video Call" : booking.type === "call" ? "Phone Call" : "In Person"}
+                  </div>
+                </div>
+              </div>
+
+              {booking.teamsJoinUrl && booking.status !== "cancelled" && (
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5">Teams Meeting</div>
+                  <a
+                    href={booking.teamsJoinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <Video size={11} /> Join Microsoft Teams Meeting <ExternalLink size={10} />
+                  </a>
+                </div>
+              )}
+
+              {booking.notes && (
+                <div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Notes</div>
+                  <div className="text-sm text-slate-300 leading-relaxed">{booking.notes}</div>
+                </div>
+              )}
+
+              {booking.microsoftEventId && (
+                <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
+                  <CheckCircle size={12} />
+                  Synced with Outlook calendar
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 px-5 py-4 border-t border-riden-border flex-shrink-0">
+              <Button variant="outline" size="sm" onClick={() => { onClose(); onDelete(); }} className="flex-1">
+                <Trash2 size={13} /> Delete
+              </Button>
+              <Button variant="gradient" size="sm" onClick={() => { onClose(); onEdit(); }} className="flex-1">
+                <Edit2 size={13} /> Edit
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ── Booking Modal ─────────────────────────────────────────────────────────────
 
 function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
@@ -277,8 +421,7 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
     setSaving(true);
     setError("");
     try {
-      const url =
-        mode === "edit" && initial?.id ? `/api/bookings/${initial.id}` : "/api/bookings";
+      const url = mode === "edit" && initial?.id ? `/api/bookings/${initial.id}` : "/api/bookings";
       const method = mode === "edit" ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -317,116 +460,67 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
             className="relative w-full sm:max-w-lg glass-card rounded-t-2xl sm:rounded-2xl border border-riden-border flex flex-col max-h-[92vh] sm:max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Mobile handle */}
             <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-riden-border" />
             </div>
-
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-riden-border flex-shrink-0">
               <h2 className="text-base font-semibold text-white">
                 {mode === "create" ? "New Booking" : "Edit Booking"}
               </h2>
-              <button
-                onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
-              >
+              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
                 <X size={16} />
               </button>
             </div>
 
-            {/* Form */}
             <div className="p-5 space-y-4 overflow-y-auto portal-scroll flex-1">
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Meeting Title</label>
-                <input
-                  className={inputCls}
-                  value={form.title}
-                  onChange={(e) => set("title", e.target.value)}
-                />
+                <input className={inputCls} value={form.title} onChange={(e) => set("title", e.target.value)} />
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Client Name</label>
-                  <input
-                    className={inputCls}
-                    placeholder="John Smith"
-                    value={form.client}
-                    onChange={(e) => set("client", e.target.value)}
-                  />
+                  <input className={inputCls} placeholder="John Smith" value={form.client} onChange={(e) => set("client", e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Client Email</label>
-                  <input
-                    type="email"
-                    className={inputCls}
-                    placeholder="john@company.com"
-                    value={form.clientEmail}
-                    onChange={(e) => set("clientEmail", e.target.value)}
-                  />
+                  <input type="email" className={inputCls} placeholder="john@company.com" value={form.clientEmail} onChange={(e) => set("clientEmail", e.target.value)} />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Date</label>
-                  <input
-                    type="date"
-                    className={inputCls}
-                    value={form.date}
-                    onChange={(e) => set("date", e.target.value)}
-                  />
+                  <input type="date" className={inputCls} value={form.date} onChange={(e) => set("date", e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Time</label>
-                  <input
-                    type="time"
-                    className={inputCls}
-                    value={form.time}
-                    onChange={(e) => set("time", e.target.value)}
-                  />
+                  <input type="time" className={inputCls} value={form.time} onChange={(e) => set("time", e.target.value)} />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Duration</label>
-                  <select
-                    className={inputCls}
-                    value={form.duration}
-                    onChange={(e) => handleDurationChange(e.target.value)}
-                  >
+                  <select className={inputCls} value={form.duration} onChange={(e) => handleDurationChange(e.target.value)}>
                     {DURATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Meeting Type</label>
-                  <select
-                    className={inputCls}
-                    value={form.type}
-                    onChange={(e) => set("type", e.target.value)}
-                  >
+                  <select className={inputCls} value={form.type} onChange={(e) => set("type", e.target.value)}>
                     <option value="video">Video Call</option>
                     <option value="call">Phone Call</option>
                     <option value="in-person">In Person</option>
                   </select>
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Status</label>
-                <select
-                  className={inputCls}
-                  value={form.status}
-                  onChange={(e) => set("status", e.target.value)}
-                >
+                <select className={inputCls} value={form.status} onChange={(e) => set("status", e.target.value)}>
                   <option value="confirmed">Confirmed</option>
                   <option value="pending">Pending</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
-
               {mode === "create" && (
                 <label className="flex items-start gap-3 cursor-pointer group select-none">
                   <input
@@ -445,18 +539,10 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
                   </div>
                 </label>
               )}
-
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Notes</label>
-                <textarea
-                  className={inputCls + " resize-none"}
-                  rows={3}
-                  placeholder="Any extra details..."
-                  value={form.notes}
-                  onChange={(e) => set("notes", e.target.value)}
-                />
+                <textarea className={inputCls + " resize-none"} rows={3} placeholder="Any extra details..." value={form.notes} onChange={(e) => set("notes", e.target.value)} />
               </div>
-
               {error && (
                 <div className="flex items-start gap-2 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2.5">
                   <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
@@ -465,11 +551,8 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
               )}
             </div>
 
-            {/* Footer */}
             <div className="flex gap-3 px-5 py-4 border-t border-riden-border flex-shrink-0">
-              <Button variant="outline" className="flex-1" onClick={onClose} disabled={saving}>
-                Cancel
-              </Button>
+              <Button variant="outline" className="flex-1" onClick={onClose} disabled={saving}>Cancel</Button>
               <Button variant="gradient" className="flex-1" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : mode === "create" ? "Create Booking" : "Save Changes"}
               </Button>
@@ -483,35 +566,43 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
 
 // ── Booking Card ──────────────────────────────────────────────────────────────
 
-function BookingCard({ booking, onEdit, onDelete, highlight }: {
+function BookingCard({ booking, highlight, onView, onEdit, onDelete }: {
   booking: Booking;
+  highlight?: boolean;
+  onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  highlight?: boolean;
 }) {
   const [menu, setMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const TypeIcon = booking.type === "video" ? Video : booking.type === "call" ? Phone : MapPin;
   const isCancelled = booking.status === "cancelled";
+  const name = clientLabel(booking.client);
+
+  useEffect(() => {
+    if (!menu) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menu]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0 }}
+    <div
       className={cn(
-        "glass-card rounded-xl border p-4 flex items-start gap-3 relative",
-        highlight && !isCancelled ? "border-blue-500/20" : "border-riden-border",
-        isCancelled && "opacity-60"
+        "rounded-xl border p-4 flex items-start gap-3 transition-colors",
+        "bg-riden-surface/60 backdrop-blur-sm",
+        highlight && !isCancelled ? "border-blue-500/25 bg-blue-500/[0.04]" : "border-riden-border",
+        isCancelled && "opacity-50"
       )}
-      style={
-        highlight && !isCancelled
-          ? { background: "linear-gradient(135deg, rgba(59,130,246,0.05), transparent)" }
-          : undefined
-      }
     >
       {/* Time column */}
       <div className="text-center w-12 flex-shrink-0 pt-0.5">
-        <div className="text-sm font-bold text-white">{booking.time.slice(0, 5)}</div>
-        <div className="text-[10px] text-slate-500">{booking.duration}</div>
+        <div className="text-sm font-bold text-white tabular-nums">{booking.time.slice(0, 5)}</div>
+        <div className="text-[10px] text-slate-500 mt-0.5">{booking.duration}</div>
       </div>
 
       {/* Divider */}
@@ -519,58 +610,88 @@ function BookingCard({ booking, onEdit, onDelete, highlight }: {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-white truncate">{booking.title}</div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0 text-xs text-slate-400 mt-0.5">
+            <div className="text-sm font-semibold text-white truncate leading-snug">{booking.title}</div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-400 mt-1">
               <span className="flex items-center gap-1">
-                <User size={10} /> {booking.client}
+                <User size={10} className="flex-shrink-0" />
+                <span className={cn("truncate max-w-[160px]", name === "No client linked" && "text-slate-600 italic")}>
+                  {name}
+                </span>
               </span>
               {booking.clientEmail && (
-                <span className="text-slate-500 truncate max-w-[180px]">{booking.clientEmail}</span>
+                <span className="text-slate-500 truncate max-w-[180px] hidden sm:inline">{booking.clientEmail}</span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+          {/* Status + menu */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <Badge
               variant={STATUS_COLORS[booking.status as keyof typeof STATUS_COLORS] ?? "secondary"}
-              className="text-[10px] hidden sm:flex"
+              className="text-[10px] hidden sm:flex capitalize"
             >
               {booking.status}
             </Badge>
-            <div className="relative">
+
+            {/* Three-dot menu — contained in its own relative wrapper */}
+            <div ref={menuRef} className="relative">
               <button
-                onClick={() => setMenu(!menu)}
-                className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
+                onClick={() => setMenu((m) => !m)}
+                className={cn(
+                  "w-7 h-7 flex items-center justify-center rounded-lg transition-colors",
+                  "text-slate-500 hover:text-white hover:bg-white/10",
+                  menu && "bg-white/10 text-white"
+                )}
+                aria-label="Booking actions"
               >
-                <MoreHorizontal size={14} />
+                <MoreHorizontal size={15} />
               </button>
-              {menu && (
-                <div
-                  className="absolute right-0 top-full mt-1 w-36 bg-riden-surface rounded-xl border border-riden-border overflow-hidden z-20 shadow-2xl"
-                  onClick={() => setMenu(false)}
-                >
-                  <button
-                    onClick={onEdit}
-                    className="w-full flex items-center gap-2 px-3 py-3 text-xs text-white hover:bg-riden-muted transition-colors font-medium"
+
+              <AnimatePresence>
+                {menu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.1 }}
+                    className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-riden-border bg-[#1e293b] shadow-2xl z-[100]"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <Edit2 size={13} className="text-blue-400" /> Edit
-                  </button>
-                  <div className="h-px bg-riden-border mx-2" />
-                  <button
-                    onClick={onDelete}
-                    className="w-full flex items-center gap-2 px-3 py-3 text-xs text-rose-400 hover:bg-riden-muted transition-colors font-medium"
-                  >
-                    <Trash2 size={13} /> Delete
-                  </button>
-                </div>
-              )}
+                    <button
+                      onClick={() => { setMenu(false); onView(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium rounded-t-xl"
+                    >
+                      <Eye size={13} className="text-slate-400" /> View Details
+                    </button>
+                    <button
+                      onClick={() => { setMenu(false); onEdit(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium"
+                    >
+                      <Edit2 size={13} className="text-blue-400" /> Edit Booking
+                    </button>
+                    <button
+                      onClick={() => { setMenu(false); onEdit(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium"
+                    >
+                      <Clock size={13} className="text-violet-400" /> Reschedule
+                    </button>
+                    <div className="h-px bg-riden-border mx-2 my-1" />
+                    <button
+                      onClick={() => { setMenu(false); onDelete(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors font-medium rounded-b-xl"
+                    >
+                      <Trash2 size={13} /> Delete Booking
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
 
-        {/* Teams join link */}
+        {/* Teams link */}
         {booking.teamsJoinUrl && !isCancelled && (
           <a
             href={booking.teamsJoinUrl}
@@ -578,12 +699,11 @@ function BookingCard({ booking, onEdit, onDelete, highlight }: {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
           >
-            <Video size={11} /> Join Teams Meeting
-            <ExternalLink size={10} />
+            <Video size={11} /> Join Teams Meeting <ExternalLink size={10} />
           </a>
         )}
 
-        {/* Footer row */}
+        {/* Footer metadata */}
         <div className="flex items-center flex-wrap gap-3 mt-2">
           <span className="flex items-center gap-1 text-[10px] text-slate-500">
             <TypeIcon size={10} />
@@ -595,13 +715,57 @@ function BookingCard({ booking, onEdit, onDelete, highlight }: {
             </span>
           )}
           {booking.notes && (
-            <span className="text-[10px] text-slate-500 truncate max-w-[160px]" title={booking.notes ?? ""}>
+            <span className="text-[10px] text-slate-500 truncate max-w-[200px]" title={booking.notes}>
               {booking.notes}
             </span>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+// ── Date Group Section ────────────────────────────────────────────────────────
+
+function DateGroup({ dateStr, bookings, today, onView, onEdit, onDelete }: {
+  dateStr: string;
+  bookings: Booking[];
+  today: string;
+  onView: (b: Booking) => void;
+  onEdit: (b: Booking) => void;
+  onDelete: (id: string) => void;
+}) {
+  const sorted = [...bookings].sort((a, b) => a.time.localeCompare(b.time));
+  const header = fmtGroupHeader(dateStr, today);
+  const isToday = dateStr === today;
+
+  return (
+    <section>
+      <div className="flex items-center gap-3 mb-3">
+        <span className={cn(
+          "text-[11px] font-bold tracking-widest flex-shrink-0",
+          isToday ? "text-blue-400" : "text-slate-500"
+        )}>
+          {header}
+        </span>
+        <div className="flex-1 h-px bg-riden-border" />
+        <span className="text-[10px] text-slate-600 font-medium flex-shrink-0">
+          {sorted.length} booking{sorted.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+      <div className="space-y-2.5">
+        {sorted.map((b) => (
+          <BookingCard
+            key={b.id}
+            booking={b}
+            highlight={isToday}
+            onView={() => onView(b)}
+            onEdit={() => onEdit(b)}
+            onDelete={() => onDelete(b.id)}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -621,19 +785,11 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
     <div className="glass-card rounded-xl border border-riden-border p-3 sm:p-4">
       {/* Month header */}
       <div className="flex items-center justify-between mb-3">
-        <button
-          onClick={onPrev}
-          className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-400 hover:text-white transition-colors"
-        >
+        <button onClick={onPrev} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-400 hover:text-white transition-colors">
           <ChevronLeft size={16} />
         </button>
-        <span className="text-sm font-semibold text-white">
-          {MONTH_NAMES[month]} {year}
-        </span>
-        <button
-          onClick={onNext}
-          className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-400 hover:text-white transition-colors"
-        >
+        <span className="text-sm font-semibold text-white">{MONTH_NAMES[month]} {year}</span>
+        <button onClick={onNext} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-400 hover:text-white transition-colors">
           <ChevronRight size={16} />
         </button>
       </div>
@@ -641,9 +797,7 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
       {/* Day-of-week labels */}
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="text-center text-[10px] font-semibold text-slate-600 uppercase py-1">
-            {d}
-          </div>
+          <div key={d} className="text-center text-[10px] font-semibold text-slate-600 uppercase py-1">{d}</div>
         ))}
       </div>
 
@@ -659,16 +813,25 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
               key={cell.dateStr}
               onClick={() => onDayClick(cell.dateStr)}
               className={cn(
-                "min-h-[44px] sm:min-h-[68px] rounded-lg p-1 flex flex-col transition-all duration-150 hover:bg-riden-muted",
+                "min-h-[44px] sm:min-h-[68px] rounded-lg p-1 flex flex-col transition-all duration-150 focus:outline-none",
                 !cell.cur && "opacity-25 pointer-events-none",
-                isToday && "bg-blue-500/10 ring-1 ring-blue-500/30",
-                isSelected && !isToday && "ring-1 ring-riden-border bg-riden-muted/60",
+                isSelected
+                  ? "ring-2 ring-blue-500 bg-blue-500/10"
+                  : isToday
+                    ? "bg-blue-500/10 ring-1 ring-blue-500/20 hover:bg-blue-500/15"
+                    : "hover:bg-riden-muted/80"
               )}
             >
               <span
                 className={cn(
-                  "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-medium self-end",
-                  isToday ? "bg-blue-500 text-white" : cell.cur ? "text-slate-300" : "text-slate-600"
+                  "w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-semibold self-end transition-colors",
+                  isSelected
+                    ? "bg-blue-600 text-white"
+                    : isToday
+                      ? "bg-blue-500 text-white"
+                      : cell.cur
+                        ? "text-slate-300"
+                        : "text-slate-600"
                 )}
               >
                 {cell.day}
@@ -676,7 +839,6 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
 
               {dayBookings.length > 0 && (
                 <div className="mt-0.5 w-full flex-1 space-y-0.5 overflow-hidden">
-                  {/* Text pills — desktop only */}
                   {dayBookings.slice(0, 2).map((b) => (
                     <div
                       key={b.id}
@@ -685,8 +847,8 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
                         b.status === "confirmed"
                           ? "bg-blue-500/20 text-blue-300"
                           : b.status === "pending"
-                          ? "bg-yellow-500/20 text-yellow-300"
-                          : "bg-slate-600/30 text-slate-400"
+                            ? "bg-yellow-500/20 text-yellow-300"
+                            : "bg-slate-600/30 text-slate-400"
                       )}
                     >
                       {b.title.replace("Riden Technologies ", "RT ")}
@@ -697,18 +859,13 @@ function MonthGrid({ year, month, bookingsByDate, selectedDay, today, onDayClick
                       +{dayBookings.length - 2} more
                     </div>
                   )}
-                  {/* Dot indicators — mobile only */}
                   <div className="sm:hidden flex gap-0.5 px-0.5 mt-1">
                     {dayBookings.slice(0, 3).map((b) => (
                       <div
                         key={b.id}
                         className={cn(
                           "w-1.5 h-1.5 rounded-full",
-                          b.status === "confirmed"
-                            ? "bg-blue-400"
-                            : b.status === "pending"
-                            ? "bg-yellow-400"
-                            : "bg-slate-500"
+                          b.status === "confirmed" ? "bg-blue-400" : b.status === "pending" ? "bg-yellow-400" : "bg-slate-500"
                         )}
                       />
                     ))}
@@ -737,6 +894,7 @@ export default function BookingsPage() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const [viewBooking, setViewBooking] = useState<Booking | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null);
@@ -760,9 +918,7 @@ export default function BookingsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const bookingsByDate = useMemo(() => {
     const m = new Map<string, Booking[]>();
@@ -772,6 +928,41 @@ export default function BookingsPage() {
     }
     return m;
   }, [bookings]);
+
+  // Selected day bookings — shows all bookings for that date (past or future)
+  const selectedDayBookings = useMemo(
+    () => selectedDay
+      ? [...(bookingsByDate.get(selectedDay) ?? [])].sort((a, b) => a.time.localeCompare(b.time))
+      : [],
+    [bookingsByDate, selectedDay]
+  );
+
+  // Upcoming grouped by date — today + future, sorted
+  const upcomingGrouped = useMemo(() => {
+    const sorted = bookings
+      .filter((b) => b.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+    const groups = new Map<string, Booking[]>();
+    for (const b of sorted) {
+      if (!groups.has(b.date)) groups.set(b.date, []);
+      groups.get(b.date)!.push(b);
+    }
+    return groups;
+  }, [bookings, today]);
+
+  // Past bookings — newest first, capped at 5
+  const pastBookings = useMemo(
+    () => bookings
+      .filter((b) => b.date < today)
+      .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+      .slice(0, 5),
+    [bookings, today]
+  );
+
+  const totalToday = useMemo(
+    () => bookings.filter((b) => b.date === today && b.status !== "cancelled").length,
+    [bookings, today]
+  );
 
   function showToast(message: string, ok: boolean) {
     setToast({ message, ok });
@@ -787,10 +978,7 @@ export default function BookingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToast(
-          `Synced ${data.synced} events · ${data.created} new · ${data.updated} updated`,
-          true
-        );
+        showToast(`Synced ${data.synced} events · ${data.created} new · ${data.updated} updated`, true);
         setLastSynced(new Date());
         fetchBookings();
       } else {
@@ -821,41 +1009,23 @@ export default function BookingsPage() {
   }
 
   function goPrevMonth() {
-    setCalDate((d) =>
-      d.month === 0 ? { year: d.year - 1, month: 11 } : { ...d, month: d.month - 1 }
-    );
+    setCalDate((d) => d.month === 0 ? { year: d.year - 1, month: 11 } : { ...d, month: d.month - 1 });
     setSelectedDay(null);
   }
 
   function goNextMonth() {
-    setCalDate((d) =>
-      d.month === 11 ? { year: d.year + 1, month: 0 } : { ...d, month: d.month + 1 }
-    );
+    setCalDate((d) => d.month === 11 ? { year: d.year + 1, month: 0 } : { ...d, month: d.month + 1 });
     setSelectedDay(null);
   }
 
   function handleDayClick(dateStr: string) {
-    setSelectedDay((prev) => (prev === dateStr ? null : dateStr));
+    setSelectedDay(dateStr);
   }
 
-  const agendaBookings = useMemo(
-    () => (selectedDay ? bookings.filter((b) => b.date === selectedDay) : bookings),
-    [bookings, selectedDay]
-  );
-
-  const grouped = useMemo(
-    () => ({
-      today: agendaBookings.filter((b) => b.date === today),
-      upcoming: agendaBookings.filter((b) => b.date > today),
-      past: agendaBookings.filter((b) => b.date < today),
-    }),
-    [agendaBookings, today]
-  );
-
-  const totalToday = useMemo(
-    () => bookings.filter((b) => b.date === today && b.status !== "cancelled").length,
-    [bookings, today]
-  );
+  function openEdit(b: Booking) {
+    setEditBooking(b);
+    setModalOpen(true);
+  }
 
   const deleteBooking = bookings.find((b) => b.id === deleteId);
 
@@ -866,9 +1036,7 @@ export default function BookingsPage() {
         <div>
           <h2 className="text-xl font-bold text-white">Bookings & Calendar</h2>
           <div className="flex items-center gap-2 flex-wrap text-sm text-slate-500">
-            <span>
-              {totalToday} appointment{totalToday !== 1 ? "s" : ""} today
-            </span>
+            <span>{totalToday} appointment{totalToday !== 1 ? "s" : ""} today</span>
             {lastSynced && (
               <>
                 <span className="text-slate-700">·</span>
@@ -882,18 +1050,11 @@ export default function BookingsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSync}
-            disabled={syncing}
-            title="Sync from Outlook calendar"
-          >
+          <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing} title="Sync from Outlook calendar">
             <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
             <span className="hidden sm:inline">Sync Outlook</span>
           </Button>
 
-          {/* View toggle — desktop only */}
           <div className="hidden sm:flex bg-riden-muted rounded-lg p-1 border border-riden-border gap-0.5">
             {(["month", "agenda"] as ViewMode[]).map((v) => (
               <button
@@ -901,32 +1062,25 @@ export default function BookingsPage() {
                 onClick={() => setView(v)}
                 className={cn(
                   "px-3 py-1.5 rounded-md text-xs font-medium transition-all capitalize",
-                  view === v
-                    ? "bg-riden-surface text-white shadow-sm"
-                    : "text-slate-500 hover:text-white"
+                  view === v ? "bg-riden-surface text-white shadow-sm" : "text-slate-500 hover:text-white"
                 )}
               >
-                {v === "month" ? (
-                  <span className="flex items-center gap-1.5"><Calendar size={12} />{v}</span>
-                ) : (
-                  <span className="flex items-center gap-1.5"><Clock size={12} />{v}</span>
-                )}
+                {v === "month"
+                  ? <span className="flex items-center gap-1.5"><Calendar size={12} />{v}</span>
+                  : <span className="flex items-center gap-1.5"><Clock size={12} />{v}</span>
+                }
               </button>
             ))}
           </div>
 
-          <Button
-            variant="gradient"
-            size="sm"
-            onClick={() => { setEditBooking(null); setModalOpen(true); }}
-          >
+          <Button variant="gradient" size="sm" onClick={() => { setEditBooking(null); setModalOpen(true); }}>
             <Plus size={14} />
             <span className="hidden sm:inline">New Booking</span>
           </Button>
         </div>
       </div>
 
-      {/* Month Grid */}
+      {/* Month calendar */}
       {view === "month" && (
         <MonthGrid
           year={calDate.year}
@@ -940,28 +1094,62 @@ export default function BookingsPage() {
         />
       )}
 
-      {/* Selected day label */}
+      {/* Selected day panel */}
       {selectedDay && (
-        <div className="flex items-center gap-2">
-          <Calendar size={14} className="text-blue-400" />
-          <span className="text-sm font-semibold text-white">{fmtDate(selectedDay)}</span>
-          <button
-            onClick={() => setSelectedDay(null)}
-            className="flex items-center gap-1 text-xs text-slate-500 hover:text-white transition-colors ml-1"
-          >
-            <X size={11} /> Clear filter
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-blue-500/25 p-4"
+          style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.06), transparent)" }}
+        >
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-blue-400 flex-shrink-0" />
+              <h3 className="text-sm font-semibold text-white">
+                Bookings for {fmtDateLong(selectedDay)}
+              </h3>
+            </div>
+            <button
+              onClick={() => setSelectedDay(null)}
+              className="flex items-center gap-1 text-xs text-slate-500 hover:text-white transition-colors"
+            >
+              <X size={11} /> Clear
+            </button>
+          </div>
+
+          {selectedDayBookings.length === 0 ? (
+            <div className="py-6 text-center">
+              <Calendar size={24} className="text-slate-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">No bookings for this day</p>
+              <button
+                onClick={() => { setEditBooking(null); setModalOpen(true); }}
+                className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                + Add a booking for this day
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {selectedDayBookings.map((b) => (
+                <BookingCard
+                  key={b.id}
+                  booking={b}
+                  highlight={selectedDay === today}
+                  onView={() => setViewBooking(b)}
+                  onEdit={() => openEdit(b)}
+                  onDelete={() => setDeleteId(b.id)}
+                />
+              ))}
+            </div>
+          )}
+        </motion.div>
       )}
 
-      {/* Agenda / List */}
+      {/* Upcoming — grouped by date */}
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="glass-card rounded-xl border border-riden-border p-4 animate-pulse flex gap-4"
-            >
+            <div key={i} className="glass-card rounded-xl border border-riden-border p-4 animate-pulse flex gap-4">
               <div className="w-12 h-10 rounded bg-riden-muted" />
               <div className="w-px h-10 bg-riden-muted" />
               <div className="flex-1 space-y-2">
@@ -971,100 +1159,66 @@ export default function BookingsPage() {
             </div>
           ))}
         </div>
-      ) : agendaBookings.length === 0 ? (
+      ) : upcomingGrouped.size === 0 ? (
         <div className="glass-card rounded-xl border border-riden-border p-12 text-center">
           <Calendar size={32} className="text-slate-600 mx-auto mb-3" />
-          <p className="text-white font-semibold mb-1">
-            {selectedDay ? "No bookings for this day" : "No bookings yet"}
-          </p>
-          <p className="text-sm text-slate-500 mb-5">
-            {selectedDay
-              ? "Click another day or clear the filter."
-              : "Create your first booking or sync from the Outlook calendar."}
-          </p>
+          <p className="text-white font-semibold mb-1">No upcoming bookings</p>
+          <p className="text-sm text-slate-500 mb-5">Create a booking or sync from Outlook to get started.</p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button
-              variant="gradient"
-              size="sm"
-              onClick={() => { setEditBooking(null); setModalOpen(true); }}
-            >
+            <Button variant="gradient" size="sm" onClick={() => { setEditBooking(null); setModalOpen(true); }}>
               <Plus size={14} /> New Booking
             </Button>
             <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
-              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
-              Sync Outlook
+              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} /> Sync Outlook
             </Button>
           </div>
         </div>
-      ) : selectedDay ? (
-        // Single-day view — show ALL bookings for this day (past or future)
-        <div className="space-y-3">
-          {agendaBookings.map((b) => (
-            <BookingCard
-              key={b.id} booking={b}
-              highlight={b.date === today}
-              onEdit={() => { setEditBooking(b); setModalOpen(true); }}
-              onDelete={() => setDeleteId(b.id)}
+      ) : (
+        <div className="space-y-6">
+          {Array.from(upcomingGrouped.entries()).map(([dateStr, dayBookings]) => (
+            <DateGroup
+              key={dateStr}
+              dateStr={dateStr}
+              bookings={dayBookings}
+              today={today}
+              onView={(b) => setViewBooking(b)}
+              onEdit={(b) => openEdit(b)}
+              onDelete={(id) => setDeleteId(id)}
             />
           ))}
         </div>
-      ) : (
-        // All-bookings view — grouped by today / upcoming / past
-        <div className="space-y-6">
-          {grouped.today.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-                Today — {fmtDate(today)}
-              </h3>
-              <div className="space-y-3">
-                {grouped.today.map((b) => (
-                  <BookingCard
-                    key={b.id} booking={b} highlight
-                    onEdit={() => { setEditBooking(b); setModalOpen(true); }}
-                    onDelete={() => setDeleteId(b.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+      )}
 
-          {grouped.upcoming.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-                Upcoming
-              </h3>
-              <div className="space-y-3">
-                {grouped.upcoming.map((b) => (
-                  <BookingCard
-                    key={b.id} booking={b}
-                    onEdit={() => { setEditBooking(b); setModalOpen(true); }}
-                    onDelete={() => setDeleteId(b.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {grouped.past.length > 0 && (
-            <section className="opacity-60">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-                Past
-              </h3>
-              <div className="space-y-3">
-                {grouped.past.slice(0, 5).map((b) => (
-                  <BookingCard
-                    key={b.id} booking={b}
-                    onEdit={() => { setEditBooking(b); setModalOpen(true); }}
-                    onDelete={() => setDeleteId(b.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
+      {/* Past bookings */}
+      {!loading && pastBookings.length > 0 && (
+        <section className="opacity-60">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[11px] font-bold tracking-widest text-slate-600">PAST BOOKINGS</span>
+            <div className="flex-1 h-px bg-riden-border" />
+            <span className="text-[10px] text-slate-600">{pastBookings.length} shown</span>
+          </div>
+          <div className="space-y-2.5">
+            {pastBookings.map((b) => (
+              <BookingCard
+                key={b.id}
+                booking={b}
+                onView={() => setViewBooking(b)}
+                onEdit={() => openEdit(b)}
+                onDelete={() => setDeleteId(b.id)}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Modals */}
+      <BookingDetailModal
+        booking={viewBooking}
+        onClose={() => setViewBooking(null)}
+        onEdit={() => { if (viewBooking) openEdit(viewBooking); }}
+        onDelete={() => { if (viewBooking) setDeleteId(viewBooking.id); }}
+      />
+
       <BookingModal
         open={modalOpen}
         mode={editBooking ? "edit" : "create"}
@@ -1078,10 +1232,7 @@ export default function BookingsPage() {
           } else if (emailError) {
             showToast(`Booking saved — email not sent: ${emailError.slice(0, 80)}`, false);
           } else if (emailSent) {
-            showToast(
-              editBooking ? "Booking updated" : "Booking created — confirmation email sent",
-              true
-            );
+            showToast(editBooking ? "Booking updated" : "Booking created — confirmation email sent", true);
           } else {
             showToast(editBooking ? "Booking updated" : "Booking created", true);
           }
@@ -1096,15 +1247,9 @@ export default function BookingsPage() {
         onConfirm={handleDeleteConfirm}
       />
 
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <Toast
-            key={toast.message}
-            message={toast.message}
-            ok={toast.ok}
-            onClose={() => setToast(null)}
-          />
+          <Toast key={toast.message} message={toast.message} ok={toast.ok} onClose={() => setToast(null)} />
         )}
       </AnimatePresence>
     </div>
