@@ -52,7 +52,10 @@ function pickTemplate(industry: string): { templateId: string; themeId: string }
   if (["health", "medical", "dental", "therapy", "care"].some((k) => ind.includes(k))) {
     return { templateId: "healthcare-clean", themeId: "minimal" };
   }
-  return { templateId: "growth-lead-gen", themeId: "modern" };
+  if (["legal", "law", "solicitor"].some((k) => ind.includes(k))) {
+    return { templateId: "luxury-premium", themeId: "elegant" };
+  }
+  return { templateId: "modern-minimal", themeId: "minimal" };
 }
 
 // ── Claude API call ───────────────────────────────────────────────────────────
@@ -205,6 +208,10 @@ export async function POST(req: NextRequest) {
   try {
     specJson = await generateSiteSpec(body, apiKey);
     const spec = JSON.parse(specJson) as Record<string, unknown>;
+    // Always enforce the requested tier and template — Claude sometimes overrides these
+    spec.tier = body.tier;
+    spec.templateId = templateId;
+    spec.themeId = themeId;
     const pages = spec.pages as Array<Record<string, unknown>> | undefined;
     const sections = Array.isArray(pages?.[0]?.sections) ? pages![0].sections as Record<string, unknown>[] : null;
 
