@@ -8,6 +8,7 @@ import {
   buildStartEnd,
   isMsConfigured,
 } from "@/lib/ms-graph";
+import { sendBookingConfirmation, isSendGridConfigured } from "@/lib/sendgrid";
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -126,11 +127,35 @@ export async function POST(
       WHERE id = ${id}
     `;
 
+    let emailError: string | null = null;
+    if (isSendGridConfigured()) {
+      try {
+        const durationLabel = durationMinutes >= 60
+          ? `${durationMinutes / 60} hour${durationMinutes > 60 ? "s" : ""}`
+          : `${durationMinutes} minutes`;
+        await sendBookingConfirmation({
+          to: email,
+          toName: lead.name as string,
+          title,
+          date,
+          time,
+          duration: durationLabel,
+          meetingType: "video",
+          teamsJoinUrl: event.teamsJoinUrl,
+          notes: notes || null,
+          timezone,
+        });
+      } catch (e) {
+        emailError = e instanceof Error ? e.message : "Failed to send confirmation email";
+      }
+    }
+
     return NextResponse.json({
       success: true,
       eventId: event.id,
       teamsJoinUrl: event.teamsJoinUrl,
       bookingStatus: "invite_sent",
+      ...(emailError ? { emailError } : {}),
     });
   } catch (err) {
     console.error("Teams invite error:", err);

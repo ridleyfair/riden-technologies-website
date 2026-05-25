@@ -20,7 +20,7 @@ function getSgConfig() {
   }
   return {
     apiKey: env.SENDGRID_API_KEY ?? "",
-    fromEmail: env.SENDGRID_FROM_EMAIL ?? "hello@ridentechnologies.com",
+    fromEmail: env.SENDGRID_FROM_EMAIL ?? "bookings@ridentechnologies.com",
     fromName: env.SENDGRID_FROM_NAME ?? "Riden Technologies",
   };
 }
@@ -151,7 +151,7 @@ function buildHtml(input: BookingEmailInput): string {
           <td style="padding:0 32px 28px;">
             <p style="margin:0;font-size:13px;color:#64748b;line-height:1.6;">
               Need to reschedule or have questions? Reply to this email or reach us at
-              <a href="mailto:hello@ridentechnologies.com" style="color:#60a5fa;">hello@ridentechnologies.com</a>.
+              <a href="mailto:bookings@ridentechnologies.com" style="color:#60a5fa;">bookings@ridentechnologies.com</a>.
             </p>
           </td>
         </tr>
