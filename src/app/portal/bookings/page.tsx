@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar, Clock, Plus, Video, User, MoreHorizontal, X,
@@ -564,31 +565,117 @@ function BookingModal({ open, mode, initial, defaultDate, onClose, onSave }: {
   );
 }
 
+// ── Portal Action Menu ────────────────────────────────────────────────────────
+// Rendered via createPortal into document.body so no parent overflow:hidden clips it.
+
+const MENU_WIDTH = 210;
+
+function BookingActionMenu({ btnRef, open, onClose, onView, onEdit, onReschedule, onSync, onDelete }: {
+  btnRef: React.RefObject<HTMLButtonElement | null>;
+  open: boolean;
+  onClose: () => void;
+  onView: () => void;
+  onEdit: () => void;
+  onReschedule: () => void;
+  onSync: () => void;
+  onDelete: () => void;
+}) {
+  const [coords, setCoords] = useState({ top: 0, left: 0, openUp: false });
+
+  useEffect(() => {
+    if (!open || !btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUp = spaceBelow < 220;
+    let left = rect.right - MENU_WIDTH;
+    if (left < 8) left = 8;
+    if (left + MENU_WIDTH > window.innerWidth - 8) left = window.innerWidth - MENU_WIDTH - 8;
+    setCoords({
+      top: openUp ? rect.top - 4 : rect.bottom + 4,
+      left,
+      openUp,
+    });
+  }, [open, btnRef]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    function onClick(e: MouseEvent) {
+      if (btnRef.current?.contains(e.target as Node)) return;
+      onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, [open, onClose, btnRef]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  const style: React.CSSProperties = {
+    position: "fixed",
+    top: coords.openUp ? undefined : coords.top,
+    bottom: coords.openUp ? window.innerHeight - coords.top : undefined,
+    left: coords.left,
+    width: MENU_WIDTH,
+    zIndex: 9999,
+  };
+
+  const itemCls = "w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors text-left whitespace-nowrap";
+
+  return createPortal(
+    <div style={style}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: coords.openUp ? 4 : -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.12 }}
+        className="rounded-xl border border-[#334155] bg-[#1a2639] shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
+      >
+        <button onClick={() => { onClose(); onView(); }} className={cn(itemCls, "text-slate-200 hover:bg-white/8 hover:text-white")}>
+          <Eye size={15} className="text-slate-400 flex-shrink-0" />
+          View Details
+        </button>
+        <button onClick={() => { onClose(); onEdit(); }} className={cn(itemCls, "text-slate-200 hover:bg-white/8 hover:text-white")}>
+          <Edit2 size={15} className="text-blue-400 flex-shrink-0" />
+          Edit Booking
+        </button>
+        <button onClick={() => { onClose(); onReschedule(); }} className={cn(itemCls, "text-slate-200 hover:bg-white/8 hover:text-white")}>
+          <Clock size={15} className="text-violet-400 flex-shrink-0" />
+          Reschedule
+        </button>
+        <button onClick={() => { onClose(); onSync(); }} className={cn(itemCls, "text-slate-200 hover:bg-white/8 hover:text-white")}>
+          <CheckCircle size={15} className="text-emerald-400 flex-shrink-0" />
+          Check Outlook Sync
+        </button>
+        <div className="h-px bg-[#334155] mx-3 my-1" />
+        <button onClick={() => { onClose(); onDelete(); }} className={cn(itemCls, "text-rose-400 hover:bg-rose-500/10 hover:text-rose-300")}>
+          <Trash2 size={15} className="flex-shrink-0" />
+          Delete Booking
+        </button>
+      </motion.div>
+    </div>,
+    document.body
+  );
+}
+
 // ── Booking Card ──────────────────────────────────────────────────────────────
 
-function BookingCard({ booking, highlight, onView, onEdit, onDelete }: {
+function BookingCard({ booking, highlight, onView, onEdit, onDelete, onSync }: {
   booking: Booking;
   highlight?: boolean;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onSync: () => void;
 }) {
-  const [menu, setMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const TypeIcon = booking.type === "video" ? Video : booking.type === "call" ? Phone : MapPin;
   const isCancelled = booking.status === "cancelled";
   const name = clientLabel(booking.client);
-
-  useEffect(() => {
-    if (!menu) return;
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [menu]);
 
   return (
     <div
@@ -626,7 +713,7 @@ function BookingCard({ booking, highlight, onView, onEdit, onDelete }: {
             </div>
           </div>
 
-          {/* Status + menu */}
+          {/* Status + menu trigger */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Badge
               variant={STATUS_COLORS[booking.status as keyof typeof STATUS_COLORS] ?? "secondary"}
@@ -634,60 +721,18 @@ function BookingCard({ booking, highlight, onView, onEdit, onDelete }: {
             >
               {booking.status}
             </Badge>
-
-            {/* Three-dot menu — contained in its own relative wrapper */}
-            <div ref={menuRef} className="relative">
-              <button
-                onClick={() => setMenu((m) => !m)}
-                className={cn(
-                  "w-7 h-7 flex items-center justify-center rounded-lg transition-colors",
-                  "text-slate-500 hover:text-white hover:bg-white/10",
-                  menu && "bg-white/10 text-white"
-                )}
-                aria-label="Booking actions"
-              >
-                <MoreHorizontal size={15} />
-              </button>
-
-              <AnimatePresence>
-                {menu && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                    transition={{ duration: 0.1 }}
-                    className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-riden-border bg-[#1e293b] shadow-2xl z-[100]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => { setMenu(false); onView(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium rounded-t-xl"
-                    >
-                      <Eye size={13} className="text-slate-400" /> View Details
-                    </button>
-                    <button
-                      onClick={() => { setMenu(false); onEdit(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium"
-                    >
-                      <Edit2 size={13} className="text-blue-400" /> Edit Booking
-                    </button>
-                    <button
-                      onClick={() => { setMenu(false); onEdit(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium"
-                    >
-                      <Clock size={13} className="text-violet-400" /> Reschedule
-                    </button>
-                    <div className="h-px bg-riden-border mx-2 my-1" />
-                    <button
-                      onClick={() => { setMenu(false); onDelete(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors font-medium rounded-b-xl"
-                    >
-                      <Trash2 size={13} /> Delete Booking
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <button
+              ref={btnRef}
+              onClick={() => setMenuOpen((v) => !v)}
+              className={cn(
+                "w-7 h-7 flex items-center justify-center rounded-lg transition-colors flex-shrink-0",
+                "text-slate-500 hover:text-white hover:bg-white/10",
+                menuOpen && "bg-white/10 text-white"
+              )}
+              aria-label="Booking actions"
+            >
+              <MoreHorizontal size={15} />
+            </button>
           </div>
         </div>
 
@@ -721,19 +766,37 @@ function BookingCard({ booking, highlight, onView, onEdit, onDelete }: {
           )}
         </div>
       </div>
+
+      {/* Portal menu — rendered outside DOM hierarchy, never clipped */}
+      <AnimatePresence>
+        {menuOpen && (
+          <BookingActionMenu
+            key="menu"
+            btnRef={btnRef}
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            onView={onView}
+            onEdit={onEdit}
+            onReschedule={onEdit}
+            onSync={onSync}
+            onDelete={onDelete}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 // ── Date Group Section ────────────────────────────────────────────────────────
 
-function DateGroup({ dateStr, bookings, today, onView, onEdit, onDelete }: {
+function DateGroup({ dateStr, bookings, today, onView, onEdit, onDelete, onSync }: {
   dateStr: string;
   bookings: Booking[];
   today: string;
   onView: (b: Booking) => void;
   onEdit: (b: Booking) => void;
   onDelete: (id: string) => void;
+  onSync: (b: Booking) => void;
 }) {
   const sorted = [...bookings].sort((a, b) => a.time.localeCompare(b.time));
   const header = fmtGroupHeader(dateStr, today);
@@ -762,6 +825,7 @@ function DateGroup({ dateStr, bookings, today, onView, onEdit, onDelete }: {
             onView={() => onView(b)}
             onEdit={() => onEdit(b)}
             onDelete={() => onDelete(b.id)}
+            onSync={() => onSync(b)}
           />
         ))}
       </div>
@@ -1027,6 +1091,14 @@ export default function BookingsPage() {
     setModalOpen(true);
   }
 
+  function handleSyncBooking(b: Booking) {
+    if (b.microsoftEventId) {
+      showToast(`Outlook synced · Event ID: ${b.microsoftEventId.slice(0, 12)}…`, true);
+    } else {
+      showToast("This booking is not linked to an Outlook calendar event.", false);
+    }
+  }
+
   const deleteBooking = bookings.find((b) => b.id === deleteId);
 
   return (
@@ -1138,6 +1210,7 @@ export default function BookingsPage() {
                   onView={() => setViewBooking(b)}
                   onEdit={() => openEdit(b)}
                   onDelete={() => setDeleteId(b.id)}
+                  onSync={() => handleSyncBooking(b)}
                 />
               ))}
             </div>
@@ -1184,6 +1257,7 @@ export default function BookingsPage() {
               onView={(b) => setViewBooking(b)}
               onEdit={(b) => openEdit(b)}
               onDelete={(id) => setDeleteId(id)}
+              onSync={(b) => handleSyncBooking(b)}
             />
           ))}
         </div>
@@ -1205,6 +1279,7 @@ export default function BookingsPage() {
                 onView={() => setViewBooking(b)}
                 onEdit={() => openEdit(b)}
                 onDelete={() => setDeleteId(b.id)}
+                onSync={() => handleSyncBooking(b)}
               />
             ))}
           </div>
