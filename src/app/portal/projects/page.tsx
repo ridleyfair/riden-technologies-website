@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, MoreHorizontal, RefreshCw, FolderOpen, X,
   AlertTriangle, CheckCircle, Trash2, Eye, Users,
   Calendar, PoundSterling, TrendingUp,
-  Star, Globe, MapPin, Search, Sparkles, Copy, Phone, Mail,
+  Star, Globe, MapPin, Search, Sparkles, Copy, Phone, Mail, Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -156,6 +156,31 @@ function ProjectDetailModal({
   const [logoUrl, setLogoUrl]     = useState<string>(parsedPhotos.logo);
   const [heroPhoto, setHeroPhoto] = useState<string>(parsedPhotos.hero);
   const [photos, setPhotos]       = useState<string[]>(parsedPhotos.gallery);
+  const logoFileRef               = useRef<HTMLInputElement>(null);
+
+  function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const MAX_H = 400;
+        if (img.height <= MAX_H) { setLogoUrl(dataUrl); return; }
+        const scale  = MAX_H / img.height;
+        const canvas = document.createElement("canvas");
+        canvas.width  = Math.round(img.width * scale);
+        canvas.height = MAX_H;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setLogoUrl(canvas.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.85));
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    // reset so same file can be re-selected
+    e.target.value = "";
+  }
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   // Checkatrade scraper state
@@ -1025,9 +1050,17 @@ function ProjectDetailModal({
               {/* Company Logo */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Company Logo</h3>
-                <p className="text-[11px] text-slate-500">Appears in the top-left of the website nav. Best as a PNG with a transparent background.</p>
+                <p className="text-[11px] text-slate-500">Appears top-left in the nav. PNG with transparent background works best.</p>
+                {/* hidden file input */}
+                <input
+                  ref={logoFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoUpload}
+                />
                 {logoUrl ? (
-                  <div className="relative rounded-xl overflow-hidden border border-riden-border bg-riden-surface flex items-center justify-center h-20 px-4">
+                  <div className="relative rounded-xl border border-riden-border bg-riden-surface flex items-center justify-center h-20 px-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={logoUrl} alt="Logo" className="max-h-14 max-w-full object-contain" />
                     <button
@@ -1038,12 +1071,20 @@ function ProjectDetailModal({
                     </button>
                   </div>
                 ) : (
-                  <input
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="Paste logo URL..."
-                    className={`${inputCls} text-xs`}
-                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => logoFileRef.current?.click()}
+                      className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0"
+                    >
+                      <Upload size={12} /> Upload
+                    </button>
+                    <input
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder="or paste a URL..."
+                      className={`${inputCls} text-xs`}
+                    />
+                  </div>
                 )}
               </div>
 
