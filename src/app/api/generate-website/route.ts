@@ -266,9 +266,9 @@ function buildPagesJson(
 
         case "services":
           if (isHome) {
-            sectionJsons.push(`{ "type": "services", "content": { "headline": "Our Services", "items": [ <3 top service highlights from About/Services — name, description (1 sentence), icon (emoji), highlight (bool)> ] } }`);
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Our Services", "items": [ <3–6 top service highlights from About/Services — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
           } else {
-            sectionJsons.push(`{ "type": "services", "content": { "headline": "Everything We Offer", "items": [ <ALL services from About/Services with full descriptions — name, description (2-3 sentences), icon (emoji), highlight (bool)> ] } }`);
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Everything We Offer", "items": [ <ALL services from About/Services — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler — be specific about what the service delivers), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
           }
           break;
 
@@ -438,7 +438,7 @@ ${reviewsBlock}
 MANDATORY CONTENT RULES:
 1. Hero (home page) — specific tagline using REAL facts from About. FORBIDDEN: "passionate professionals", "years of experience" without a number, "trusted local experts".
 2. Hero (sub-pages) — brief page-specific headline, not the business tagline.
-3. Services (home page) — 3 highlights only. Services (dedicated page) — ALL services with full descriptions.
+3. Services (home page) — 3–6 highlights. Services (dedicated page) — ALL services. Every description: 1 sentence, 18–32 words MAX. No business name. No "our team", "we are dedicated", "passionate" filler. Be specific and practical.
 4. About — professionally rewrite About text. Preserve ALL facts (dates, years, locations, capabilities).
 5. Testimonials — CRITICAL: testimonials.content.items are pre-populated. Copy them exactly as given. If items is [], keep it as [] — NEVER invent testimonials.
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
