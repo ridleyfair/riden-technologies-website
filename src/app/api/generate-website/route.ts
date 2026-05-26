@@ -52,37 +52,124 @@ interface GenerateBody {
   photos?: string[];
 }
 
-// ── Template / theme picker ───────────────────────────────────────────────────
+// ── Template definitions ──────────────────────────────────────────────────────
+// Each template declares whether it is single-page (scroll) or multi-page
+// (routed), and which pages + section types it expects.
+// Section types understood by the renderer: hero, services, about,
+// testimonials, gallery, cta, contact, footer.
 
-const TEMPLATE_THEMES: Record<string, string> = {
-  "modern-minimal":          "minimal",
-  "tradie-bold":             "bold",
-  "healthcare-clean":        "minimal",
-  "beauty-elegant":          "elegant",
-  "luxury-premium":          "elegant",
-  "corporate-professional":  "modern",
-  "legal-authority":         "classic",
+interface PageDef {
+  slug: string;
+  title: string;
+  sections: string[];
+}
+
+interface TemplateDef {
+  themeId: string;
+  siteType: "single-page" | "multi-page";
+  label: string;
+  pages: PageDef[];
+}
+
+const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
+  "modern-minimal": {
+    themeId: "minimal",
+    siteType: "multi-page",
+    label: "Modern Minimal",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "tradie-bold": {
+    themeId: "bold",
+    siteType: "single-page",
+    label: "Tradie Bold",
+    pages: [
+      { slug: "/", title: "Home", sections: ["hero", "services", "about", "gallery", "testimonials", "cta", "footer"] },
+    ],
+  },
+  "healthcare-clean": {
+    themeId: "minimal",
+    siteType: "multi-page",
+    label: "Healthcare Clean",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "beauty-elegant": {
+    themeId: "elegant",
+    siteType: "multi-page",
+    label: "Beauty Elegant",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "gallery", "testimonials", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/gallery",  title: "Gallery",  sections: ["hero", "gallery", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "luxury-premium": {
+    themeId: "elegant",
+    siteType: "multi-page",
+    label: "Luxury Premium",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/gallery",  title: "Gallery",  sections: ["hero", "gallery", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "corporate-professional": {
+    themeId: "modern",
+    siteType: "multi-page",
+    label: "Corporate Professional",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "legal-authority": {
+    themeId: "classic",
+    siteType: "multi-page",
+    label: "Legal Authority",
+    pages: [
+      { slug: "/",                title: "Home",           sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
+      { slug: "/practice-areas",  title: "Practice Areas", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/about",           title: "About",          sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/contact",         title: "Contact",        sections: ["hero", "contact", "footer"] },
+    ],
+  },
 };
+
+// Kept for backward compatibility — derived from TEMPLATE_DEFINITIONS
+const TEMPLATE_THEMES: Record<string, string> = Object.fromEntries(
+  Object.entries(TEMPLATE_DEFINITIONS).map(([id, def]) => [id, def.themeId]),
+);
 
 function pickTemplate(industry: string): { templateId: string; themeId: string } {
   const ind = (industry ?? "").toLowerCase();
+  let templateId = "modern-minimal";
   if (["trades", "automotive", "construction", "plumbing", "electrical", "roofing"].some((k) => ind.includes(k))) {
-    return { templateId: "tradie-bold", themeId: "bold" };
+    templateId = "tradie-bold";
+  } else if (["beauty", "salon", "spa", "nails", "hair"].some((k) => ind.includes(k))) {
+    templateId = "beauty-elegant";
+  } else if (["health", "medical", "dental", "therapy", "care"].some((k) => ind.includes(k))) {
+    templateId = "healthcare-clean";
+  } else if (["legal", "law", "solicitor"].some((k) => ind.includes(k))) {
+    templateId = "legal-authority";
   }
-  if (["beauty", "salon", "spa", "nails", "hair"].some((k) => ind.includes(k))) {
-    return { templateId: "beauty-elegant", themeId: "elegant" };
-  }
-  if (["health", "medical", "dental", "therapy", "care"].some((k) => ind.includes(k))) {
-    return { templateId: "healthcare-clean", themeId: "minimal" };
-  }
-  if (["legal", "law", "solicitor"].some((k) => ind.includes(k))) {
-    return { templateId: "luxury-premium", themeId: "elegant" };
-  }
-  return { templateId: "modern-minimal", themeId: "minimal" };
+  return { templateId, themeId: TEMPLATE_DEFINITIONS[templateId].themeId };
 }
 
 // ── About field parser — cleans scraped Checkatrade / web text ────────────────
-// Strips navigation noise while preserving trust signals and location data.
 
 function parseAbout(raw: string): {
   cleaned: string;
@@ -118,7 +205,6 @@ function parseAbout(raw: string): {
     cleanLines.push(line);
   }
 
-  // Remove consecutive duplicate lines (Checkatrade sometimes repeats headings)
   const deduped: string[] = [];
   for (const line of cleanLines) {
     if (deduped[deduped.length - 1] !== line) deduped.push(line);
@@ -131,60 +217,183 @@ function parseAbout(raw: string): {
   };
 }
 
+// ── Build the pages JSON fragment for the Claude prompt ───────────────────────
+// Produces a JSON-like schema with placeholders that Claude fills in.
+
+function buildPagesJson(
+  def: TemplateDef,
+  body: GenerateBody,
+  topReviews: Review[],
+  locationSuffix: string,
+): string {
+  const phone = body.phone;
+  const city = body.city + locationSuffix;
+  const year = new Date().getFullYear();
+  const hasPhotos = (body.photos ?? []).length > 0;
+  const reviewsNote = topReviews.length > 0
+    ? "use the provided real reviews verbatim"
+    : "write 2-3 short plausible testimonials";
+
+  // Build nav links — anchor links for single-page, routes for multi-page
+  const navLinks = def.siteType === "single-page"
+    ? [
+        { label: "Home", href: "/" },
+        { label: "Services", href: "#services" },
+        { label: "About", href: "#about" },
+        { label: "Contact", href: "#contact" },
+      ]
+    : def.pages.map((p) => ({ label: p.title, href: p.slug }));
+
+  const navJson = JSON.stringify(navLinks, null, 2)
+    .split("\n").join("\n  "); // indent to match outer JSON
+
+  const pageJsons = def.pages.map((page) => {
+    const isHome = page.slug === "/";
+    const sectionJsons: string[] = [];
+
+    for (const sType of page.sections) {
+      switch (sType) {
+        case "hero":
+          if (isHome) {
+            sectionJsons.push(`{ "type": "hero", "content": { "tagline": "<specific tagline using About facts — NOT generic filler>", "subHeadline": "<specific sub-headline with real services or trust signals>", "cta": "Get a Free Quote", "ctaHref": "tel:${phone}" } }`);
+          } else {
+            sectionJsons.push(`{ "type": "hero", "content": { "tagline": "<${page.title} — concise page headline>", "subHeadline": "<1-line page intro>", "variant": "mini" } }`);
+          }
+          break;
+
+        case "services":
+          if (isHome) {
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Our Services", "items": [ <3 top service highlights from About/Services — name, description (1 sentence), icon (emoji), highlight (bool)> ] } }`);
+          } else {
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Everything We Offer", "items": [ <ALL services from About/Services with full descriptions — name, description (2-3 sentences), icon (emoji), highlight (bool)> ] } }`);
+          }
+          break;
+
+        case "about":
+          sectionJsons.push(`{ "type": "about", "content": { "headline": "About Us", "body": "<professionally rewritten About text — preserve ALL real facts: membership dates, years trading, specific locations, named capabilities>" } }`);
+          break;
+
+        case "testimonials":
+          sectionJsons.push(`{ "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <${reviewsNote}; each: author, location, body, rating (1-5)> ] } }`);
+          break;
+
+        case "gallery":
+          if (hasPhotos) {
+            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of recent projects", "items": ${JSON.stringify(body.photos!.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } }`);
+          }
+          // if no photos provided, omit gallery section entirely
+          break;
+
+        case "cta":
+          sectionJsons.push(`{ "type": "cta", "content": { "headline": "<specific CTA for ${body.industry} in ${city}>", "subHeadline": "<specific sub-headline using services from About>", "cta": "Call Now", "ctaHref": "tel:${phone}" } }`);
+          break;
+
+        case "contact":
+          sectionJsons.push(`{ "type": "contact", "content": { "headline": "Get In Touch", "subHeadline": "<friendly invite to get in touch>", "phone": "${phone}", "email": "${body.email}", "address": "${city}"${body.notes ? `, "openingHours": "${body.notes}"` : ""} } }`);
+          break;
+
+        case "footer":
+          sectionJsons.push(`{ "type": "footer", "content": { "tagline": "<short tagline from About facts>", "columns": [], "phone": "${phone}", "email": "${body.email}", "address": "${city}", "copyright": "© ${year} ${body.businessName}. All rights reserved." } }`);
+          break;
+      }
+    }
+
+    const sectionsStr = sectionJsons.join(",\n          ");
+    return `{
+      "slug": "${page.slug}",
+      "title": "${page.title}",
+      "sections": [
+          ${sectionsStr}
+      ]
+    }`;
+  });
+
+  return `{
+  "pages": [
+    ${pageJsons.join(",\n    ")}
+  ],
+  "nav": {
+    "links": ${navJson},
+    "ctaLabel": "Get a Free Quote",
+    "ctaHref": "tel:${phone}"
+  }
+}`;
+}
+
 // ── Claude API call ───────────────────────────────────────────────────────────
 
-async function generateSiteSpec(body: GenerateBody, apiKey: string): Promise<string> {
-  // ── Debug logging (no secrets logged) ─────────────────────────────────────
+async function generateSiteSpec(
+  body: GenerateBody,
+  templateId: string,
+  themeId: string,
+  templateDef: TemplateDef,
+  apiKey: string,
+): Promise<string> {
+  // ── Debug logging ──────────────────────────────────────────────────────────
   const aboutLength = body.about?.length ?? 0;
-  console.log(`[generate-website] businessName="${body.businessName}" about.length=${aboutLength}`);
+  console.log(
+    `[generate-website] businessName="${body.businessName}"`,
+    `templateId="${templateId}" siteType="${templateDef.siteType}"`,
+    `about.length=${aboutLength}`,
+  );
   if (aboutLength === 0) {
-    console.warn("[generate-website] WARNING: about field is empty — website copy will use generic fallback");
+    console.warn("[generate-website] WARNING: about field is empty — copy will use generic fallback");
   } else {
-    console.log(`[generate-website] about preview (first 300 chars): ${body.about!.slice(0, 300)}`);
+    console.log(`[generate-website] about preview: ${body.about!.slice(0, 300)}`);
   }
 
-  // ── Clean the About field ──────────────────────────────────────────────────
+  // ── Parse About field ──────────────────────────────────────────────────────
   const parsedAbout = parseAbout(body.about ?? "");
   console.log(
-    `[generate-website] parsedAbout cleaned.length=${parsedAbout.cleaned.length}`,
+    `[generate-website] parsedAbout.cleaned.length=${parsedAbout.cleaned.length}`,
     `trustSignals=${JSON.stringify(parsedAbout.trustSignals)}`,
     `locations=${JSON.stringify(parsedAbout.locations)}`,
   );
 
-  // ── Select top real reviews to pass verbatim to Claude ────────────────────
+  // ── Top real reviews ───────────────────────────────────────────────────────
   const realReviews = Array.isArray(body.reviews) ? body.reviews : [];
   const topReviews = realReviews
     .filter((r) => r.body && r.body.trim().length > 15)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 3);
 
-  const { templateId, themeId } = pickTemplate(body.industry);
   const locationSuffix = body.postcode ? ` (${body.postcode})` : "";
+  const city = body.city + locationSuffix;
 
   const aboutBlock = parsedAbout.cleaned.length > 0
     ? parsedAbout.cleaned
     : "(No About information provided — use industry and city as fallback only.)";
 
   const trustLine = parsedAbout.trustSignals.length > 0
-    ? `\nTrust signals found in About: ${parsedAbout.trustSignals.join("; ")}`
-    : "";
-
+    ? `\nTrust signals: ${parsedAbout.trustSignals.join("; ")}` : "";
   const locationLine = parsedAbout.locations.length > 0
-    ? `\nService area mentions in About: ${parsedAbout.locations.join("; ")}`
-    : "";
+    ? `\nService areas: ${parsedAbout.locations.join("; ")}` : "";
 
   const reviewsBlock =
     topReviews.length > 0
-      ? `\nREAL CUSTOMER REVIEWS — use these verbatim in testimonials; do NOT invent new ones:\n${topReviews.map((r) => `- "${r.body.trim()}" — ${r.author}${r.date ? ` (${r.date})` : ""}, rated ${r.rating}/5`).join("\n")}`
-      : "\n(No real reviews provided — you may write 2-3 short plausible testimonials only.)";
+      ? `\nREAL REVIEWS — use verbatim in testimonials:\n${topReviews.map((r) => `- "${r.body.trim()}" — ${r.author}${r.date ? ` (${r.date})` : ""}, ${r.rating}/5`).join("\n")}`
+      : "\n(No real reviews — you may write 2-3 plausible short testimonials.)";
+
+  // ── Build the template-specific pages schema ───────────────────────────────
+  const pagesSchema = buildPagesJson(templateDef, body, topReviews, locationSuffix);
 
   const systemPrompt =
     "You are a professional website copywriter for Riden Technologies. " +
     "Generate a complete SiteSpec JSON for a client website. " +
-    "The ABOUT section is the PRIMARY source of truth — every section of the website must be grounded in it. " +
+    "The ABOUT section is the PRIMARY source of truth — base ALL copy on it. " +
+    "Follow the exact page/section structure provided — do not add or remove pages. " +
     "Return ONLY valid JSON, no markdown, no explanation.";
 
+  const pageCount = templateDef.pages.length;
+  const siteTypeDesc = templateDef.siteType === "multi-page"
+    ? `MULTI-PAGE site (${pageCount} pages with routing)`
+    : "SINGLE-PAGE site (all sections on one scroll)";
+
   const userPrompt = `Generate a complete SiteSpec JSON for this business.
+
+SELECTED TEMPLATE: ${templateId} (${templateDef.label})
+SITE TYPE: ${siteTypeDesc}
+PAGES TO GENERATE: ${templateDef.pages.map((p) => `${p.title} (${p.slug})`).join(", ")}
 
 ══════════════════════════════════════════
 PRIMARY SOURCE — ABOUT THIS BUSINESS
@@ -196,33 +405,29 @@ ${aboutBlock}${trustLine}${locationLine}
 BUSINESS DETAILS:
 Business Name: ${body.businessName}
 Industry: ${body.industry}
-City/Location: ${body.city}${locationSuffix}
+City/Location: ${city}
 Phone: ${body.phone}
 Email: ${body.email}
 Services: ${body.services}${body.accreditations ? `\nAccreditations: ${body.accreditations}` : ""}${body.rating ? `\nCheckatrade Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}${body.notes ? `\nOpening Hours: ${body.notes}` : ""}${body.socialFacebook ? `\nFacebook: ${body.socialFacebook}` : ""}${body.socialInstagram ? `\nInstagram: ${body.socialInstagram}` : ""}
 ${reviewsBlock}
 
 MANDATORY CONTENT RULES:
-1. Hero tagline — write a specific, compelling 1-line headline using REAL facts from the About section (e.g. specific trades, location, Checkatrade membership date, rating). FORBIDDEN: "We are passionate professionals", "With years of experience", "Your trusted local experts" or any other generic filler.
-2. Hero sub-headline — use 1-2 specific services or trust signals from About.
-3. Services — list ONLY services explicitly named in the About or Services fields. Do NOT invent services.
-4. About section body — professionally rewrite the About text. Preserve ALL factual claims (membership dates, years trading, specific locations, named capabilities). Remove navigation noise and repetition. Keep it factually accurate.
-5. Testimonials — if real reviews are provided above, use them verbatim. Do NOT invent fake reviews.
-6. Trust signals — use ONLY facts from About/Accreditations (e.g. "Checkatrade member since February 2020", "Gas Safe Registered"). Do NOT add fake certifications, fake awards, or fake guarantees.
-7. SEO title/description — include specific services and the ${body.city}${body.postcode ? `/${body.postcode}` : ""} location.
-8. Local copy — if About mentions specific towns, postcodes, or service areas, include them in the copy.
-9. CTA copy — make it specific to the industry and location, not generic.
-10. Colour palette — choose colours that fit the ${body.industry} industry: professional and trustworthy.
+1. Hero (home page) — specific tagline using REAL facts from About. FORBIDDEN: "passionate professionals", "years of experience" without a number, "trusted local experts".
+2. Hero (sub-pages) — brief page-specific headline, not the business tagline.
+3. Services (home page) — 3 highlights only. Services (dedicated page) — ALL services with full descriptions.
+4. About — professionally rewrite About text. Preserve ALL facts (dates, years, locations, capabilities).
+5. Testimonials — ${topReviews.length > 0 ? "use the real reviews verbatim" : "write 2-3 short plausible ones"}.
+6. Trust signals — ONLY from About/Accreditations. No invented certifications.
+7. SEO — include specific services and ${city} location.
+8. Contact section — include real phone, email, address, opening hours from the brief.
 
-ABSOLUTELY DO NOT:
-- Write "We are passionate professionals" or similar filler
-- Write "With years of experience" without a specific number from About
-- Invent certifications, accreditations, or awards not in the source data
-- Invent a team size
-- Invent fake opening hours (use the provided ones or omit)
-- Write fake reviews if real ones are provided above
+DO NOT:
+- Generate different pages than the structure provided
+- Write generic filler copy
+- Invent services, certifications, or reviews not in the source data
+- Add or remove sections from any page
 
-The JSON must exactly match this structure:
+The JSON must exactly match this structure (fill in all <placeholders> with real content):
 {
   "version": 1,
   "businessId": "<uuid>",
@@ -230,6 +435,7 @@ The JSON must exactly match this structure:
   "tier": "${body.tier}",
   "themeId": "${themeId}",
   "templateId": "${templateId}",
+  "siteType": "${templateDef.siteType}",
   "enabledModules": [],
   "brand": {
     "palette": {
@@ -246,34 +452,10 @@ The JSON must exactly match this structure:
     "tone": "professional",
     "logoText": "${body.businessName}"
   },
-  "nav": {
-    "links": [
-      { "label": "Home", "href": "/" },
-      { "label": "Services", "href": "#services" },
-      { "label": "About", "href": "#about" },
-      { "label": "Contact", "href": "#contact" }
-    ],
-    "ctaLabel": "Get a Free Quote",
-    "ctaHref": "tel:${body.phone}"
-  },
-  "pages": [
-    {
-      "slug": "/",
-      "title": "Home",
-      "sections": [
-        { "type": "hero", "content": { "tagline": "<specific tagline from About facts — not generic>", "subHeadline": "<specific sub-headline using real services or trust signals from About>", "cta": "Get a Free Quote", "ctaHref": "tel:${body.phone}" } },
-        { "type": "services", "content": { "headline": "Our Services", "items": [ <3-6 service items using ONLY services named in About/Services. Each: name, description (1-2 sentences), icon (emoji), highlight (boolean)> ] } },
-        { "type": "about", "content": { "headline": "About Us", "body": "<professionally rewritten About text — preserve real facts, remove navigation noise, keep factual accuracy>" } },
-        { "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <use real reviews verbatim if provided; each: author, location, body, rating (1-5)> ] } },
-        ${body.photos && body.photos.length > 0 ? `{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of our recent projects", "items": ${JSON.stringify(body.photos.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } },` : ""}
-        { "type": "cta", "content": { "headline": "<specific CTA for ${body.industry} in ${body.city}>", "subHeadline": "<specific sub-headline using services from About>", "cta": "Call Now", "ctaHref": "tel:${body.phone}" } },
-        { "type": "footer", "content": { "tagline": "<short tagline from About facts>", "columns": [], "phone": "${body.phone}", "email": "${body.email}", "address": "${body.city}${locationSuffix}", "copyright": "© ${new Date().getFullYear()} ${body.businessName}. All rights reserved." } }
-      ]
-    }
-  ],
+  ${pagesSchema.slice(1, -1).trim()},
   "seo": {
-    "title": "<SEO title — specific services + ${body.city} location>",
-    "description": "<meta description using real services from About and ${body.city} location>",
+    "title": "<SEO title — specific services + ${city}>",
+    "description": "<meta description using real services from About and ${city}>",
     "keywords": [ <5-8 keywords using specific services from About and location> ],
     "ogTitle": "<og title>",
     "ogDescription": "<og description>"
@@ -282,7 +464,14 @@ The JSON must exactly match this structure:
 
 Return ONLY the JSON object.`;
 
-  console.log(`[generate-website] prompt.length=${userPrompt.length} about.included=${userPrompt.includes(aboutBlock.slice(0, 30))}`);
+  console.log(
+    `[generate-website] prompt.length=${userPrompt.length}`,
+    `pages=${pageCount}`,
+    `about.included=${userPrompt.includes(aboutBlock.slice(0, 20))}`,
+  );
+
+  // Multi-page sites need more output tokens
+  const maxTokens = templateDef.siteType === "multi-page" ? 8192 : 4096;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -293,7 +482,7 @@ Return ONLY the JSON object.`;
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
+      max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     }),
@@ -304,12 +493,9 @@ Return ONLY the JSON object.`;
     throw new Error(`Claude API error (${resp.status}): ${err}`);
   }
 
-  const data = (await resp.json()) as {
-    content: Array<{ type: string; text: string }>;
-  };
+  const data = (await resp.json()) as { content: Array<{ type: string; text: string }> };
   let text = data.content.find((c) => c.type === "text")?.text ?? "";
   if (!text) throw new Error("Claude returned empty response");
-  // Strip markdown code fences if present
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
   return text;
 }
@@ -322,10 +508,7 @@ export async function POST(req: NextRequest) {
 
   const apiKey = getAnthropicKey();
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY is not configured." }, { status: 500 });
   }
 
   let body: GenerateBody;
@@ -338,86 +521,107 @@ export async function POST(req: NextRequest) {
   if (!body.businessName || !body.clientName || !body.username || !body.password) {
     return NextResponse.json(
       { error: "businessName, clientName, username, and password are required." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!body.about || body.about.trim().length === 0) {
-    console.warn(`[generate-website] about is empty for "${body.businessName}" — proceeding but copy will be generic`);
+    console.warn(`[generate-website] about is empty for "${body.businessName}" — copy will be generic`);
   }
 
-  // Generate spec via Claude — use manual template selection if provided
-  const { templateId, themeId } = body.templateId && TEMPLATE_THEMES[body.templateId]
-    ? { templateId: body.templateId, themeId: TEMPLATE_THEMES[body.templateId] }
-    : pickTemplate(body.industry);
+  // ── Resolve template — user selection takes priority ──────────────────────
+  const resolvedTemplateId = body.templateId && TEMPLATE_DEFINITIONS[body.templateId]
+    ? body.templateId
+    : pickTemplate(body.industry).templateId;
+  const templateDef = TEMPLATE_DEFINITIONS[resolvedTemplateId];
+  const resolvedThemeId = templateDef.themeId;
+
+  console.log(
+    `[generate-website] resolved templateId="${resolvedTemplateId}"`,
+    `(requested="${body.templateId ?? "auto"}")`,
+    `themeId="${resolvedThemeId}"`,
+    `siteType="${templateDef.siteType}"`,
+    `pages=${templateDef.pages.map((p) => p.slug).join(",")}`,
+  );
+
+  // ── Generate spec ──────────────────────────────────────────────────────────
   let specJson: string;
   try {
-    specJson = await generateSiteSpec(body, apiKey);
+    specJson = await generateSiteSpec(body, resolvedTemplateId, resolvedThemeId, templateDef, apiKey);
     const spec = JSON.parse(specJson) as Record<string, unknown>;
-    // Always enforce the requested tier and template — Claude sometimes overrides these
+
+    // Always enforce resolved template/tier — Claude occasionally drifts
     spec.tier = body.tier;
-    spec.templateId = templateId;
-    spec.themeId = themeId;
+    spec.templateId = resolvedTemplateId;
+    spec.themeId = resolvedThemeId;
+    spec.siteType = templateDef.siteType;
+
     const pages = spec.pages as Array<Record<string, unknown>> | undefined;
-    const sections = Array.isArray(pages?.[0]?.sections) ? pages![0].sections as Record<string, unknown>[] : null;
 
-    if (sections) {
-      // Inject hero background image
-      if (body.heroImage) {
-        const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
-        if (heroSection) {
-          const heroContent = heroSection.content as Record<string, unknown>;
-          heroContent.backgroundImage = body.heroImage;
+    if (Array.isArray(pages)) {
+      for (const page of pages) {
+        const sections = Array.isArray(page.sections) ? page.sections as Record<string, unknown>[] : null;
+        if (!sections) continue;
+
+        const isHome = (page.slug as string) === "/";
+
+        // Inject hero background image into home page hero section only
+        if (isHome && body.heroImage) {
+          const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
+          if (heroSection) {
+            (heroSection.content as Record<string, unknown>).backgroundImage = body.heroImage;
+          }
+        }
+
+        // For gallery pages or home-page gallery sections, inject real photos
+        if (body.photos && body.photos.length > 0) {
+          const isGalleryPage = (page.slug as string) === "/gallery";
+          const gallerySection = sections.find((s) => s.type === "gallery") as Record<string, unknown> | undefined;
+
+          if (gallerySection) {
+            // Override items with real photos
+            (gallerySection.content as Record<string, unknown>).items = body.photos.map((src, i) => ({
+              src,
+              alt: `${body.businessName} work photo ${i + 1}`,
+              caption: "",
+            }));
+          } else if (isHome || isGalleryPage) {
+            // Inject gallery section if not already present on home or gallery page
+            const insertBefore = sections.findIndex((s) => s.type === "cta" || s.type === "footer");
+            const idx = insertBefore >= 0 ? insertBefore : sections.length - 1;
+            sections.splice(idx, 0, {
+              type: "gallery",
+              content: {
+                headline: "Our Work",
+                subHeadline: "A selection of recent projects",
+                items: body.photos.map((src, i) => ({
+                  src,
+                  alt: `${body.businessName} work photo ${i + 1}`,
+                  caption: "",
+                })),
+              },
+            });
+          }
         }
       }
 
-      // Ensure gallery section is present when work photos provided
-      if (body.photos && body.photos.length > 0) {
-        const hasGallery = sections.some((s) => s.type === "gallery");
-        if (!hasGallery) {
-          const gallerySection = {
-            type: "gallery",
-            content: {
-              headline: "Our Work",
-              subHeadline: "A selection of our recent projects",
-              items: body.photos.map((src, i) => ({
-                src,
-                alt: `${body.businessName} work photo ${i + 1}`,
-                caption: "",
-              })),
-            },
-          };
-          sections.splice(Math.max(0, sections.length - 2), 0, gallerySection);
-        } else {
-          const gallery = sections.find((s) => s.type === "gallery") as Record<string, unknown>;
-          const content = gallery.content as Record<string, unknown>;
-          content.items = body.photos.map((src, i) => ({
-            src,
-            alt: `${body.businessName} work photo ${i + 1}`,
-            caption: "",
-          }));
-        }
-      }
-
-      // Debug: log generated section types and About body preview
-      const sectionTypes = sections.map((s) => s.type as string);
-      console.log(`[generate-website] generated sections: ${sectionTypes.join(", ")}`);
-      const aboutSection = sections.find((s) => s.type === "about") as Record<string, unknown> | undefined;
-      if (aboutSection) {
-        const aboutContent = aboutSection.content as Record<string, unknown>;
-        console.log(`[generate-website] about.body preview: ${String(aboutContent.body ?? "").slice(0, 200)}`);
-      }
+      // Debug output
+      const pageMap = pages.map((p) => {
+        const sections = (p.sections as Record<string, unknown>[] | undefined) ?? [];
+        return `${p.slug}[${sections.map((s) => s.type).join(",")}]`;
+      });
+      console.log(`[generate-website] final pages: ${pageMap.join(" | ")}`);
     }
 
     specJson = JSON.stringify(spec);
   } catch (e) {
     return NextResponse.json(
       { error: `Failed to generate site spec: ${String(e)}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
-  // Save to DB
+  // ── Save to DB ─────────────────────────────────────────────────────────────
   const id = crypto.randomUUID();
   const previewUrl = `https://sites.ridentechnologies.com/preview/${id}`;
 
@@ -434,7 +638,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     return NextResponse.json(
       { error: `Failed to save generated site: ${String(e)}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
