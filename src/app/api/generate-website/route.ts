@@ -18,12 +18,21 @@ function getAnthropicKey(): string {
 
 // ── Request body type ─────────────────────────────────────────────────────────
 
+interface Review {
+  author: string;
+  rating: number;
+  body: string;
+  source: string;
+  date?: string;
+}
+
 interface GenerateBody {
   projectId?: string;
   businessName: string;
   clientName: string;
   industry: string;
   city: string;
+  postcode?: string;
   phone: string;
   email: string;
   services: string;
@@ -37,6 +46,9 @@ interface GenerateBody {
   templateId?: string;
   heroImage?: string;
   notes?: string;
+  socialFacebook?: string;
+  socialInstagram?: string;
+  reviews?: Review[];
   photos?: string[];
 }
 
@@ -71,29 +83,146 @@ function pickTemplate(industry: string): { templateId: string; themeId: string }
   return { templateId: "modern-minimal", themeId: "minimal" };
 }
 
+// ── About field parser — cleans scraped Checkatrade / web text ────────────────
+// Strips navigation noise while preserving trust signals and location data.
+
+function parseAbout(raw: string): {
+  cleaned: string;
+  trustSignals: string[];
+  locations: string[];
+} {
+  const noisePatterns = [
+    /^(Overview|Skills|Reviews|Photos|Company\s+info|Request\s+a\s+quote|Get\s+a\s+quote|View\s+all|See\s+all|Show\s+more|Home|Back|Next|Previous|Trustmarks|Follow|Share|Report|Verified|Profile|Gallery|Checkatrade\s+Guarantee)$/i,
+    /^\d+\s+(reviews?|photos?|jobs?\s+completed?)$/i,
+    /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\w*\s*[\-–:]/i,
+    /^(Call|Email|Message|Contact)\s+now$/i,
+    /^(Read\s+more|Less|Expand|Collapse|Load\s+more)$/i,
+  ];
+
+  const lines = raw.split(/[\n\r]+/).map((l) => l.trim()).filter(Boolean);
+  const cleanLines: string[] = [];
+  const trustSignals: string[] = [];
+  const locations: string[] = [];
+
+  for (const line of lines) {
+    if (noisePatterns.some((p) => p.test(line))) continue;
+
+    if (/checkatrade\s+member\s+since|member\s+since\s+(january|february|march|april|may|june|july|august|september|october|november|december)/i.test(line)) {
+      trustSignals.push(line);
+    }
+    if (/trading\s+for\s+\d+|years?\s+on\s+checkatrade|\d+\s*years?\s+(of\s+)?experience|established\s+in\s+\d{4}/i.test(line)) {
+      trustSignals.push(line);
+    }
+    if (/areas?\s+covered|service\s+area|we\s+cover|covering|based\s+in|serving\s+(the\s+)?/i.test(line)) {
+      locations.push(line);
+    }
+
+    cleanLines.push(line);
+  }
+
+  // Remove consecutive duplicate lines (Checkatrade sometimes repeats headings)
+  const deduped: string[] = [];
+  for (const line of cleanLines) {
+    if (deduped[deduped.length - 1] !== line) deduped.push(line);
+  }
+
+  return {
+    cleaned: deduped.join("\n"),
+    trustSignals: [...new Set(trustSignals)],
+    locations: [...new Set(locations)],
+  };
+}
+
 // ── Claude API call ───────────────────────────────────────────────────────────
 
 async function generateSiteSpec(body: GenerateBody, apiKey: string): Promise<string> {
-  const systemPrompt =
-    "You are a professional website copywriter for Riden Technologies. " +
-    "Generate a complete SiteSpec JSON for a client website based on the business data provided. " +
-    "Return ONLY valid JSON, no markdown, no explanation.";
+  // ── Debug logging (no secrets logged) ─────────────────────────────────────
+  const aboutLength = body.about?.length ?? 0;
+  console.log(`[generate-website] businessName="${body.businessName}" about.length=${aboutLength}`);
+  if (aboutLength === 0) {
+    console.warn("[generate-website] WARNING: about field is empty — website copy will use generic fallback");
+  } else {
+    console.log(`[generate-website] about preview (first 300 chars): ${body.about!.slice(0, 300)}`);
+  }
+
+  // ── Clean the About field ──────────────────────────────────────────────────
+  const parsedAbout = parseAbout(body.about ?? "");
+  console.log(
+    `[generate-website] parsedAbout cleaned.length=${parsedAbout.cleaned.length}`,
+    `trustSignals=${JSON.stringify(parsedAbout.trustSignals)}`,
+    `locations=${JSON.stringify(parsedAbout.locations)}`,
+  );
+
+  // ── Select top real reviews to pass verbatim to Claude ────────────────────
+  const realReviews = Array.isArray(body.reviews) ? body.reviews : [];
+  const topReviews = realReviews
+    .filter((r) => r.body && r.body.trim().length > 15)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 3);
 
   const { templateId, themeId } = pickTemplate(body.industry);
+  const locationSuffix = body.postcode ? ` (${body.postcode})` : "";
 
-  const userPrompt = `Generate a complete SiteSpec JSON for the following business:
+  const aboutBlock = parsedAbout.cleaned.length > 0
+    ? parsedAbout.cleaned
+    : "(No About information provided — use industry and city as fallback only.)";
 
+  const trustLine = parsedAbout.trustSignals.length > 0
+    ? `\nTrust signals found in About: ${parsedAbout.trustSignals.join("; ")}`
+    : "";
+
+  const locationLine = parsedAbout.locations.length > 0
+    ? `\nService area mentions in About: ${parsedAbout.locations.join("; ")}`
+    : "";
+
+  const reviewsBlock =
+    topReviews.length > 0
+      ? `\nREAL CUSTOMER REVIEWS — use these verbatim in testimonials; do NOT invent new ones:\n${topReviews.map((r) => `- "${r.body.trim()}" — ${r.author}${r.date ? ` (${r.date})` : ""}, rated ${r.rating}/5`).join("\n")}`
+      : "\n(No real reviews provided — you may write 2-3 short plausible testimonials only.)";
+
+  const systemPrompt =
+    "You are a professional website copywriter for Riden Technologies. " +
+    "Generate a complete SiteSpec JSON for a client website. " +
+    "The ABOUT section is the PRIMARY source of truth — every section of the website must be grounded in it. " +
+    "Return ONLY valid JSON, no markdown, no explanation.";
+
+  const userPrompt = `Generate a complete SiteSpec JSON for this business.
+
+══════════════════════════════════════════
+PRIMARY SOURCE — ABOUT THIS BUSINESS
+Read this carefully. Base ALL copy on it.
+══════════════════════════════════════════
+${aboutBlock}${trustLine}${locationLine}
+══════════════════════════════════════════
+
+BUSINESS DETAILS:
 Business Name: ${body.businessName}
 Industry: ${body.industry}
-City/Location: ${body.city}
+City/Location: ${body.city}${locationSuffix}
 Phone: ${body.phone}
 Email: ${body.email}
-Services/Trades: ${body.services}
-${body.about ? `About the Business: ${body.about}` : ""}
-${body.accreditations ? `Accreditations & Certifications: ${body.accreditations}` : ""}
-${body.rating ? `Customer Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}
-Tier: ${body.tier}
-${body.notes ? `Additional Notes: ${body.notes}` : ""}
+Services: ${body.services}${body.accreditations ? `\nAccreditations: ${body.accreditations}` : ""}${body.rating ? `\nCheckatrade Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}${body.notes ? `\nOpening Hours: ${body.notes}` : ""}${body.socialFacebook ? `\nFacebook: ${body.socialFacebook}` : ""}${body.socialInstagram ? `\nInstagram: ${body.socialInstagram}` : ""}
+${reviewsBlock}
+
+MANDATORY CONTENT RULES:
+1. Hero tagline — write a specific, compelling 1-line headline using REAL facts from the About section (e.g. specific trades, location, Checkatrade membership date, rating). FORBIDDEN: "We are passionate professionals", "With years of experience", "Your trusted local experts" or any other generic filler.
+2. Hero sub-headline — use 1-2 specific services or trust signals from About.
+3. Services — list ONLY services explicitly named in the About or Services fields. Do NOT invent services.
+4. About section body — professionally rewrite the About text. Preserve ALL factual claims (membership dates, years trading, specific locations, named capabilities). Remove navigation noise and repetition. Keep it factually accurate.
+5. Testimonials — if real reviews are provided above, use them verbatim. Do NOT invent fake reviews.
+6. Trust signals — use ONLY facts from About/Accreditations (e.g. "Checkatrade member since February 2020", "Gas Safe Registered"). Do NOT add fake certifications, fake awards, or fake guarantees.
+7. SEO title/description — include specific services and the ${body.city}${body.postcode ? `/${body.postcode}` : ""} location.
+8. Local copy — if About mentions specific towns, postcodes, or service areas, include them in the copy.
+9. CTA copy — make it specific to the industry and location, not generic.
+10. Colour palette — choose colours that fit the ${body.industry} industry: professional and trustworthy.
+
+ABSOLUTELY DO NOT:
+- Write "We are passionate professionals" or similar filler
+- Write "With years of experience" without a specific number from About
+- Invent certifications, accreditations, or awards not in the source data
+- Invent a team size
+- Invent fake opening hours (use the provided ones or omit)
+- Write fake reviews if real ones are provided above
 
 The JSON must exactly match this structure:
 {
@@ -134,29 +263,28 @@ The JSON must exactly match this structure:
       "slug": "/",
       "title": "Home",
       "sections": [
-        { "type": "hero", "content": { "tagline": "<compelling tagline>", "subHeadline": "<sub headline>", "cta": "Get a Free Quote", "ctaHref": "tel:${body.phone}" } },
-        { "type": "services", "content": { "headline": "Our Services", "items": [ <3-5 service items based on: ${body.services}> ] } },
-        { "type": "about", "content": { "headline": "About Us", "body": "<about paragraph tailored to the business — use the About the Business info if provided, otherwise write a compelling paragraph based on the industry and city>" } },
-        { "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <2-3 plausible testimonials> ] } },
+        { "type": "hero", "content": { "tagline": "<specific tagline from About facts — not generic>", "subHeadline": "<specific sub-headline using real services or trust signals from About>", "cta": "Get a Free Quote", "ctaHref": "tel:${body.phone}" } },
+        { "type": "services", "content": { "headline": "Our Services", "items": [ <3-6 service items using ONLY services named in About/Services. Each: name, description (1-2 sentences), icon (emoji), highlight (boolean)> ] } },
+        { "type": "about", "content": { "headline": "About Us", "body": "<professionally rewritten About text — preserve real facts, remove navigation noise, keep factual accuracy>" } },
+        { "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <use real reviews verbatim if provided; each: author, location, body, rating (1-5)> ] } },
         ${body.photos && body.photos.length > 0 ? `{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of our recent projects", "items": ${JSON.stringify(body.photos.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } },` : ""}
-        { "type": "cta", "content": { "headline": "Ready to Get Started?", "subHeadline": "Contact us today for a free consultation.", "cta": "Call Now", "ctaHref": "tel:${body.phone}" } },
-        { "type": "footer", "content": { "tagline": "<short tagline>", "columns": [], "phone": "${body.phone}", "email": "${body.email}", "address": "${body.city}", "copyright": "© ${new Date().getFullYear()} ${body.businessName}. All rights reserved." } }
+        { "type": "cta", "content": { "headline": "<specific CTA for ${body.industry} in ${body.city}>", "subHeadline": "<specific sub-headline using services from About>", "cta": "Call Now", "ctaHref": "tel:${body.phone}" } },
+        { "type": "footer", "content": { "tagline": "<short tagline from About facts>", "columns": [], "phone": "${body.phone}", "email": "${body.email}", "address": "${body.city}${locationSuffix}", "copyright": "© ${new Date().getFullYear()} ${body.businessName}. All rights reserved." } }
       ]
     }
   ],
   "seo": {
-    "title": "<SEO title>",
-    "description": "<meta description>",
-    "keywords": [ <5-8 relevant keywords> ],
+    "title": "<SEO title — specific services + ${body.city} location>",
+    "description": "<meta description using real services from About and ${body.city} location>",
+    "keywords": [ <5-8 keywords using specific services from About and location> ],
     "ogTitle": "<og title>",
     "ogDescription": "<og description>"
   }
 }
 
-Choose a colour palette that fits the ${body.industry} industry in ${body.city}.
-Each service item must have: name, description, icon (emoji or simple word), highlight (boolean).
-Each testimonial must have: author, location, body, rating (4 or 5).
 Return ONLY the JSON object.`;
+
+  console.log(`[generate-website] prompt.length=${userPrompt.length} about.included=${userPrompt.includes(aboutBlock.slice(0, 30))}`);
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -216,6 +344,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (!body.about || body.about.trim().length === 0) {
+    console.warn(`[generate-website] about is empty for "${body.businessName}" — proceeding but copy will be generic`);
+  }
+
   // Generate spec via Claude — use manual template selection if provided
   const { templateId, themeId } = body.templateId && TEMPLATE_THEMES[body.templateId]
     ? { templateId: body.templateId, themeId: TEMPLATE_THEMES[body.templateId] }
@@ -267,6 +399,15 @@ export async function POST(req: NextRequest) {
             caption: "",
           }));
         }
+      }
+
+      // Debug: log generated section types and About body preview
+      const sectionTypes = sections.map((s) => s.type as string);
+      console.log(`[generate-website] generated sections: ${sectionTypes.join(", ")}`);
+      const aboutSection = sections.find((s) => s.type === "about") as Record<string, unknown> | undefined;
+      if (aboutSection) {
+        const aboutContent = aboutSection.content as Record<string, unknown>;
+        console.log(`[generate-website] about.body preview: ${String(aboutContent.body ?? "").slice(0, 200)}`);
       }
     }
 
