@@ -19,11 +19,12 @@ function getAnthropicKey(): string {
 // ── Request body type ─────────────────────────────────────────────────────────
 
 interface Review {
-  author: string;
-  rating: number;
-  body: string;
-  source: string;
-  date?: string;
+  author:    string;
+  rating:    number;
+  body:      string;
+  source:    string;
+  date?:     string;
+  location?: string;
 }
 
 interface GenerateBody {
@@ -49,6 +50,8 @@ interface GenerateBody {
   notes?: string;
   socialFacebook?: string;
   socialInstagram?: string;
+  platformUrl?: string;
+  platform?: string;
   reviews?: Review[];
   photos?: string[];
 }
@@ -232,9 +235,7 @@ function buildPagesJson(
   const city = body.city + locationSuffix;
   const year = new Date().getFullYear();
   const hasPhotos = (body.photos ?? []).length > 0;
-  const reviewsNote = topReviews.length > 0
-    ? "use the provided real reviews verbatim"
-    : "write 2-3 short plausible testimonials";
+  // No reviewsNote variable needed — reviews are pre-serialised or left empty
 
   // Build nav links — anchor links for single-page, routes for multi-page
   const navLinks = def.siteType === "single-page"
@@ -275,9 +276,26 @@ function buildPagesJson(
           sectionJsons.push(`{ "type": "about", "content": { "headline": "About Us", "body": "<professionally rewritten About text — preserve ALL real facts: membership dates, years trading, specific locations, named capabilities>" } }`);
           break;
 
-        case "testimonials":
-          sectionJsons.push(`{ "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [ <${reviewsNote}; each: author, location, body, rating (1-5)> ] } }`);
+        case "testimonials": {
+          if (topReviews.length === 0) {
+            // No real reviews — output empty items; post-processing will remove this section
+            sectionJsons.push(`{ "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": [] } }`);
+          } else {
+            // Pre-serialise real reviews so Claude copies them verbatim
+            const safeItems = topReviews.map(r => ({
+              author:   r.author || "Customer",
+              location: r.location || body.city,
+              body:     r.body.trim().replace(/"/g, '“').replace(/'/g, '’'),
+              rating:   r.rating > 5 ? Math.round(r.rating / 2) : Math.max(1, Math.min(5, r.rating)),
+              source:   r.source || "Checkatrade",
+              ...(r.date ? { date: r.date } : {}),
+            }));
+            sectionJsons.push(
+              `{ "type": "testimonials", "content": { "headline": "What Our Customers Say", "items": ${JSON.stringify(safeItems)} } }`
+            );
+          }
           break;
+        }
 
         case "gallery":
           if (hasPhotos) {
@@ -361,7 +379,7 @@ async function generateSiteSpec(
   const topReviews = realReviews
     .filter((r) => r.body && r.body.trim().length > 15)
     .sort((a, b) => b.rating - a.rating)
-    .slice(0, 3);
+    .slice(0, 10);
 
   const locationSuffix = body.postcode ? ` (${body.postcode})` : "";
   const city = body.city + locationSuffix;
@@ -377,8 +395,8 @@ async function generateSiteSpec(
 
   const reviewsBlock =
     topReviews.length > 0
-      ? `\nREAL REVIEWS — use verbatim in testimonials:\n${topReviews.map((r) => `- "${r.body.trim()}" — ${r.author}${r.date ? ` (${r.date})` : ""}, ${r.rating}/5`).join("\n")}`
-      : "\n(No real reviews — you may write 2-3 plausible short testimonials.)";
+      ? `\nREAL REVIEWS (${topReviews.length} imported — already embedded in testimonials section below, DO NOT alter):\n${topReviews.map((r, idx) => `${idx + 1}. "${r.body.trim()}" — ${r.author}${r.location ? `, ${r.location}` : ""}${r.date ? ` (${r.date})` : ""}, ${r.rating > 5 ? Math.round(r.rating / 2) : r.rating}/5`).join("\n")}`
+      : "\n(No real reviews available — testimonials.content.items MUST be an empty array []. Do NOT invent any reviews.)";
 
   // ── Build the template-specific pages schema ───────────────────────────────
   const pagesSchema = buildPagesJson(templateDef, body, topReviews, locationSuffix);
@@ -422,7 +440,7 @@ MANDATORY CONTENT RULES:
 2. Hero (sub-pages) — brief page-specific headline, not the business tagline.
 3. Services (home page) — 3 highlights only. Services (dedicated page) — ALL services with full descriptions.
 4. About — professionally rewrite About text. Preserve ALL facts (dates, years, locations, capabilities).
-5. Testimonials — ${topReviews.length > 0 ? "use the real reviews verbatim" : "write 2-3 short plausible ones"}.
+5. Testimonials — CRITICAL: testimonials.content.items are pre-populated. Copy them exactly as given. If items is [], keep it as [] — NEVER invent testimonials.
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
 7. SEO — include specific services and ${city} location.
 8. Contact section — include real phone, email, address, opening hours from the brief.
@@ -570,10 +588,51 @@ export async function POST(req: NextRequest) {
 
     const pages = spec.pages as Array<Record<string, unknown>> | undefined;
 
+    // Pre-build the canonical review items once (rating normalised, source set)
+    // Re-derive from body.reviews since topReviews is scoped inside generateSiteSpec
+    const postProcessReviews = (body.reviews ?? [])
+      .filter((r) => r.body && r.body.trim().length > 15)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 10);
+    const canonicalReviews = postProcessReviews.map((r) => ({
+      author:   r.author || "Customer",
+      location: r.location || body.city,
+      body:     r.body.trim(),
+      rating:   r.rating > 5 ? Math.round(r.rating / 2) : Math.max(1, Math.min(5, r.rating)),
+      source:   r.source || "Checkatrade",
+      ...(r.date ? { date: r.date } : {}),
+    }));
+
     if (Array.isArray(pages)) {
       for (const page of pages) {
-        const sections = Array.isArray(page.sections) ? page.sections as Record<string, unknown>[] : null;
+        let sections = Array.isArray(page.sections) ? page.sections as Record<string, unknown>[] : null;
         if (!sections) continue;
+
+        // ── Testimonials post-processing ──────────────────────────────────────
+        // 1. Overwrite items with canonical reviews (or keep empty if none)
+        // 2. Inject platform metadata
+        // 3. Remove testimonials sections with 0 items (hide when no real reviews)
+        for (const section of sections) {
+          if ((section.type as string) !== "testimonials") continue;
+          const sc = section.content as Record<string, unknown>;
+          if (canonicalReviews.length > 0) {
+            sc.items = canonicalReviews;
+            if (body.platformUrl) {
+              sc.platformUrl   = body.platformUrl;
+              sc.platform      = body.platform ?? "Checkatrade";
+              sc.totalReviews  = body.reviewCount ?? canonicalReviews.length;
+            }
+          } else {
+            sc.items = [];
+          }
+        }
+        // Remove sections with empty testimonials
+        sections = sections.filter((s) => {
+          if ((s.type as string) !== "testimonials") return true;
+          const items = (s.content as Record<string, unknown>).items as unknown[];
+          return Array.isArray(items) && items.length > 0;
+        });
+        page.sections = sections;
 
         const isHome = (page.slug as string) === "/";
 
