@@ -55,8 +55,6 @@ interface GenerateBody {
 // ── Template / theme picker ───────────────────────────────────────────────────
 
 const TEMPLATE_THEMES: Record<string, string> = {
-  "starter-simple":          "minimal",
-  "starter-landing":         "modern",
   "modern-minimal":          "minimal",
   "tradie-bold":             "bold",
   "healthcare-clean":        "minimal",

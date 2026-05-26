@@ -1120,10 +1120,6 @@ function ProjectDetailModal({
                   className={inputCls}
                 >
                   <option value="" className="bg-riden-surface">Auto (industry-matched)</option>
-                  <optgroup label="── Starter" className="bg-riden-surface text-slate-500">
-                    <option value="starter-simple"   className="bg-riden-surface">Simple</option>
-                    <option value="starter-landing"  className="bg-riden-surface">Landing Page</option>
-                  </optgroup>
                   <optgroup label="── Pro" className="bg-riden-surface text-slate-500">
                     <option value="modern-minimal"   className="bg-riden-surface">Modern Minimal</option>
                     <option value="tradie-bold"       className="bg-riden-surface">Tradie Bold</option>

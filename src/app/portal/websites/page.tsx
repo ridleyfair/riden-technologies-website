@@ -28,13 +28,13 @@ function WebsiteModal({
   open: boolean; mode: "create" | "edit"; initial?: Partial<Website>;
   onClose: () => void; onSave: () => void;
 }) {
-  const [form, setForm] = useState({ name: "", client: "", url: "", status: "building", tier: "starter", template: "Custom Design" });
+  const [form, setForm] = useState({ name: "", client: "", url: "", status: "building", tier: "pro", template: "Custom Design" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
-      setForm({ name: initial?.name ?? "", client: initial?.client ?? "", url: initial?.url ?? "", status: initial?.status ?? "building", tier: initial?.tier ?? "starter", template: initial?.template ?? "Custom Design" });
+      setForm({ name: initial?.name ?? "", client: initial?.client ?? "", url: initial?.url ?? "", status: initial?.status ?? "building", tier: initial?.tier ?? "pro", template: initial?.template ?? "Custom Design" });
       setError("");
     }
   }, [open, initial]);
@@ -92,8 +92,8 @@ function WebsiteModal({
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Tier</label>
                   <select className={inputCls} value={form.tier} onChange={(e) => set("tier", e.target.value)}>
-                    <option value="starter">Starter</option>
-                    <option value="growth">Growth</option>
+                    <option value="pro">Pro</option>
+                    <option value="pro_plus">Pro+</option>
                     <option value="enterprise">Enterprise</option>
                   </select>
                 </div>

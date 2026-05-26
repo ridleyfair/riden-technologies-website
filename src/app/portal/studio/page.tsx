@@ -65,7 +65,7 @@ const STATUS_VARIANT: Record<string, "success" | "warning" | "secondary"> = {
 };
 
 const TIER_LABELS: Record<string, string> = {
-  starter: "Starter",
+  pro: "Pro",
   pro_plus: "Pro+",
   enterprise: "Enterprise",
 };
@@ -260,7 +260,7 @@ function GenerateModal({
                     value={form.tier}
                     onChange={(e) => set("tier", e.target.value)}
                   >
-                    <option value="starter">Starter</option>
+                    <option value="pro">Pro</option>
                     <option value="pro_plus">Pro+</option>
                     <option value="enterprise">Enterprise</option>
                   </select>
