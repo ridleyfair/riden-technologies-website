@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -10,6 +10,9 @@ import {
   ExternalLink,
   RefreshCw,
   KeyRound,
+  ImagePlus,
+  Upload,
+  Images,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +45,8 @@ type GenerateForm = {
   username: string;
   password: string;
   notes: string;
+  heroImage: string;
+  photos: string[];
 };
 
 const DEFAULT_FORM: GenerateForm = {
@@ -56,6 +61,8 @@ const DEFAULT_FORM: GenerateForm = {
   username: "",
   password: "",
   notes: "",
+  heroImage: "",
+  photos: [],
 };
 
 const STATUS_VARIANT: Record<string, "success" | "warning" | "secondary"> = {
@@ -72,6 +79,260 @@ const TIER_LABELS: Record<string, string> = {
 
 const inputCls =
   "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors";
+
+// ── Upload helpers ─────────────────────────────────────────────────────────────
+
+async function uploadFile(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: fd });
+  const data = await res.json() as { ok?: boolean; url?: string; error?: string };
+  if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
+  return data.url!;
+}
+
+// ── HeroImageUpload ────────────────────────────────────────────────────────────
+
+function HeroImageUpload({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFile(file: File) {
+    setError("");
+    setUploading(true);
+    try {
+      const url = await uploadFile(file);
+      onChange(url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }
+
+  return (
+    <div>
+      <label className="block text-xs text-slate-400 mb-1.5">
+        Hero Image <span className="text-slate-600">(optional — JPG, PNG, WEBP · max 8 MB)</span>
+      </label>
+
+      {value ? (
+        // Preview
+        <div className="relative rounded-xl overflow-hidden border border-riden-border bg-riden-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Hero preview"
+            className="w-full h-36 object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between">
+            <span className="text-xs text-white/70 truncate">Hero image uploaded</span>
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="p-1 rounded-md bg-black/40 hover:bg-red-500/80 text-white transition-colors"
+              title="Remove"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        // Drop zone
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => inputRef.current?.click()}
+          className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-riden-border bg-riden-muted hover:border-blue-500/40 hover:bg-riden-muted/80 cursor-pointer transition-colors p-6"
+        >
+          {uploading ? (
+            <>
+              <RefreshCw size={20} className="text-blue-400 animate-spin" />
+              <p className="text-xs text-slate-500">Uploading…</p>
+            </>
+          ) : (
+            <>
+              <ImagePlus size={20} className="text-slate-600" />
+              <p className="text-xs text-slate-500">
+                Click or drag &amp; drop a hero image
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+          e.target.value = "";
+        }}
+      />
+
+      {/* URL fallback */}
+      <div className="mt-2 flex items-center gap-2">
+        <span className="text-[10px] text-slate-600 shrink-0">or paste URL:</span>
+        <input
+          className="flex-1 bg-riden-muted border border-riden-border rounded-lg px-2.5 py-1.5 text-xs text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500/50 transition-colors"
+          placeholder="https://example.com/hero.jpg"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+
+      {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+    </div>
+  );
+}
+
+// ── GalleryUpload ──────────────────────────────────────────────────────────────
+
+function GalleryUpload({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (urls: string[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+    setError("");
+    setUploading(true);
+    try {
+      const urls = await Promise.all(list.map(uploadFile));
+      onChange([...value, ...urls]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "One or more uploads failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+  }
+
+  function remove(idx: number) {
+    onChange(value.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div>
+      <label className="block text-xs text-slate-400 mb-1.5">
+        Our Work / Gallery Photos{" "}
+        <span className="text-slate-600">(optional · JPG, PNG, WEBP · max 8 MB each)</span>
+      </label>
+
+      {/* Uploaded thumbnails grid */}
+      {value.length > 0 && (
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {value.map((url, i) => (
+            <div key={url + i} className="relative rounded-lg overflow-hidden aspect-square bg-riden-muted border border-riden-border group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`Gallery ${i + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="absolute top-1 right-1 p-0.5 rounded bg-black/50 text-white opacity-0 group-hover:opacity-100 hover:bg-red-500/90 transition-all"
+                title="Remove"
+              >
+                <X size={10} />
+              </button>
+              <div className="absolute bottom-0 left-0 right-0 text-center text-[9px] text-white/50 bg-black/30 py-0.5">
+                {i + 1}
+              </div>
+            </div>
+          ))}
+
+          {/* Add more tile */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() => inputRef.current?.click()}
+            className="flex flex-col items-center justify-center rounded-lg border border-dashed border-riden-border bg-riden-muted hover:border-blue-500/40 cursor-pointer transition-colors aspect-square"
+          >
+            {uploading ? (
+              <RefreshCw size={14} className="text-blue-400 animate-spin" />
+            ) : (
+              <>
+                <Upload size={14} className="text-slate-600" />
+                <span className="text-[9px] text-slate-600 mt-1">Add</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Drop zone (shown when empty) */}
+      {value.length === 0 && (
+        <div
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          onClick={() => inputRef.current?.click()}
+          className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-riden-border bg-riden-muted hover:border-blue-500/40 hover:bg-riden-muted/80 cursor-pointer transition-colors p-6"
+        >
+          {uploading ? (
+            <>
+              <RefreshCw size={20} className="text-blue-400 animate-spin" />
+              <p className="text-xs text-slate-500">Uploading…</p>
+            </>
+          ) : (
+            <>
+              <Images size={20} className="text-slate-600" />
+              <p className="text-xs text-slate-500">
+                Click or drag &amp; drop gallery photos
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) handleFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+
+      {value.length > 0 && (
+        <p className="text-[10px] text-slate-600 mt-1">
+          {value.length} photo{value.length !== 1 ? "s" : ""} added
+          {uploading && " · uploading…"}
+        </p>
+      )}
+      {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+    </div>
+  );
+}
 
 // ── Generate Modal ─────────────────────────────────────────────────────────────
 
@@ -95,7 +356,7 @@ function GenerateModal({
     }
   }, [open]);
 
-  function set(field: keyof GenerateForm, value: string) {
+  function set<K extends keyof GenerateForm>(field: K, value: GenerateForm[K]) {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
@@ -110,7 +371,11 @@ function GenerateModal({
       const res = await fetch("/api/generate-website", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          heroImage: form.heroImage || undefined,
+          photos: form.photos.length > 0 ? form.photos : undefined,
+        }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
@@ -161,6 +426,8 @@ function GenerateModal({
 
             {/* Body */}
             <div className="p-5 space-y-4 overflow-y-auto portal-scroll flex-1">
+
+              {/* Business details */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-400 mb-1.5">Business Name *</label>
@@ -252,36 +519,57 @@ function GenerateModal({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Tier</label>
-                  <select
-                    className={inputCls}
-                    value={form.tier}
-                    onChange={(e) => set("tier", e.target.value)}
-                  >
-                    <option value="pro">Pro</option>
-                    <option value="pro_plus">Pro+</option>
-                    <option value="enterprise">Enterprise</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Preview Username *</label>
-                  <input
-                    className={inputCls}
-                    placeholder="client-username"
-                    value={form.username}
-                    onChange={(e) => set("username", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5">Preview Password *</label>
-                  <input
-                    className={inputCls}
-                    placeholder="secure-password"
-                    value={form.password}
-                    onChange={(e) => set("password", e.target.value)}
-                  />
+              {/* ── Media uploads ──────────────────────────────────────────── */}
+              <div className="border-t border-riden-border pt-4 space-y-4">
+                <p className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
+                  <ImagePlus size={13} className="text-slate-500" />
+                  Media (optional)
+                </p>
+
+                <HeroImageUpload
+                  value={form.heroImage}
+                  onChange={(url) => set("heroImage", url)}
+                />
+
+                <GalleryUpload
+                  value={form.photos}
+                  onChange={(urls) => set("photos", urls)}
+                />
+              </div>
+
+              {/* ── Credentials ────────────────────────────────────────────── */}
+              <div className="border-t border-riden-border pt-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1.5">Tier</label>
+                    <select
+                      className={inputCls}
+                      value={form.tier}
+                      onChange={(e) => set("tier", e.target.value)}
+                    >
+                      <option value="pro">Pro</option>
+                      <option value="pro_plus">Pro+</option>
+                      <option value="enterprise">Enterprise</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1.5">Preview Username *</label>
+                    <input
+                      className={inputCls}
+                      placeholder="client-username"
+                      value={form.username}
+                      onChange={(e) => set("username", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1.5">Preview Password *</label>
+                    <input
+                      className={inputCls}
+                      placeholder="secure-password"
+                      value={form.password}
+                      onChange={(e) => set("password", e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -291,7 +579,7 @@ function GenerateModal({
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                   <RefreshCw size={14} className="text-blue-400 animate-spin" />
                   <p className="text-xs text-blue-300">
-                    Claude is generating your website... this may take 20–40 seconds.
+                    Claude is generating your website… this may take 20–40 seconds.
                   </p>
                 </div>
               )}
@@ -310,7 +598,7 @@ function GenerateModal({
               >
                 {generating ? (
                   <>
-                    <RefreshCw size={13} className="animate-spin" /> Generating...
+                    <RefreshCw size={13} className="animate-spin" /> Generating…
                   </>
                 ) : (
                   <>
