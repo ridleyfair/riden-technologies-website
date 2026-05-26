@@ -78,10 +78,10 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
     siteType: "multi-page",
     label: "Modern Minimal",
     pages: [
-      { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
+      { slug: "/",         title: "Home",     sections: ["hero", "services", "process", "testimonials", "cta", "footer"] },
       { slug: "/our-work", title: "Our Work", sections: ["hero", "gallery", "cta", "footer"] },
       { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
-      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "process", "cta", "footer"] },
       { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
@@ -292,6 +292,10 @@ function buildPagesJson(
 
         case "contact":
           sectionJsons.push(`{ "type": "contact", "content": { "headline": "Get In Touch", "subHeadline": "<friendly invite to get in touch>", "phone": "${phone}", "email": "${body.email}", "address": "${city}"${body.notes ? `, "openingHours": "${body.notes}"` : ""} } }`);
+          break;
+
+        case "process":
+          sectionJsons.push(`{ "type": "process", "content": { "headline": "How We Work", "subHeadline": "<1-line description of the simple, clear process>", "steps": [ <4 steps specific to ${body.industry} work: each has number ("1"/"2"/"3"/"4"), title (2-4 words), description (1 clear sentence)> ] } }`);
           break;
 
         case "footer":
