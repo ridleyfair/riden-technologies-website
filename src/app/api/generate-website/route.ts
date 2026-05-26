@@ -44,6 +44,7 @@ interface GenerateBody {
   username: string;
   password: string;
   templateId?: string;
+  logoUrl?: string;
   heroImage?: string;
   notes?: string;
   socialFacebook?: string;
@@ -555,6 +556,12 @@ export async function POST(req: NextRequest) {
     spec.templateId = resolvedTemplateId;
     spec.themeId = resolvedThemeId;
     spec.siteType = templateDef.siteType;
+
+    // Inject logo URL into brand config
+    if (body.logoUrl) {
+      const brand = spec.brand as Record<string, unknown>;
+      brand.logoUrl = body.logoUrl;
+    }
 
     const pages = spec.pages as Array<Record<string, unknown>> | undefined;
 

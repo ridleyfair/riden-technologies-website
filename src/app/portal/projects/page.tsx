@@ -140,17 +140,22 @@ function ProjectDetailModal({
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
 
-  // photosJson stores { hero: string, gallery: string[] } or legacy plain string[]
+  // photosJson stores { logo: string, hero: string, gallery: string[] } or legacy plain string[]
   const parsedPhotos = (() => {
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { hero: "", gallery: raw as string[] };
-      return { hero: String(raw.hero ?? ""), gallery: Array.isArray(raw.gallery) ? raw.gallery as string[] : [] };
-    } catch { return { hero: "", gallery: [] }; }
+      if (Array.isArray(raw)) return { logo: "", hero: "", gallery: raw as string[] };
+      return {
+        logo:    String(raw.logo    ?? ""),
+        hero:    String(raw.hero    ?? ""),
+        gallery: Array.isArray(raw.gallery) ? raw.gallery as string[] : [],
+      };
+    } catch { return { logo: "", hero: "", gallery: [] }; }
   })();
 
+  const [logoUrl, setLogoUrl]     = useState<string>(parsedPhotos.logo);
   const [heroPhoto, setHeroPhoto] = useState<string>(parsedPhotos.hero);
-  const [photos, setPhotos] = useState<string[]>(parsedPhotos.gallery);
+  const [photos, setPhotos]       = useState<string[]>(parsedPhotos.gallery);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   // Checkatrade scraper state
@@ -242,7 +247,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ hero: heroPhoto, gallery: photos }),
+          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -262,7 +267,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ hero: heroPhoto, gallery: photos }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos }) }),
     });
   }
 
@@ -460,7 +465,8 @@ function ProjectDetailModal({
           username:        project.clientName.toLowerCase().replace(/\s+/g, "-"),
           password:        Math.random().toString(36).slice(2, 10),
           reviews,
-          heroImage:    heroPhoto || undefined,
+          logoUrl:      logoUrl    || undefined,
+          heroImage:    heroPhoto  || undefined,
           templateId:   selectedTemplate || undefined,
           photos,
         }),
@@ -1014,6 +1020,31 @@ function ProjectDetailModal({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Company Logo */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Company Logo</h3>
+                <p className="text-[11px] text-slate-500">Appears in the top-left of the website nav. Best as a PNG with a transparent background.</p>
+                {logoUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-riden-border bg-riden-surface flex items-center justify-center h-20 px-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="Logo" className="max-h-14 max-w-full object-contain" />
+                    <button
+                      onClick={() => setLogoUrl("")}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="Paste logo URL..."
+                    className={`${inputCls} text-xs`}
+                  />
+                )}
               </div>
 
               {/* Hero Photo */}
