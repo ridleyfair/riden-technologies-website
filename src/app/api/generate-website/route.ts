@@ -81,6 +81,7 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
       { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
       { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
       { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/our-work", title: "Our Work", sections: ["hero", "gallery", "cta", "footer"] },
       { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
