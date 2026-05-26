@@ -153,10 +153,16 @@ function ProjectDetailModal({
     } catch { return { logo: "", hero: "", gallery: [] }; }
   })();
 
-  const [logoUrl, setLogoUrl]     = useState<string>(parsedPhotos.logo);
-  const [heroPhoto, setHeroPhoto] = useState<string>(parsedPhotos.hero);
-  const [photos, setPhotos]       = useState<string[]>(parsedPhotos.gallery);
-  const logoFileRef               = useRef<HTMLInputElement>(null);
+  const [logoUrl, setLogoUrl]         = useState<string>(parsedPhotos.logo);
+  const [heroPhoto, setHeroPhoto]     = useState<string>(parsedPhotos.hero);
+  const [photos, setPhotos]           = useState<string[]>(parsedPhotos.gallery);
+  const logoFileRef                   = useRef<HTMLInputElement>(null);
+  const heroFileRef                   = useRef<HTMLInputElement>(null);
+  const galleryFileRef                = useRef<HTMLInputElement>(null);
+  const [heroUploading, setHeroUploading]       = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [heroUploadError, setHeroUploadError]   = useState("");
+  const [galleryUploadError, setGalleryUploadError] = useState("");
 
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -181,6 +187,49 @@ function ProjectDetailModal({
     // reset so same file can be re-selected
     e.target.value = "";
   }
+  async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setHeroUploading(true);
+    setHeroUploadError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json() as { ok?: boolean; url?: string; error?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
+      setHeroPhoto(data.url!);
+    } catch (err) {
+      setHeroUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setHeroUploading(false);
+    }
+  }
+
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    setGalleryUploading(true);
+    setGalleryUploadError("");
+    try {
+      const urls = await Promise.all(files.map(async (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = await res.json() as { ok?: boolean; url?: string; error?: string };
+        if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
+        return data.url!;
+      }));
+      setPhotos((prev) => [...prev, ...urls]);
+    } catch (err) {
+      setGalleryUploadError(err instanceof Error ? err.message : "One or more uploads failed");
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   // Checkatrade scraper state
@@ -1092,25 +1141,48 @@ function ProjectDetailModal({
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hero Photo</h3>
                 <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
+                {/* Hidden file input */}
+                <input
+                  ref={heroFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleHeroUpload}
+                />
                 {heroPhoto ? (
                   <div className="relative rounded-xl overflow-hidden border border-riden-border">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={heroPhoto} alt="Hero" className="w-full h-36 object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
                     <button
-                      onClick={() => setHeroPhoto("")}
+                      onClick={() => { setHeroPhoto(""); setHeroUploadError(""); }}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
                     >
                       <X size={11} />
                     </button>
+                    <span className="absolute bottom-2 left-3 text-[10px] text-white/60">Hero image</span>
                   </div>
                 ) : (
-                  <input
-                    value={heroPhoto}
-                    onChange={(e) => setHeroPhoto(e.target.value)}
-                    placeholder="Paste a photo URL..."
-                    className={`${inputCls} text-xs`}
-                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => heroFileRef.current?.click()}
+                      disabled={heroUploading}
+                      className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50"
+                    >
+                      {heroUploading
+                        ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</>
+                        : <><Upload size={12} /> Upload</>
+                      }
+                    </button>
+                    <input
+                      value={heroPhoto}
+                      onChange={(e) => setHeroPhoto(e.target.value)}
+                      placeholder="or paste a URL..."
+                      className={`${inputCls} text-xs`}
+                    />
+                  </div>
                 )}
+                {heroUploadError && <p className="text-[10px] text-rose-400">{heroUploadError}</p>}
               </div>
 
               {/* Work Photos (Gallery) */}
@@ -1126,20 +1198,44 @@ function ProjectDetailModal({
                     </button>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500">These appear in the gallery section on the website. Right-click a Checkatrade work photo → &quot;Copy image address&quot; and paste below.</p>
-                {/* Add by URL */}
+                <p className="text-[11px] text-slate-500">Upload photos or paste URLs. These appear in the gallery section on the website.</p>
+
+                {/* Hidden multi-file input */}
+                <input
+                  ref={galleryFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={handleGalleryUpload}
+                />
+
+                {/* Upload + URL row */}
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => galleryFileRef.current?.click()}
+                    disabled={galleryUploading}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50"
+                  >
+                    {galleryUploading
+                      ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</>
+                      : <><Upload size={12} /> Upload Photos</>
+                    }
+                  </button>
                   <input
                     value={photoUrlInput}
                     onChange={(e) => setPhotoUrlInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && addPhotoByUrl()}
-                    placeholder="Paste a photo URL and press Enter..."
+                    placeholder="or paste a URL and press Enter..."
                     className={`${inputCls} flex-1 text-xs`}
                   />
                   <Button variant="outline" size="sm" onClick={addPhotoByUrl} disabled={!photoUrlInput.trim()}>
                     Add
                   </Button>
                 </div>
+
+                {galleryUploadError && <p className="text-[10px] text-rose-400">{galleryUploadError}</p>}
+
                 {photos.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">
                     {photos.map((src, i) => (
