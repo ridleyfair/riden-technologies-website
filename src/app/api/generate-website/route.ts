@@ -636,11 +636,18 @@ export async function POST(req: NextRequest) {
 
         const isHome = (page.slug as string) === "/";
 
+        // Relative upload URLs like /api/media/{uuid}.webp are only valid on the
+        // CRM domain. The template engine is a separate deployment, so they must
+        // be stored as absolute URLs so <img src="..."> resolves correctly there.
+        const crmOrigin = new URL(req.url).origin;
+        const toAbsUrl = (url: string) =>
+          url.startsWith("/") ? `${crmOrigin}${url}` : url;
+
         // Inject hero background image into home page hero section only
         if (isHome && body.heroImage) {
           const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
           if (heroSection) {
-            (heroSection.content as Record<string, unknown>).backgroundImage = body.heroImage;
+            (heroSection.content as Record<string, unknown>).backgroundImage = toAbsUrl(body.heroImage);
           }
         }
 
@@ -653,7 +660,7 @@ export async function POST(req: NextRequest) {
           if (gallerySection) {
             // Override items with real photos
             (gallerySection.content as Record<string, unknown>).items = body.photos.map((src, i) => ({
-              src,
+              src: toAbsUrl(src),
               alt: `${body.businessName} work photo ${i + 1}`,
               caption: "",
             }));
@@ -667,7 +674,7 @@ export async function POST(req: NextRequest) {
                 headline: "Our Work",
                 subHeadline: "A selection of recent projects",
                 items: body.photos.map((src, i) => ({
-                  src,
+                  src: toAbsUrl(src),
                   alt: `${body.businessName} work photo ${i + 1}`,
                   caption: "",
                 })),
