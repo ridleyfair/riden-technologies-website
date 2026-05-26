@@ -79,9 +79,9 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
     label: "Modern Minimal",
     pages: [
       { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
+      { slug: "/our-work", title: "Our Work", sections: ["hero", "gallery", "cta", "footer"] },
       { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
       { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/our-work", title: "Our Work", sections: ["hero", "gallery", "cta", "footer"] },
       { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
@@ -581,9 +581,10 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // For gallery pages or home-page gallery sections, inject real photos
+        // Inject real photos into whichever page the template designates for gallery
         if (body.photos && body.photos.length > 0) {
-          const isGalleryPage = (page.slug as string) === "/gallery";
+          const galleryPageSlug = templateDef.pages.find((p) => p.sections.includes("gallery"))?.slug;
+          const isDesignatedGalleryPage = (page.slug as string) === galleryPageSlug;
           const gallerySection = sections.find((s) => s.type === "gallery") as Record<string, unknown> | undefined;
 
           if (gallerySection) {
@@ -593,8 +594,8 @@ export async function POST(req: NextRequest) {
               alt: `${body.businessName} work photo ${i + 1}`,
               caption: "",
             }));
-          } else if (isHome || isGalleryPage) {
-            // Inject gallery section if not already present on home or gallery page
+          } else if (isDesignatedGalleryPage) {
+            // Inject gallery section if Claude omitted it on the designated gallery page
             const insertBefore = sections.findIndex((s) => s.type === "cta" || s.type === "footer");
             const idx = insertBefore >= 0 ? insertBefore : sections.length - 1;
             sections.splice(idx, 0, {
