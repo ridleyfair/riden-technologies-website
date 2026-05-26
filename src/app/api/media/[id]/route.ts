@@ -5,7 +5,11 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+
+  // Strip optional extension (e.g. "uuid.webp" → "uuid") so URLs can carry
+  // the file extension for client-side type detection without breaking the lookup.
+  const id = rawId.replace(/\.[a-z0-9]+$/i, "");
 
   // Basic UUID validation — prevent SQL injection via path param
   if (!/^[0-9a-f-]{36}$/.test(id)) {
