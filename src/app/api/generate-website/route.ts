@@ -229,6 +229,40 @@ function parseAbout(raw: string): {
   };
 }
 
+// ── Copy cleanup — strip em/en dashes before saving ──────────────────────────
+
+const COPY_SKIP_KEYS = new Set([
+  'phone', 'email', 'href', 'ctaHref', 'secondaryCtaHref', 'platformUrl',
+  'src', 'url', 'logoUrl', 'logoSvg', 'backgroundImage', 'mobileBackgroundImage',
+  'avatar', 'linkedIn', 'headingFont', 'bodyFont', 'icon', 'platform', 'source',
+  'variant', 'mediaType', 'animationStyle', 'tone', 'slug', 'type', 'id',
+  'businessId', 'themeId', 'templateId', 'siteType', 'tier', 'version', 'number',
+  'period', 'value', 'primary', 'secondary', 'accent', 'background', 'surface',
+  'text', 'textMuted',
+])
+
+function cleanDashStr(s: string): string {
+  if (/^https?:\/\//.test(s) || /^\//.test(s) || /^#/.test(s) ||
+      /^tel:/.test(s) || /^mailto:/.test(s) || /@/.test(s)) return s
+  let r = s.replace(/\s*[—–]\s*/g, ', ')
+  r = r.replace(/,\s*,+/g, ', ')
+  r = r.replace(/^[,\s]+/, '')
+  r = r.replace(/,\s*([.!?])/g, '$1')
+  r = r.replace(/,\s*$/, '.')
+  return r.replace(/  +/g, ' ').trim()
+}
+
+function cleanDashesInSpec(val: unknown, key?: string): unknown {
+  if (key !== undefined && COPY_SKIP_KEYS.has(key)) return val
+  if (typeof val === 'string') return cleanDashStr(val)
+  if (Array.isArray(val)) return val.map(item => cleanDashesInSpec(item))
+  if (val !== null && typeof val === 'object')
+    return Object.fromEntries(
+      Object.entries(val as Record<string, unknown>).map(([k, v]) => [k, cleanDashesInSpec(v, k)])
+    )
+  return val
+}
+
 // ── Build the pages JSON fragment for the Claude prompt ───────────────────────
 // Produces a JSON-like schema with placeholders that Claude fills in.
 
@@ -451,6 +485,7 @@ MANDATORY CONTENT RULES:
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
 7. SEO — include specific services and ${city} location.
 8. Contact section — include real phone, email, address, opening hours from the brief.
+9. PUNCTUATION — NEVER use em dashes (—) or en dashes (–) anywhere in copy. Use commas, periods, or natural sentence structure instead. BAD: "Expert craftsmanship — fully insured". GOOD: "Expert craftsmanship, fully insured workmanship."
 
 DO NOT:
 - Generate different pages than the structure provided
@@ -726,7 +761,8 @@ export async function POST(req: NextRequest) {
       console.log(`[generate-website] final pages: ${pageMap.join(" | ")}`);
     }
 
-    specJson = JSON.stringify(spec);
+    // Strip any em/en dashes Claude snuck into the copy
+    specJson = JSON.stringify(cleanDashesInSpec(spec));
   } catch (e) {
     return NextResponse.json(
       { error: `Failed to generate site spec: ${String(e)}` },
