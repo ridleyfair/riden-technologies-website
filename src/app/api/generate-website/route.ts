@@ -50,6 +50,7 @@ interface GenerateBody {
   heroHotspots?: Array<{
     label: string; href: string;
     x: number; y: number; width: number; height: number;
+    variant?: 'primary' | 'secondary';
     hideMobile?: boolean;
   }>;
   notes?: string;
@@ -668,10 +669,10 @@ export async function POST(req: NextRequest) {
                 const secondary   = (heroContent.secondaryCta as string) || "";
                 const secondaryHref = (heroContent.secondaryCtaHref as string) || "#services";
                 const defaults: typeof body.heroHotspots = [
-                  { label: primary, href: primaryHref, x: 4, y: 67, width: 19, height: 9 },
+                  { label: primary, href: primaryHref, variant: "primary",   x: 4,  y: 67, width: 19, height: 9 },
                 ];
                 if (secondary) {
-                  defaults.push({ label: secondary, href: secondaryHref, x: 25, y: 67, width: 17, height: 9 });
+                  defaults.push({ label: secondary, href: secondaryHref, variant: "secondary", x: 25, y: 67, width: 17, height: 9 });
                 }
                 heroContent.hotspots = defaults;
                 console.log(`[generate-website] webp hero detected — injected ${defaults.length} default hotspot(s)`);

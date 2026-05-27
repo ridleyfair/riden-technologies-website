@@ -53,6 +53,7 @@ type Toast = { msg: string; type: "success" | "error" };
 type HeroHotspot = {
   label: string; href: string;
   x: number; y: number; width: number; height: number;
+  variant?: 'primary' | 'secondary';
   hideMobile?: boolean;
 };
 
@@ -207,6 +208,15 @@ function HotspotsEditor({
               <X size={12} />
             </button>
           </div>
+          {/* Variant toggle */}
+          <div className="flex gap-1.5">
+            {(["primary", "secondary"] as const).map((v) => (
+              <button key={v} onClick={() => upd(i, { variant: v })}
+                className={`px-3 py-1 rounded-lg text-[10px] font-semibold border transition-colors ${hs.variant === v || (!hs.variant && v === "primary") ? "border-[#d6ad74] text-[#d6ad74] bg-[#d6ad74]/10" : "border-riden-border text-slate-500 hover:text-slate-300"}`}>
+                {v === "primary" ? "Primary (gold)" : "Secondary (glass)"}
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <input value={hs.label} onChange={(e) => upd(i, { label: e.target.value })}
               placeholder="Button label" className={txtCls} />
@@ -230,7 +240,7 @@ function HotspotsEditor({
             <input type="checkbox" checked={hs.hideMobile ?? false}
               onChange={(e) => upd(i, { hideMobile: e.target.checked })}
               className="w-3 h-3 accent-blue-500" />
-            <span className="text-[10px] text-slate-400">Hide on mobile (&lt; 480 px)</span>
+            <span className="text-[10px] text-slate-400">Hide on mobile (&lt; 768 px)</span>
           </label>
         </div>
       ))}
@@ -355,8 +365,8 @@ function ProjectDetailModal({
       // For .webp artwork, suggest default hotspot zones if none are set yet
       if (uploadedUrl.split("?")[0].toLowerCase().endsWith(".webp") && heroHotspots.length === 0) {
         setHeroHotspots([
-          { label: "Get a Free Quote", href: brief.phone ? `tel:${brief.phone}` : "#contact", x: 4, y: 67, width: 19, height: 9 },
-          { label: "Our Services",     href: "#services", x: 25, y: 67, width: 17, height: 9, hideMobile: true },
+          { label: "Get a Free Quote", href: brief.phone ? `tel:${brief.phone}` : "#contact", variant: "primary"   as const, x: 4,  y: 67, width: 19, height: 9 },
+          { label: "Our Services",     href: "#services",                                       variant: "secondary" as const, x: 25, y: 67, width: 17, height: 9, hideMobile: true },
         ]);
       }
     } catch (err) {
