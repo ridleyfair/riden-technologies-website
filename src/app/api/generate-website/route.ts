@@ -572,8 +572,9 @@ Return ONLY the JSON object.`;
     `about.included=${userPrompt.includes(aboutBlock.slice(0, 20))}`,
   );
 
-  // Multi-page sites need more output tokens
-  const maxTokens = templateDef.siteType === "multi-page" ? 8192 : 4096;
+  // Multi-page sites with 5 pages can exceed 8 K tokens — use extended output.
+  // Single-page sites rarely reach 4 K but give headroom for large about/reviews.
+  const maxTokens = templateDef.siteType === "multi-page" ? 16000 : 8000;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -581,6 +582,7 @@ Return ONLY the JSON object.`;
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
+      "anthropic-beta": "output-128k-2025-02-19",
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
@@ -595,9 +597,20 @@ Return ONLY the JSON object.`;
     throw new Error(`Claude API error (${resp.status}): ${err}`);
   }
 
-  const data = (await resp.json()) as { content: Array<{ type: string; text: string }> };
+  const data = (await resp.json()) as {
+    content:      Array<{ type: string; text: string }>;
+    stop_reason?: string;
+  };
   let text = data.content.find((c) => c.type === "text")?.text ?? "";
   if (!text) throw new Error("Claude returned empty response");
+
+  // Detect truncation before attempting JSON.parse so the error is actionable.
+  if (data.stop_reason === "max_tokens") {
+    throw new Error(
+      "Site spec was truncated (output token limit reached). Try reducing the number of services or reviews, then regenerate.",
+    );
+  }
+
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
   return text;
 }
