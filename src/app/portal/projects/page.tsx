@@ -50,6 +50,12 @@ type Review = {
 
 type Toast = { msg: string; type: "success" | "error" };
 
+type HeroHotspot = {
+  label: string; href: string;
+  x: number; y: number; width: number; height: number;
+  hideMobile?: boolean;
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   planning:    { label: "Planning",     color: "text-blue-400",    bg: "bg-blue-400" },
   in_progress: { label: "In Progress",  color: "text-amber-400",   bg: "bg-amber-400" },
@@ -89,6 +95,149 @@ function StarRating({ rating }: { rating: number }) {
           className={i <= rating ? "text-amber-400 fill-amber-400" : "text-slate-600"}
         />
       ))}
+    </div>
+  );
+}
+
+// ─── Hotspot Editor ──────────────────────────────────────────────────────────
+// Visual drag-to-draw editor for .webp artwork hero click zones.
+
+const HOTSPOT_COLORS = ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", "#ef4444"];
+
+function HotspotsEditor({
+  imageUrl, hotspots, onChange,
+}: {
+  imageUrl:  string;
+  hotspots:  HeroHotspot[];
+  onChange:  (next: HeroHotspot[]) => void;
+}) {
+  const containerRef              = useRef<HTMLDivElement>(null);
+  const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
+  const [drawing,   setDrawing]   = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+
+  function pct(e: React.MouseEvent) {
+    const r = containerRef.current!.getBoundingClientRect();
+    return {
+      x: Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width)  * 100)),
+      y: Math.max(0, Math.min(100, ((e.clientY - r.top)  / r.height) * 100)),
+    };
+  }
+
+  function onDown(e: React.MouseEvent) {
+    const p = pct(e); setDrawStart(p); setDrawing({ x: p.x, y: p.y, w: 0, h: 0 });
+  }
+  function onMove(e: React.MouseEvent) {
+    if (!drawStart) return;
+    const p = pct(e);
+    setDrawing({ x: Math.min(drawStart.x, p.x), y: Math.min(drawStart.y, p.y),
+                 w: Math.abs(p.x - drawStart.x), h: Math.abs(p.y - drawStart.y) });
+  }
+  function onUp() {
+    if (drawing && drawing.w >= 2 && drawing.h >= 2) {
+      onChange([...hotspots, {
+        label: `Button ${hotspots.length + 1}`, href: "#contact",
+        x: Math.round(drawing.x), y: Math.round(drawing.y),
+        width: Math.round(drawing.w), height: Math.round(drawing.h),
+      }]);
+    }
+    setDrawStart(null); setDrawing(null);
+  }
+
+  function upd(i: number, patch: Partial<HeroHotspot>) {
+    const next = [...hotspots]; next[i] = { ...next[i], ...patch }; onChange(next);
+  }
+
+  const numCls = "w-full bg-black/30 border border-riden-border rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500/50";
+  const txtCls = "bg-black/30 border border-riden-border rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
+
+  return (
+    <div className="space-y-3">
+      {/* Image canvas — drag to draw hotspot zones */}
+      <div
+        ref={containerRef}
+        className="relative w-full select-none cursor-crosshair rounded-xl overflow-hidden border border-blue-500/30"
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt="Hero artwork" className="w-full h-auto block" draggable={false} />
+
+        {/* Saved hotspot overlays */}
+        {hotspots.map((hs, i) => (
+          <div key={i} style={{
+            position: "absolute", left: `${hs.x}%`, top: `${hs.y}%`,
+            width: `${hs.width}%`, height: `${hs.height}%`,
+            border: `2px solid ${HOTSPOT_COLORS[i % HOTSPOT_COLORS.length]}`,
+            backgroundColor: `${HOTSPOT_COLORS[i % HOTSPOT_COLORS.length]}28`,
+            borderRadius: 4, pointerEvents: "none",
+          }}>
+            <span style={{
+              position: "absolute", top: "-1.1rem", left: 0,
+              background: HOTSPOT_COLORS[i % HOTSPOT_COLORS.length],
+              color: "#fff", fontSize: 9, fontWeight: 700,
+              padding: "1px 5px", borderRadius: 3, whiteSpace: "nowrap", lineHeight: 1.4,
+            }}>{i + 1}: {hs.label}</span>
+          </div>
+        ))}
+
+        {/* Live drag preview */}
+        {drawing && drawing.w > 1 && (
+          <div style={{
+            position: "absolute", left: `${drawing.x}%`, top: `${drawing.y}%`,
+            width: `${drawing.w}%`, height: `${drawing.h}%`,
+            border: "2px dashed #60a5fa", backgroundColor: "rgba(96,165,250,0.15)",
+            pointerEvents: "none",
+          }} />
+        )}
+      </div>
+
+      <p className="text-[10px] text-slate-500">
+        Click and drag on the image to draw a zone over each CTA button. Edit labels and links below.
+      </p>
+
+      {/* Per-hotspot forms */}
+      {hotspots.map((hs, i) => (
+        <div key={i} className="rounded-xl border bg-riden-muted p-3 space-y-2"
+          style={{ borderColor: `${HOTSPOT_COLORS[i % HOTSPOT_COLORS.length]}55` }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold" style={{ color: HOTSPOT_COLORS[i % HOTSPOT_COLORS.length] }}>
+              Hotspot {i + 1}
+            </span>
+            <button onClick={() => onChange(hotspots.filter((_, j) => j !== i))}
+              className="text-slate-500 hover:text-rose-400 transition-colors">
+              <X size={12} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={hs.label} onChange={(e) => upd(i, { label: e.target.value })}
+              placeholder="Button label" className={txtCls} />
+            <input value={hs.href} onChange={(e) => upd(i, { href: e.target.value })}
+              placeholder="/contact or tel:…" className={txtCls} />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {(["x", "y", "width", "height"] as const).map((f) => (
+              <div key={f}>
+                <p className="text-[9px] text-slate-500 mb-0.5 uppercase tracking-wider">
+                  {f === "width" ? "W%" : f === "height" ? "H%" : `${f.toUpperCase()}%`}
+                </p>
+                <input type="number" min={0} max={100} step={0.5}
+                  value={hs[f]}
+                  onChange={(e) => upd(i, { [f]: parseFloat(e.target.value) || 0 })}
+                  className={numCls} />
+              </div>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={hs.hideMobile ?? false}
+              onChange={(e) => upd(i, { hideMobile: e.target.checked })}
+              className="w-3 h-3 accent-blue-500" />
+            <span className="text-[10px] text-slate-400">Hide on mobile (&lt; 480 px)</span>
+          </label>
+        </div>
+      ))}
+
+      {hotspots.length === 0 && (
+        <p className="text-[10px] text-slate-600 italic">No hotspots yet — draw on the image above to add clickable zones.</p>
+      )}
     </div>
   );
 }
@@ -140,17 +289,18 @@ function ProjectDetailModal({
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
 
-  // photosJson stores { logo: string, hero: string, gallery: string[] } or legacy plain string[]
+  // photosJson stores { logo, hero, gallery, heroHotspots } or legacy plain string[]
   const parsedPhotos = (() => {
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", hero: "", gallery: raw as string[] };
+      if (Array.isArray(raw)) return { logo: "", hero: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[] };
       return {
-        logo:    String(raw.logo    ?? ""),
-        hero:    String(raw.hero    ?? ""),
-        gallery: Array.isArray(raw.gallery) ? raw.gallery as string[] : [],
+        logo:         String(raw.logo    ?? ""),
+        hero:         String(raw.hero    ?? ""),
+        gallery:      Array.isArray(raw.gallery)       ? raw.gallery       as string[]      : [],
+        heroHotspots: Array.isArray(raw.heroHotspots)  ? raw.heroHotspots  as HeroHotspot[] : [],
       };
-    } catch { return { logo: "", hero: "", gallery: [] }; }
+    } catch { return { logo: "", hero: "", gallery: [], heroHotspots: [] as HeroHotspot[] }; }
   })();
 
   const [logoUrl, setLogoUrl]         = useState<string>(parsedPhotos.logo);
@@ -159,6 +309,7 @@ function ProjectDetailModal({
   const logoFileRef                   = useRef<HTMLInputElement>(null);
   const heroFileRef                   = useRef<HTMLInputElement>(null);
   const galleryFileRef                = useRef<HTMLInputElement>(null);
+  const [heroHotspots, setHeroHotspots]         = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
   const [heroUploading, setHeroUploading]       = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [heroUploadError, setHeroUploadError]   = useState("");
@@ -199,7 +350,15 @@ function ProjectDetailModal({
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json() as { ok?: boolean; url?: string; error?: string };
       if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
-      setHeroPhoto(data.url!);
+      const uploadedUrl = data.url!;
+      setHeroPhoto(uploadedUrl);
+      // For .webp artwork, suggest default hotspot zones if none are set yet
+      if (uploadedUrl.split("?")[0].toLowerCase().endsWith(".webp") && heroHotspots.length === 0) {
+        setHeroHotspots([
+          { label: "Get a Free Quote", href: brief.phone ? `tel:${brief.phone}` : "#contact", x: 4, y: 67, width: 19, height: 9 },
+          { label: "Our Services",     href: "#services", x: 25, y: 67, width: 17, height: 9, hideMobile: true },
+        ]);
+      }
     } catch (err) {
       setHeroUploadError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -321,7 +480,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos }),
+          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos, heroHotspots }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -341,7 +500,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos, heroHotspots }) }),
     });
   }
 
@@ -541,6 +700,7 @@ function ProjectDetailModal({
           reviews,
           logoUrl:      logoUrl    || undefined,
           heroImage:    heroPhoto  || undefined,
+          heroHotspots: heroHotspots.length > 0 ? heroHotspots : undefined,
           templateId:   selectedTemplate || undefined,
           photos,
         }),
@@ -1140,7 +1300,13 @@ function ProjectDetailModal({
               {/* Hero Photo */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hero Photo</h3>
-                <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
+                {heroPhoto && heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") ? (
+                  <p className="text-[11px] text-slate-500">
+                    This is a <span className="text-blue-400 font-semibold">.webp artwork hero</span> — the full image replaces the normal hero layout. Draw clickable zones over the CTA buttons below.
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
+                )}
                 {/* Hidden file input */}
                 <input
                   ref={heroFileRef}
@@ -1150,19 +1316,47 @@ function ProjectDetailModal({
                   onChange={handleHeroUpload}
                 />
                 {heroPhoto ? (
-                  <div className="relative rounded-xl overflow-hidden border border-riden-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={heroPhoto} alt="Hero" className="w-full h-36 object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                    <button
-                      onClick={() => { setHeroPhoto(""); setHeroUploadError(""); }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
-                    >
-                      <X size={11} />
-                    </button>
-                    <span className="absolute bottom-2 left-3 text-[10px] text-white/60">Hero image</span>
-                  </div>
+                  heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") ? (
+                    /* .webp — hotspot editor */
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => heroFileRef.current?.click()}
+                          disabled={heroUploading}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-50"
+                        >
+                          {heroUploading ? <><RefreshCw size={11} className="animate-spin" /> Replacing…</> : <><Upload size={11} /> Replace image</>}
+                        </button>
+                        <button
+                          onClick={() => { setHeroPhoto(""); setHeroUploadError(""); setHeroHotspots([]); }}
+                          className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-rose-400 transition-colors"
+                        >
+                          <X size={10} /> Remove
+                        </button>
+                      </div>
+                      <HotspotsEditor
+                        imageUrl={heroPhoto}
+                        hotspots={heroHotspots}
+                        onChange={setHeroHotspots}
+                      />
+                    </div>
+                  ) : (
+                    /* jpg/png — simple preview */
+                    <div className="relative rounded-xl overflow-hidden border border-riden-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={heroPhoto} alt="Hero" className="w-full h-36 object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                      <button
+                        onClick={() => { setHeroPhoto(""); setHeroUploadError(""); }}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                      >
+                        <X size={11} />
+                      </button>
+                      <span className="absolute bottom-2 left-3 text-[10px] text-white/60">Hero image</span>
+                    </div>
+                  )
                 ) : (
+                  /* No image — upload button + URL input */
                   <div className="flex gap-2">
                     <button
                       onClick={() => heroFileRef.current?.click()}

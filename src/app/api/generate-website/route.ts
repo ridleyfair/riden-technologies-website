@@ -47,6 +47,11 @@ interface GenerateBody {
   templateId?: string;
   logoUrl?: string;
   heroImage?: string;
+  heroHotspots?: Array<{
+    label: string; href: string;
+    x: number; y: number; width: number; height: number;
+    hideMobile?: boolean;
+  }>;
   notes?: string;
   socialFacebook?: string;
   socialInstagram?: string;
@@ -647,7 +652,31 @@ export async function POST(req: NextRequest) {
         if (isHome && body.heroImage) {
           const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
           if (heroSection) {
-            (heroSection.content as Record<string, unknown>).backgroundImage = toAbsUrl(body.heroImage);
+            const heroContent = heroSection.content as Record<string, unknown>;
+            heroContent.backgroundImage = toAbsUrl(body.heroImage);
+
+            // For .webp artwork heroes, inject hotspot click zones.
+            // Admin-supplied hotspots take priority; otherwise derive sensible
+            // defaults from the CTA labels Claude generated.
+            const isWebpHero = body.heroImage.split("?")[0].toLowerCase().endsWith(".webp");
+            if (isWebpHero) {
+              if (body.heroHotspots && body.heroHotspots.length > 0) {
+                heroContent.hotspots = body.heroHotspots;
+              } else {
+                const primary   = (heroContent.cta         as string) || "Get a Free Quote";
+                const primaryHref = (heroContent.ctaHref   as string) || "#contact";
+                const secondary   = (heroContent.secondaryCta as string) || "";
+                const secondaryHref = (heroContent.secondaryCtaHref as string) || "#services";
+                const defaults: typeof body.heroHotspots = [
+                  { label: primary, href: primaryHref, x: 4, y: 67, width: 19, height: 9 },
+                ];
+                if (secondary) {
+                  defaults.push({ label: secondary, href: secondaryHref, x: 25, y: 67, width: 17, height: 9 });
+                }
+                heroContent.hotspots = defaults;
+                console.log(`[generate-website] webp hero detected — injected ${defaults.length} default hotspot(s)`);
+              }
+            }
           }
         }
 
