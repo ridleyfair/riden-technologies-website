@@ -303,7 +303,7 @@ function ProjectDetailModal({
   const parsedPhotos = (() => {
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", hero: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[] };
+      if (Array.isArray(raw)) return { logo: "", hero: "", heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[] };
       return {
         logo:         String(raw.logo       ?? ""),
         hero:         String(raw.hero       ?? ""),
