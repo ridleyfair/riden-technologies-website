@@ -57,6 +57,12 @@ type HeroHotspot = {
   hideMobile?: boolean;
 };
 
+type BrandColours = {
+  primary:   string;
+  secondary: string;
+  tertiary:  string;
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   planning:    { label: "Planning",     color: "text-blue-400",    bg: "bg-blue-400" },
   in_progress: { label: "In Progress",  color: "text-amber-400",   bg: "bg-amber-400" },
@@ -299,19 +305,26 @@ function ProjectDetailModal({
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
 
-  // photosJson stores { logo, hero, gallery, heroHotspots } or legacy plain string[]
+  // photosJson stores { logo, hero, gallery, heroHotspots, colours } or legacy plain string[]
   const parsedPhotos = (() => {
+    const emptyColours: BrandColours = { primary: "", secondary: "", tertiary: "" };
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", hero: "", heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[] };
+      if (Array.isArray(raw)) return { logo: "", hero: "", heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours };
+      const rc = raw.colours && typeof raw.colours === "object" ? raw.colours as Record<string, unknown> : {};
       return {
         logo:         String(raw.logo       ?? ""),
         hero:         String(raw.hero       ?? ""),
         heroMobile:   String(raw.heroMobile ?? ""),
         gallery:      Array.isArray(raw.gallery)       ? raw.gallery       as string[]      : [],
         heroHotspots: Array.isArray(raw.heroHotspots)  ? raw.heroHotspots  as HeroHotspot[] : [],
+        colours: {
+          primary:   String(rc.primary   ?? ""),
+          secondary: String(rc.secondary ?? ""),
+          tertiary:  String(rc.tertiary  ?? ""),
+        } as BrandColours,
       };
-    } catch { return { logo: "", hero: "", heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[] }; }
+    } catch { return { logo: "", hero: "", heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours }; }
   })();
 
   const [logoUrl, setLogoUrl]               = useState<string>(parsedPhotos.logo);
@@ -323,6 +336,7 @@ function ProjectDetailModal({
   const heroMobileFileRef                   = useRef<HTMLInputElement>(null);
   const galleryFileRef                      = useRef<HTMLInputElement>(null);
   const [heroHotspots, setHeroHotspots]             = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
+  const [brandColours, setBrandColours]             = useState<BrandColours>(parsedPhotos.colours);
   const [heroUploading, setHeroUploading]           = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
   const [galleryUploading, setGalleryUploading]     = useState(false);
@@ -515,7 +529,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots }),
+          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -535,7 +549,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }) }),
     });
   }
 
@@ -739,6 +753,15 @@ function ProjectDetailModal({
           heroHotspots:    heroHotspots.length > 0 ? heroHotspots : undefined,
           templateId:   selectedTemplate || undefined,
           photos,
+          brandColours: (() => {
+            const isHex = (s: string) => /^#[0-9a-fA-F]{6}$/.test(s);
+            const c = {
+              primary:   isHex(brandColours.primary)   ? brandColours.primary   : undefined,
+              secondary: isHex(brandColours.secondary) ? brandColours.secondary : undefined,
+              tertiary:  isHex(brandColours.tertiary)  ? brandColours.tertiary  : undefined,
+            };
+            return (c.primary || c.secondary || c.tertiary) ? c : undefined;
+          })(),
         }),
       });
       const data = await res.json();
@@ -1105,6 +1128,62 @@ function ProjectDetailModal({
                       className={inputCls}
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Brand Colours */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Brand Colours</h3>
+                <p className="text-[11px] text-slate-500">
+                  Choose the website colour palette. Leave empty to use template defaults.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {([
+                    { key: "primary"   as const, label: "Primary",   hint: "Buttons & accents" },
+                    { key: "secondary" as const, label: "Secondary",  hint: "Footer & dark sections" },
+                    { key: "tertiary"  as const, label: "Tertiary",   hint: "Backgrounds & cards" },
+                  ]).map(({ key, label, hint }) => {
+                    const val   = brandColours[key];
+                    const valid = val === "" || /^#[0-9a-fA-F]{6}$/.test(val);
+                    return (
+                      <div key={key} className="space-y-1.5">
+                        <div className="text-[10px] font-semibold text-slate-300">{label}</div>
+                        <div className="text-[9px] text-slate-600 leading-tight">{hint}</div>
+                        <div className="flex gap-1.5 items-center">
+                          {/* Colour swatch — clicking opens native colour picker */}
+                          <label
+                            className="relative w-8 h-8 rounded-lg overflow-hidden border flex-shrink-0 cursor-pointer"
+                            style={{
+                              backgroundColor: valid && val ? val : "#374151",
+                              borderColor: valid && val ? val : "rgba(255,255,255,0.1)",
+                            }}
+                          >
+                            <input
+                              type="color"
+                              value={valid && val ? val : "#374151"}
+                              onChange={(e) => setBrandColours((c) => ({ ...c, [key]: e.target.value }))}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            />
+                          </label>
+                          {/* Hex text input */}
+                          <input
+                            value={val}
+                            onChange={(e) => {
+                              let v = e.target.value.trim();
+                              if (v && !v.startsWith("#")) v = "#" + v;
+                              setBrandColours((c) => ({ ...c, [key]: v }));
+                            }}
+                            placeholder="#RRGGBB"
+                            maxLength={7}
+                            className={`${inputCls} !py-1.5 text-xs font-mono flex-1 min-w-0 ${!valid && val ? "border-rose-500/60" : ""}`}
+                          />
+                        </div>
+                        {!valid && val && (
+                          <p className="text-[9px] text-rose-400">Invalid hex</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

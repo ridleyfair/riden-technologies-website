@@ -48,6 +48,11 @@ interface GenerateBody {
   logoUrl?: string;
   heroImage?: string;
   heroMobileImage?: string;
+  brandColours?: {
+    primary?:   string;   // accent/buttons — e.g. "#D6AD74"
+    secondary?: string;   // dark sections/footer — e.g. "#111827"
+    tertiary?:  string;   // backgrounds/cards — e.g. "#F8F4EC"
+  };
   heroHotspots?: Array<{
     label: string; href: string;
     x: number; y: number; width: number; height: number;
@@ -485,7 +490,7 @@ MANDATORY CONTENT RULES:
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
 7. SEO — include specific services and ${city} location.
 8. Contact section — include real phone, email, address, opening hours from the brief.
-9. PUNCTUATION — NEVER use em dashes (—) or en dashes (–) anywhere in copy. Use commas, periods, or natural sentence structure instead. BAD: "Expert craftsmanship — fully insured". GOOD: "Expert craftsmanship, fully insured workmanship."
+9. PUNCTUATION — NEVER use em dashes (—) or en dashes (–) anywhere in copy. Use commas, periods, or natural sentence structure instead. BAD: "Expert craftsmanship — fully insured". GOOD: "Expert craftsmanship, fully insured workmanship."${body.brandColours ? `\n10. BRAND COLOURS — The client has specified exact brand colours. Use them EXACTLY as provided — do not invent a different palette. accent="${body.brandColours.primary ?? 'n/a'}", primary="${body.brandColours.secondary ?? 'n/a'}", background="${body.brandColours.tertiary ?? 'n/a'}". These are already pre-filled in the brand.palette below — do not change them.` : ''}
 
 DO NOT:
 - Generate different pages than the structure provided
@@ -505,13 +510,13 @@ The JSON must exactly match this structure (fill in all <placeholders> with real
   "enabledModules": [],
   "brand": {
     "palette": {
-      "primary": "<hex>",
-      "secondary": "<hex>",
-      "accent": "<hex>",
-      "background": "<hex>",
-      "surface": "<hex>",
-      "text": "<hex>",
-      "textMuted": "<hex>"
+      "primary":    "${body.brandColours?.secondary  ?? '<hex — dark colour for footer/nav>'}",
+      "secondary":  "${body.brandColours?.secondary  ?? '<hex>'}",
+      "accent":     "${body.brandColours?.primary    ?? '<hex — highlight/button colour>'}",
+      "background": "${body.brandColours?.tertiary   ?? '<hex — light page background>'}",
+      "surface":    "${body.brandColours?.tertiary   ?? '<hex — card/section background>'}",
+      "text":       "<hex — dark body text, choose to contrast with background>",
+      "textMuted":  "<hex — muted/secondary text>"
     },
     "headingFont": "Inter",
     "bodyFont": "Inter",
@@ -621,6 +626,14 @@ export async function POST(req: NextRequest) {
     spec.templateId = resolvedTemplateId;
     spec.themeId = resolvedThemeId;
     spec.siteType = templateDef.siteType;
+
+    // Override palette with exact client brand colours if provided
+    if (body.brandColours) {
+      const pal = (spec.brand as Record<string, unknown>).palette as Record<string, unknown>
+      if (body.brandColours.primary)   { pal.accent     = body.brandColours.primary   }
+      if (body.brandColours.secondary) { pal.primary    = body.brandColours.secondary; pal.secondary = body.brandColours.secondary }
+      if (body.brandColours.tertiary)  { pal.background = body.brandColours.tertiary;  pal.surface   = body.brandColours.tertiary  }
+    }
 
     // Inject logo URL into brand config
     if (body.logoUrl) {
