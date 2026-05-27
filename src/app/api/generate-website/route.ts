@@ -234,6 +234,36 @@ function parseAbout(raw: string): {
   };
 }
 
+// ── Review stats helpers ──────────────────────────────────────────────────────
+
+/** Floor review count to nearest 10 and add "+", e.g. 28 → "20+", 9 → "9" */
+function formatReviewCount(n: number): string {
+  if (n < 10) return String(n)
+  return `${Math.floor(n / 10) * 10}+`
+}
+
+/**
+ * Extract Checkatrade rating and review count from raw About text.
+ * Used as a fallback when body.rating / body.reviewCount are not provided.
+ */
+function parseReviewStatsFromAbout(about: string): { rating?: string; reviewCount?: number } {
+  let rating: string | undefined
+  let reviewCount: number | undefined
+
+  // Match "9.69/10", "rated 9.69/10", "9.69 out of 10"
+  const tenMatch = about.match(/(\d+(?:\.\d+)?)\s*\/\s*10/i)
+  if (tenMatch) {
+    const r = parseFloat(tenMatch[1])
+    if (r >= 0 && r <= 10) rating = `${tenMatch[1]}/10`
+  }
+
+  // Match "28 reviews", "based on 28 reviews", "28 verified reviews"
+  const countMatch = about.match(/\b(\d+)\s+(?:verified\s+)?reviews?\b/i)
+  if (countMatch) reviewCount = parseInt(countMatch[1], 10)
+
+  return { rating, reviewCount }
+}
+
 // ── Copy cleanup — strip em/en dashes before saving ──────────────────────────
 
 const COPY_SKIP_KEYS = new Set([
@@ -665,27 +695,51 @@ export async function POST(req: NextRequest) {
 
         // ── Testimonials post-processing ──────────────────────────────────────
         // 1. Overwrite items with canonical reviews (or keep empty if none)
-        // 2. Inject platform metadata
-        // 3. Remove testimonials sections with 0 items (hide when no real reviews)
+        // 2. Always inject platform metadata — never gated on platformUrl
+        // 3. Remove testimonials sections with 0 items AND no rating metadata
+
+        // Resolve authoritative rating / count — brief fields take priority over About text
+        const aboutStats      = parseReviewStatsFromAbout(body.about ?? "");
+        const effectiveCount  = body.reviewCount ?? aboutStats.reviewCount;
+        const effectiveRating = (() => {
+          if (body.rating) {
+            // body.rating from Checkatrade scraper is a plain number string e.g. "9.69"
+            return body.rating.includes("/") ? body.rating : `${body.rating}/10`;
+          }
+          return aboutStats.rating; // already "X.XX/10" from parser
+        })();
+
         for (const section of sections) {
           if ((section.type as string) !== "testimonials") continue;
           const sc = section.content as Record<string, unknown>;
-          if (canonicalReviews.length > 0) {
-            sc.items = canonicalReviews;
-            if (body.platformUrl) {
-              sc.platformUrl   = body.platformUrl;
-              sc.platform      = body.platform ?? "Checkatrade";
-              sc.totalReviews  = body.reviewCount ?? canonicalReviews.length;
-            }
-          } else {
-            sc.items = [];
+
+          sc.items    = canonicalReviews.length > 0 ? canonicalReviews : [];
+          sc.platform = body.platform ?? "Checkatrade";
+
+          if (effectiveCount !== undefined && effectiveCount > 0) {
+            sc.totalReviews        = effectiveCount;
+            sc.displayReviewCount  = formatReviewCount(effectiveCount);
+          } else if (canonicalReviews.length > 0) {
+            sc.totalReviews        = canonicalReviews.length;
+            sc.displayReviewCount  = formatReviewCount(canonicalReviews.length);
+          }
+
+          if (effectiveRating) {
+            sc.averageRating = effectiveRating;
+          }
+
+          if (body.platformUrl) {
+            sc.platformUrl = body.platformUrl;
           }
         }
-        // Remove sections with empty testimonials
+        // Remove testimonials sections that have no items and no rating metadata
         sections = sections.filter((s) => {
           if ((s.type as string) !== "testimonials") return true;
-          const items = (s.content as Record<string, unknown>).items as unknown[];
-          return Array.isArray(items) && items.length > 0;
+          const sc    = s.content as Record<string, unknown>;
+          const items = sc.items as unknown[];
+          const hasItems   = Array.isArray(items) && items.length > 0;
+          const hasRating  = !!(sc.averageRating || (sc.totalReviews as number) > 0);
+          return hasItems || hasRating;
         });
         page.sections = sections;
 
