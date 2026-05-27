@@ -320,7 +320,7 @@ function buildPagesJson(
           break;
 
         case "process":
-          sectionJsons.push(`{ "type": "process", "content": { "headline": "How We Work", "subHeadline": "<1-line description of the simple, clear process>", "steps": [ <4 steps specific to ${body.industry} work: each has number ("1"/"2"/"3"/"4"), title (2-4 words), description (1 clear sentence)> ] } }`);
+          sectionJsons.push(`{ "type": "process", "content": { "headline": "How We Work", "subHeadline": "<1-line description of the simple, clear process>", "steps": [ <4 steps specific to ${body.industry} work: each has number ("1"/"2"/"3"/"4"), title (2-4 words), description (max 10 words — one very short sentence, no filler)> ] } }`);
           break;
 
         case "footer":
