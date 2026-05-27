@@ -272,9 +272,9 @@ function buildPagesJson(
 
         case "services":
           if (isHome) {
-            sectionJsons.push(`{ "type": "services", "content": { "headline": "Our Services", "items": [ <3–6 top service highlights from About/Services — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Our Services", "items": [ <3–6 top service highlights — ONLY from the Services list: "${body.services}" — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
           } else {
-            sectionJsons.push(`{ "type": "services", "content": { "headline": "Everything We Offer", "items": [ <ALL services from About/Services — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler — be specific about what the service delivers), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
+            sectionJsons.push(`{ "type": "services", "content": { "headline": "Everything We Offer", "items": [ <one item per entry in the Services list: "${body.services}" — do NOT add services from About that are not in this list — each: "name" (title-case), "description" (1 concise sentence, 18–32 words max, no business name, no filler — be specific about what the service delivers), "icon" (pick best from: stairs|door|window|kitchen|cabinet|roof|hammer|wrench|tool|ruler|radiator|alert|cabin|building|home|shield|leaf|zap|scissors|box), "highlight" (bool)> ] } }`);
           }
           break;
 
@@ -444,7 +444,7 @@ ${reviewsBlock}
 MANDATORY CONTENT RULES:
 1. Hero (home page) — specific tagline using REAL facts from About. FORBIDDEN: "passionate professionals", "years of experience" without a number, "trusted local experts".
 2. Hero (sub-pages) — brief page-specific headline, not the business tagline.
-3. Services (home page) — 3–6 highlights. Services (dedicated page) — ALL services. Every description: 1 sentence, 18–32 words MAX. No business name. No "our team", "we are dedicated", "passionate" filler. Be specific and practical.
+3. Services — use ONLY the items in the Services list. Do NOT pull extra services from the About text. Home page: 3–6 highlights from the list. Dedicated services page: one card per item in the list, no additions. Every description: 1 sentence, 18–32 words MAX. No business name. No filler.
 4. About — professionally rewrite About text. Preserve ALL facts (dates, years, locations, capabilities).
 5. Testimonials — CRITICAL: testimonials.content.items are pre-populated. Copy them exactly as given. If items is [], keep it as [] — NEVER invent testimonials.
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
