@@ -47,6 +47,7 @@ interface GenerateBody {
   templateId?: string;
   logoUrl?: string;
   heroImage?: string;
+  heroMobileImage?: string;
   heroHotspots?: Array<{
     label: string; href: string;
     x: number; y: number; width: number; height: number;
@@ -660,6 +661,9 @@ export async function POST(req: NextRequest) {
             // Admin-supplied hotspots take priority; otherwise derive sensible
             // defaults from the CTA labels Claude generated.
             const isWebpHero = body.heroImage.split("?")[0].toLowerCase().endsWith(".webp");
+            if (isWebpHero && body.heroMobileImage) {
+              heroContent.mobileBackgroundImage = toAbsUrl(body.heroMobileImage);
+            }
             if (isWebpHero) {
               if (body.heroHotspots && body.heroHotspots.length > 0) {
                 heroContent.hotspots = body.heroHotspots;

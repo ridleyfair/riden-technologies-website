@@ -305,24 +305,29 @@ function ProjectDetailModal({
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
       if (Array.isArray(raw)) return { logo: "", hero: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[] };
       return {
-        logo:         String(raw.logo    ?? ""),
-        hero:         String(raw.hero    ?? ""),
+        logo:         String(raw.logo       ?? ""),
+        hero:         String(raw.hero       ?? ""),
+        heroMobile:   String(raw.heroMobile ?? ""),
         gallery:      Array.isArray(raw.gallery)       ? raw.gallery       as string[]      : [],
         heroHotspots: Array.isArray(raw.heroHotspots)  ? raw.heroHotspots  as HeroHotspot[] : [],
       };
-    } catch { return { logo: "", hero: "", gallery: [], heroHotspots: [] as HeroHotspot[] }; }
+    } catch { return { logo: "", hero: "", heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[] }; }
   })();
 
-  const [logoUrl, setLogoUrl]         = useState<string>(parsedPhotos.logo);
-  const [heroPhoto, setHeroPhoto]     = useState<string>(parsedPhotos.hero);
-  const [photos, setPhotos]           = useState<string[]>(parsedPhotos.gallery);
-  const logoFileRef                   = useRef<HTMLInputElement>(null);
-  const heroFileRef                   = useRef<HTMLInputElement>(null);
-  const galleryFileRef                = useRef<HTMLInputElement>(null);
-  const [heroHotspots, setHeroHotspots]         = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
-  const [heroUploading, setHeroUploading]       = useState(false);
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [heroUploadError, setHeroUploadError]   = useState("");
+  const [logoUrl, setLogoUrl]               = useState<string>(parsedPhotos.logo);
+  const [heroPhoto, setHeroPhoto]           = useState<string>(parsedPhotos.hero);
+  const [heroMobilePhoto, setHeroMobilePhoto] = useState<string>(parsedPhotos.heroMobile);
+  const [photos, setPhotos]                 = useState<string[]>(parsedPhotos.gallery);
+  const logoFileRef                         = useRef<HTMLInputElement>(null);
+  const heroFileRef                         = useRef<HTMLInputElement>(null);
+  const heroMobileFileRef                   = useRef<HTMLInputElement>(null);
+  const galleryFileRef                      = useRef<HTMLInputElement>(null);
+  const [heroHotspots, setHeroHotspots]             = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
+  const [heroUploading, setHeroUploading]           = useState(false);
+  const [heroMobileUploading, setHeroMobileUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading]     = useState(false);
+  const [heroUploadError, setHeroUploadError]       = useState("");
+  const [heroMobileUploadError, setHeroMobileUploadError] = useState("");
   const [galleryUploadError, setGalleryUploadError] = useState("");
 
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -373,6 +378,26 @@ function ProjectDetailModal({
       setHeroUploadError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setHeroUploading(false);
+    }
+  }
+
+  async function handleHeroMobileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setHeroMobileUploading(true);
+    setHeroMobileUploadError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res  = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json() as { ok?: boolean; url?: string; error?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
+      setHeroMobilePhoto(data.url!);
+    } catch (err) {
+      setHeroMobileUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setHeroMobileUploading(false);
     }
   }
 
@@ -490,7 +515,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos, heroHotspots }),
+          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -510,7 +535,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, gallery: photos, heroHotspots }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots }) }),
     });
   }
 
@@ -709,8 +734,9 @@ function ProjectDetailModal({
           password:        Math.random().toString(36).slice(2, 10),
           reviews,
           logoUrl:      logoUrl    || undefined,
-          heroImage:    heroPhoto  || undefined,
-          heroHotspots: heroHotspots.length > 0 ? heroHotspots : undefined,
+          heroImage:       heroPhoto       || undefined,
+          heroMobileImage: heroMobilePhoto || undefined,
+          heroHotspots:    heroHotspots.length > 0 ? heroHotspots : undefined,
           templateId:   selectedTemplate || undefined,
           photos,
         }),
@@ -1309,10 +1335,10 @@ function ProjectDetailModal({
 
               {/* Hero Photo */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hero Photo</h3>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desktop Hero Image</h3>
                 {heroPhoto && heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") ? (
                   <p className="text-[11px] text-slate-500">
-                    This is a <span className="text-blue-400 font-semibold">.webp artwork hero</span> — the full image replaces the normal hero layout. Draw clickable zones over the CTA buttons below.
+                    This is a <span className="text-blue-400 font-semibold">.webp artwork hero</span> — the full image replaces the normal hero layout. Draw clickable zones over the CTA buttons below. Upload a <span className="text-slate-300">Mobile Hero Image</span> below for portrait phones.
                   </p>
                 ) : (
                   <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
@@ -1388,6 +1414,64 @@ function ProjectDetailModal({
                 )}
                 {heroUploadError && <p className="text-[10px] text-rose-400">{heroUploadError}</p>}
               </div>
+
+              {/* Mobile Hero Image — only shown when desktop hero is a .webp artwork */}
+              {heroPhoto && heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mobile Hero Image</h3>
+                  <p className="text-[11px] text-slate-500">
+                    Portrait image for phones. Recommended: <span className="text-slate-300">.webp, 1080×1920 px</span>. If omitted, the desktop artwork is shown contained in a 16:9 frame on mobile.
+                  </p>
+                  <input
+                    ref={heroMobileFileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleHeroMobileUpload}
+                  />
+                  {heroMobilePhoto ? (
+                    <div className="relative rounded-xl overflow-hidden border border-riden-border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={heroMobilePhoto} alt="Mobile Hero" className="w-full h-48 object-cover object-top" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                      <button
+                        onClick={() => { setHeroMobilePhoto(""); setHeroMobileUploadError(""); }}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                      >
+                        <X size={11} />
+                      </button>
+                      <span className="absolute bottom-2 left-3 text-[10px] text-white/60">Mobile hero</span>
+                      <button
+                        onClick={() => heroMobileFileRef.current?.click()}
+                        disabled={heroMobileUploading}
+                        className="absolute bottom-2 right-3 flex items-center gap-1 text-[10px] text-white/70 hover:text-white transition-colors"
+                      >
+                        <Upload size={10} /> Replace
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => heroMobileFileRef.current?.click()}
+                        disabled={heroMobileUploading}
+                        className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50"
+                      >
+                        {heroMobileUploading
+                          ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</>
+                          : <><Upload size={12} /> Upload</>
+                        }
+                      </button>
+                      <input
+                        value={heroMobilePhoto}
+                        onChange={(e) => setHeroMobilePhoto(e.target.value)}
+                        placeholder="or paste a URL..."
+                        className={`${inputCls} text-xs`}
+                      />
+                    </div>
+                  )}
+                  {heroMobileUploadError && <p className="text-[10px] text-rose-400">{heroMobileUploadError}</p>}
+                </div>
+              )}
 
               {/* Work Photos (Gallery) */}
               <div className="space-y-3">
