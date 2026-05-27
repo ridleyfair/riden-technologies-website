@@ -305,16 +305,20 @@ function ProjectDetailModal({
     try { return JSON.parse(initialProject.reviewsJson ?? "[]"); } catch { return []; }
   });
 
-  // photosJson stores { logo, hero, gallery, heroHotspots, colours } or legacy plain string[]
+  // photosJson stores { logo, heroImages, hero(legacy), gallery, heroHotspots, colours } or legacy plain string[]
   const parsedPhotos = (() => {
     const emptyColours: BrandColours = { primary: "", secondary: "", tertiary: "" };
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", hero: "", heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours };
+      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours };
       const rc = raw.colours && typeof raw.colours === "object" ? raw.colours as Record<string, unknown> : {};
+      // heroImages[] is the canonical field; fall back to legacy hero string
+      const heroImages: string[] = Array.isArray(raw.heroImages)
+        ? raw.heroImages as string[]
+        : raw.hero ? [String(raw.hero)] : [];
       return {
         logo:         String(raw.logo       ?? ""),
-        hero:         String(raw.hero       ?? ""),
+        heroImages,
         heroMobile:   String(raw.heroMobile ?? ""),
         gallery:      Array.isArray(raw.gallery)       ? raw.gallery       as string[]      : [],
         heroHotspots: Array.isArray(raw.heroHotspots)  ? raw.heroHotspots  as HeroHotspot[] : [],
@@ -324,25 +328,26 @@ function ProjectDetailModal({
           tertiary:  String(rc.tertiary  ?? ""),
         } as BrandColours,
       };
-    } catch { return { logo: "", hero: "", heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours }; }
   })();
 
-  const [logoUrl, setLogoUrl]               = useState<string>(parsedPhotos.logo);
-  const [heroPhoto, setHeroPhoto]           = useState<string>(parsedPhotos.hero);
-  const [heroMobilePhoto, setHeroMobilePhoto] = useState<string>(parsedPhotos.heroMobile);
-  const [photos, setPhotos]                 = useState<string[]>(parsedPhotos.gallery);
-  const logoFileRef                         = useRef<HTMLInputElement>(null);
-  const heroFileRef                         = useRef<HTMLInputElement>(null);
-  const heroMobileFileRef                   = useRef<HTMLInputElement>(null);
-  const galleryFileRef                      = useRef<HTMLInputElement>(null);
-  const [heroHotspots, setHeroHotspots]             = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
-  const [brandColours, setBrandColours]             = useState<BrandColours>(parsedPhotos.colours);
-  const [heroUploading, setHeroUploading]           = useState(false);
+  const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
+  const [heroImages, setHeroImages]             = useState<string[]>(parsedPhotos.heroImages);
+  const [heroMobilePhoto, setHeroMobilePhoto]   = useState<string>(parsedPhotos.heroMobile);
+  const [photos, setPhotos]                     = useState<string[]>(parsedPhotos.gallery);
+  const logoFileRef                             = useRef<HTMLInputElement>(null);
+  const heroFileRef                             = useRef<HTMLInputElement>(null);
+  const heroMobileFileRef                       = useRef<HTMLInputElement>(null);
+  const galleryFileRef                          = useRef<HTMLInputElement>(null);
+  const [heroHotspots, setHeroHotspots]         = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
+  const [brandColours, setBrandColours]         = useState<BrandColours>(parsedPhotos.colours);
+  const [heroUploading, setHeroUploading]       = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
-  const [galleryUploading, setGalleryUploading]     = useState(false);
-  const [heroUploadError, setHeroUploadError]       = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [heroUploadError, setHeroUploadError]   = useState("");
   const [heroMobileUploadError, setHeroMobileUploadError] = useState("");
   const [galleryUploadError, setGalleryUploadError] = useState("");
+  const [heroUrlInput, setHeroUrlInput]         = useState("");
 
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -368,31 +373,44 @@ function ProjectDetailModal({
     e.target.value = "";
   }
   async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file) return;
+    if (!files.length) return;
     setHeroUploading(true);
     setHeroUploadError("");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json() as { ok?: boolean; url?: string; error?: string };
-      if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
-      const uploadedUrl = data.url!;
-      setHeroPhoto(uploadedUrl);
-      // For .webp artwork, suggest default hotspot zones if none are set yet
-      if (uploadedUrl.split("?")[0].toLowerCase().endsWith(".webp") && heroHotspots.length === 0) {
-        setHeroHotspots([
-          { label: "Get a Free Quote", href: brief.phone ? `tel:${brief.phone}` : "#contact", variant: "primary"   as const, x: 4,  y: 67, width: 19, height: 9 },
-          { label: "Our Services",     href: "#services",                                       variant: "secondary" as const, x: 25, y: 67, width: 17, height: 9, hideMobile: true },
-        ]);
-      }
+      const urls = await Promise.all(files.map(async (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res  = await fetch("/api/upload", { method: "POST", body: fd });
+        const data = await res.json() as { ok?: boolean; url?: string; error?: string };
+        if (!res.ok || !data.ok) throw new Error(data.error ?? "Upload failed");
+        return data.url!;
+      }));
+      setHeroImages((prev) => {
+        const next = [...prev, ...urls];
+        // For .webp artwork (single primary), suggest default hotspot zones
+        const primary = next[0];
+        if (primary?.split("?")[0].toLowerCase().endsWith(".webp") && heroHotspots.length === 0) {
+          setHeroHotspots([
+            { label: "Get a Free Quote", href: brief.phone ? `tel:${brief.phone}` : "#contact", variant: "primary"   as const, x: 4,  y: 67, width: 19, height: 9 },
+            { label: "Our Services",     href: "#services",                                       variant: "secondary" as const, x: 25, y: 67, width: 17, height: 9, hideMobile: true },
+          ]);
+        }
+        return next;
+      });
     } catch (err) {
       setHeroUploadError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setHeroUploading(false);
     }
+  }
+
+  function addHeroByUrl() {
+    const url = heroUrlInput.trim();
+    if (!url) return;
+    setHeroImages((prev) => (prev.includes(url) ? prev : [...prev, url]));
+    setHeroUrlInput("");
   }
 
   async function handleHeroMobileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -529,7 +547,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -549,7 +567,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, hero: heroPhoto, heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }) }),
     });
   }
 
@@ -747,10 +765,11 @@ function ProjectDetailModal({
           username:        project.clientName.toLowerCase().replace(/\s+/g, "-"),
           password:        Math.random().toString(36).slice(2, 10),
           reviews,
-          logoUrl:      logoUrl    || undefined,
-          heroImage:       heroPhoto       || undefined,
-          heroMobileImage: heroMobilePhoto || undefined,
-          heroHotspots:    heroHotspots.length > 0 ? heroHotspots : undefined,
+          logoUrl:         logoUrl                   || undefined,
+          heroImages:      heroImages.length > 0 ? heroImages : undefined,
+          heroImage:       heroImages[0]            || undefined,
+          heroMobileImage: heroMobilePhoto           || undefined,
+          heroHotspots:    heroHotspots.length > 0  ? heroHotspots : undefined,
           templateId:   selectedTemplate || undefined,
           photos,
           brandColours: (() => {
@@ -1412,90 +1431,113 @@ function ProjectDetailModal({
                 )}
               </div>
 
-              {/* Hero Photo */}
+              {/* Hero Images — multi-image slideshow manager */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Desktop Hero Image</h3>
-                {heroPhoto && heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") ? (
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Hero Images {heroImages.length > 1 && <span className="text-blue-400 font-normal normal-case ml-1">({heroImages.length} — slideshow)</span>}
+                  </h3>
+                  {heroImages.length > 0 && (
+                    <button onClick={() => { setHeroImages([]); setHeroHotspots([]); }} className="text-[10px] text-rose-400 hover:text-rose-300 transition-colors">
+                      Clear all
+                    </button>
+                  )}
+                </div>
+
+                {/* Primary image is .webp artwork */}
+                {heroImages[0] && heroImages[0].split("?")[0].toLowerCase().endsWith(".webp") ? (
                   <p className="text-[11px] text-slate-500">
-                    This is a <span className="text-blue-400 font-semibold">.webp artwork hero</span> — the full image replaces the normal hero layout. Draw clickable zones over the CTA buttons below. Upload a <span className="text-slate-300">Mobile Hero Image</span> below for portrait phones.
+                    This is a <span className="text-blue-400 font-semibold">.webp artwork hero</span> — the full image replaces the normal layout. Draw clickable zones below.
                   </p>
                 ) : (
-                  <p className="text-[11px] text-slate-500">Fills the top banner of the website. Best as a wide landscape shot of the work or business.</p>
+                  <p className="text-[11px] text-slate-500">
+                    Upload one or more landscape images. Multiple images rotate as a slideshow. First image is the primary / fallback.
+                  </p>
                 )}
-                {/* Hidden file input */}
+
+                {/* Hidden multi-file input */}
                 <input
                   ref={heroFileRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
+                  multiple
                   className="hidden"
                   onChange={handleHeroUpload}
                 />
-                {heroPhoto ? (
-                  heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") ? (
-                    /* .webp — hotspot editor */
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <button
-                          onClick={() => heroFileRef.current?.click()}
-                          disabled={heroUploading}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-50"
-                        >
-                          {heroUploading ? <><RefreshCw size={11} className="animate-spin" /> Replacing…</> : <><Upload size={11} /> Replace image</>}
-                        </button>
-                        <button
-                          onClick={() => { setHeroPhoto(""); setHeroUploadError(""); setHeroHotspots([]); }}
-                          className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-rose-400 transition-colors"
-                        >
-                          <X size={10} /> Remove
-                        </button>
+
+                {/* Existing images grid */}
+                {heroImages.length > 0 && (
+                  <div className="space-y-2">
+                    {heroImages[0].split("?")[0].toLowerCase().endsWith(".webp") ? (
+                      /* .webp — hotspot editor for primary image */
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <button onClick={() => heroFileRef.current?.click()} disabled={heroUploading}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-50">
+                            {heroUploading ? <><RefreshCw size={11} className="animate-spin" /> Uploading…</> : <><Upload size={11} /> Replace</>}
+                          </button>
+                          <button onClick={() => { setHeroImages([]); setHeroHotspots([]); }}
+                            className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-rose-400 transition-colors">
+                            <X size={10} /> Remove
+                          </button>
+                        </div>
+                        <HotspotsEditor imageUrl={heroImages[0]} hotspots={heroHotspots} onChange={setHeroHotspots} />
                       </div>
-                      <HotspotsEditor
-                        imageUrl={heroPhoto}
-                        hotspots={heroHotspots}
-                        onChange={setHeroHotspots}
-                      />
-                    </div>
-                  ) : (
-                    /* jpg/png — simple preview */
-                    <div className="relative rounded-xl overflow-hidden border border-riden-border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={heroPhoto} alt="Hero" className="w-full h-36 object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-                      <button
-                        onClick={() => { setHeroPhoto(""); setHeroUploadError(""); }}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
-                      >
-                        <X size={11} />
-                      </button>
-                      <span className="absolute bottom-2 left-3 text-[10px] text-white/60">Hero image</span>
-                    </div>
-                  )
-                ) : (
-                  /* No image — upload button + URL input */
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => heroFileRef.current?.click()}
-                      disabled={heroUploading}
-                      className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50"
-                    >
-                      {heroUploading
-                        ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</>
-                        : <><Upload size={12} /> Upload</>
-                      }
-                    </button>
-                    <input
-                      value={heroPhoto}
-                      onChange={(e) => setHeroPhoto(e.target.value)}
-                      placeholder="or paste a URL..."
-                      className={`${inputCls} text-xs`}
-                    />
+                    ) : (
+                      /* jpg/png grid — reorder + remove */
+                      <div className="grid grid-cols-3 gap-2">
+                        {heroImages.map((src, i) => (
+                          <div key={src} className="relative group aspect-video rounded-lg overflow-hidden border border-riden-border">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt={`Hero ${i + 1}`} className="w-full h-full object-cover" />
+                            {i === 0 && (
+                              <span className="absolute top-1 left-1 text-[9px] bg-blue-500/80 text-white px-1.5 py-0.5 rounded font-semibold">Primary</span>
+                            )}
+                            {/* Remove */}
+                            <button
+                              onClick={() => setHeroImages((prev) => prev.filter((_, idx) => idx !== i))}
+                              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <X size={9} />
+                            </button>
+                            {/* Reorder arrows */}
+                            <div className="absolute bottom-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {i > 0 && (
+                                <button onClick={() => setHeroImages((prev) => { const a = [...prev]; [a[i-1], a[i]] = [a[i], a[i-1]]; return a; })}
+                                  className="w-5 h-5 rounded bg-black/70 text-white flex items-center justify-center text-[10px]">
+                                  ←
+                                </button>
+                              )}
+                              {i < heroImages.length - 1 && (
+                                <button onClick={() => setHeroImages((prev) => { const a = [...prev]; [a[i], a[i+1]] = [a[i+1], a[i]]; return a; })}
+                                  className="w-5 h-5 rounded bg-black/70 text-white flex items-center justify-center text-[10px]">
+                                  →
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
+
+                {/* Upload + URL row */}
+                <div className="flex gap-2">
+                  <button onClick={() => heroFileRef.current?.click()} disabled={heroUploading}
+                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50">
+                    {heroUploading ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</> : <><Upload size={12} /> {heroImages.length > 0 ? "Add More" : "Upload"}</>}
+                  </button>
+                  <input value={heroUrlInput} onChange={(e) => setHeroUrlInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addHeroByUrl()}
+                    placeholder="or paste a URL and press Enter..." className={`${inputCls} flex-1 text-xs`} />
+                  <Button variant="outline" size="sm" onClick={addHeroByUrl} disabled={!heroUrlInput.trim()}>Add</Button>
+                </div>
+
                 {heroUploadError && <p className="text-[10px] text-rose-400">{heroUploadError}</p>}
               </div>
 
               {/* Mobile Hero Image — only shown when desktop hero is a .webp artwork */}
-              {heroPhoto && heroPhoto.split("?")[0].toLowerCase().endsWith(".webp") && (
+              {heroImages[0] && heroImages[0].split("?")[0].toLowerCase().endsWith(".webp") && (
                 <div className="space-y-3">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Mobile Hero Image</h3>
                   <p className="text-[11px] text-slate-500">

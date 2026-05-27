@@ -46,7 +46,8 @@ interface GenerateBody {
   password: string;
   templateId?: string;
   logoUrl?: string;
-  heroImage?: string;
+  heroImage?: string;       // single image (legacy / backward compat)
+  heroImages?: string[];    // multiple images — 2+ activates slideshow
   heroMobileImage?: string;
   brandColours?: {
     primary?:   string;   // accent/buttons — e.g. "#D6AD74"
@@ -752,17 +753,28 @@ export async function POST(req: NextRequest) {
         const toAbsUrl = (url: string) =>
           url.startsWith("/") ? `${crmOrigin}${url}` : url;
 
-        // Inject hero background image into home page hero section only
-        if (isHome && body.heroImage) {
+        // Inject hero image(s) into home page hero section only.
+        // heroImages[] takes priority over legacy heroImage string.
+        const rawHeroImages: string[] = body.heroImages?.length
+          ? body.heroImages
+          : body.heroImage ? [body.heroImage] : [];
+
+        if (isHome && rawHeroImages.length > 0) {
           const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
           if (heroSection) {
             const heroContent = heroSection.content as Record<string, unknown>;
-            heroContent.backgroundImage = toAbsUrl(body.heroImage);
+            const absImages   = rawHeroImages.map(toAbsUrl);
+
+            heroContent.backgroundImage = absImages[0];
+
+            if (absImages.length > 1) {
+              heroContent.heroImages = absImages;
+            }
 
             // For .webp artwork heroes, inject hotspot click zones.
             // Admin-supplied hotspots take priority; otherwise derive sensible
             // defaults from the CTA labels Claude generated.
-            const isWebpHero = body.heroImage.split("?")[0].toLowerCase().endsWith(".webp");
+            const isWebpHero = absImages[0].split("?")[0].toLowerCase().endsWith(".webp");
             if (isWebpHero && body.heroMobileImage) {
               heroContent.mobileBackgroundImage = toAbsUrl(body.heroMobileImage);
             }
@@ -770,9 +782,9 @@ export async function POST(req: NextRequest) {
               if (body.heroHotspots && body.heroHotspots.length > 0) {
                 heroContent.hotspots = body.heroHotspots;
               } else {
-                const primary   = (heroContent.cta         as string) || "Get a Free Quote";
-                const primaryHref = (heroContent.ctaHref   as string) || "#contact";
-                const secondary   = (heroContent.secondaryCta as string) || "";
+                const primary       = (heroContent.cta            as string) || "Get a Free Quote";
+                const primaryHref   = (heroContent.ctaHref        as string) || "#contact";
+                const secondary     = (heroContent.secondaryCta   as string) || "";
                 const secondaryHref = (heroContent.secondaryCtaHref as string) || "#services";
                 const defaults: typeof body.heroHotspots = [
                   { label: primary, href: primaryHref, variant: "primary",   x: 4,  y: 67, width: 19, height: 9 },
