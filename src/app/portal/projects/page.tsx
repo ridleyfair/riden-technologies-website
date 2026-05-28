@@ -86,19 +86,18 @@ type AboutProofCard = {
 const TRUST_CARD_ICONS = ['star', 'shield', 'check', 'clock', 'calendar', 'award', 'map-pin'] as const;
 
 const DEFAULT_ABOUT_PROOF_CARDS: AboutProofCard[] = [
-  { id: 'experience', title: 'Experience',    value: '',     subtitle: 'Years in business',   icon: 'calendar', enabled: true  },
-  { id: 'reviews',    title: 'Reviews',       value: '',     subtitle: 'Verified reviews',    icon: 'award',    enabled: true  },
-  { id: 'rating',     title: 'Rating',        value: '',     subtitle: 'Checkatrade rating',  icon: 'star',     enabled: true  },
-  { id: 'insured',    title: 'Fully Insured', value: 'Yes',  subtitle: 'Public liability',   icon: 'shield',   enabled: false },
-  { id: 'avail',      title: 'Availability',  value: '24/7', subtitle: 'Emergency enquiries', icon: 'clock',   enabled: false },
+  { id: 'experience',    title: 'Experience',    value: '',     subtitle: 'Years in the trade',           icon: 'calendar', enabled: true  },
+  { id: 'craftsmanship', title: 'Craftsmanship', value: '',     subtitle: 'Precision in every detail',    icon: 'star',     enabled: true  },
+  { id: 'communication', title: 'Communication', value: '',     subtitle: 'Dedicated point of contact',   icon: 'check',    enabled: true  },
+  { id: 'insured',       title: 'Fully Insured', value: 'Yes',  subtitle: 'Public liability covered',     icon: 'shield',   enabled: false },
+  { id: 'avail',         title: 'Availability',  value: '24/7', subtitle: 'Emergency enquiries',          icon: 'clock',    enabled: false },
 ];
 
 const DEFAULT_TRUST_CARDS: TrustCard[] = [
-  { id: 'fully-insured', title: 'Fully Insured',   value: '',     icon: 'shield',   location: ['hero', 'about'], enabled: true  },
-  { id: 'free-quotes',   title: 'Free Quotes',      value: '',     icon: 'check',    location: ['hero', 'about'], enabled: true  },
-  { id: 'avg-rating',    title: 'Average Rating',   value: '',     icon: 'star',     location: ['hero', 'about'], enabled: true  },
-  { id: 'reviews',       title: 'Reviews',          value: '',     icon: 'award',    location: ['hero', 'about'], enabled: false },
-  { id: 'availability',  title: 'Availability',     value: '24/7', icon: 'clock',    location: ['hero'],          enabled: false },
+  { id: 'fully-insured', title: 'Fully Insured',  value: '',     icon: 'shield', location: ['hero'], enabled: false },
+  { id: 'free-quotes',   title: 'Free Quotes',    value: '',     icon: 'check',  location: ['hero'], enabled: false },
+  { id: 'avg-rating',    title: 'Average Rating', value: '',     icon: 'star',   location: ['hero'], enabled: false },
+  { id: 'reviews',       title: 'Reviews',        value: '',     icon: 'award',  location: ['hero'], enabled: false },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -1272,7 +1271,7 @@ function ProjectDetailModal({
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-500">
-                  Controls what appears in the hero trust pills and About section. Blank values show title only. If all disabled, smart defaults are used.
+                  Override the default hero value cards. Leave all disabled to show the built-in premium card set (Tailored Solutions, Direct Communication, etc).
                 </p>
                 <div className="space-y-1.5">
                   {trustCards.map((card, idx) => (
