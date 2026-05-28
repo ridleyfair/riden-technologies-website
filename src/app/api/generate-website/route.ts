@@ -67,6 +67,14 @@ interface GenerateBody {
   platform?: string;
   reviews?: Review[];
   photos?: string[];
+  trustCards?: Array<{
+    id:       string;
+    title:    string;
+    value:    string;
+    icon:     string;
+    location: string[];
+    enabled:  boolean;
+  }>;
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
@@ -851,6 +859,11 @@ export async function POST(req: NextRequest) {
         return `${p.slug}[${sections.map((s) => s.type).join(",")}]`;
       });
       console.log(`[generate-website] final pages: ${pageMap.join(" | ")}`);
+    }
+
+    // Inject user-defined trust cards — overrides anything Claude may have invented
+    if (body.trustCards && body.trustCards.length > 0) {
+      spec.trustCards = body.trustCards.filter(c => c.enabled && c.title.trim() !== '');
     }
 
     // Strip any em/en dashes Claude snuck into the copy

@@ -63,6 +63,27 @@ type BrandColours = {
   tertiary:  string;
 };
 
+type TrustCardLocation = 'hero' | 'about';
+
+type TrustCard = {
+  id:       string;
+  title:    string;
+  value:    string;
+  icon:     string;
+  location: TrustCardLocation[];
+  enabled:  boolean;
+};
+
+const TRUST_CARD_ICONS = ['star', 'shield', 'check', 'clock', 'calendar', 'award', 'map-pin'] as const;
+
+const DEFAULT_TRUST_CARDS: TrustCard[] = [
+  { id: 'fully-insured', title: 'Fully Insured',   value: '',     icon: 'shield',   location: ['hero', 'about'], enabled: true  },
+  { id: 'free-quotes',   title: 'Free Quotes',      value: '',     icon: 'check',    location: ['hero', 'about'], enabled: true  },
+  { id: 'avg-rating',    title: 'Average Rating',   value: '',     icon: 'star',     location: ['hero', 'about'], enabled: true  },
+  { id: 'reviews',       title: 'Reviews',          value: '',     icon: 'award',    location: ['hero', 'about'], enabled: false },
+  { id: 'availability',  title: 'Availability',     value: '24/7', icon: 'clock',    location: ['hero'],          enabled: false },
+];
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   planning:    { label: "Planning",     color: "text-blue-400",    bg: "bg-blue-400" },
   in_progress: { label: "In Progress",  color: "text-amber-400",   bg: "bg-amber-400" },
@@ -327,8 +348,9 @@ function ProjectDetailModal({
           secondary: String(rc.secondary ?? ""),
           tertiary:  String(rc.tertiary  ?? ""),
         } as BrandColours,
+        trustCards: Array.isArray(raw.trustCards) ? raw.trustCards as TrustCard[] : DEFAULT_TRUST_CARDS,
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -341,6 +363,7 @@ function ProjectDetailModal({
   const galleryFileRef                          = useRef<HTMLInputElement>(null);
   const [heroHotspots, setHeroHotspots]         = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
   const [brandColours, setBrandColours]         = useState<BrandColours>(parsedPhotos.colours);
+  const [trustCards,   setTrustCards]           = useState<TrustCard[]>(parsedPhotos.trustCards ?? DEFAULT_TRUST_CARDS);
   const [heroUploading, setHeroUploading]       = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -547,7 +570,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -567,7 +590,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards }) }),
     });
   }
 
@@ -781,6 +804,7 @@ function ProjectDetailModal({
             };
             return (c.primary || c.secondary || c.tertiary) ? c : undefined;
           })(),
+          trustCards: trustCards.filter(c => c.enabled && c.title.trim() !== ''),
         }),
       });
       const data = await res.json();
@@ -1203,6 +1227,97 @@ function ProjectDetailModal({
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Trust Cards */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Star size={11} /> Trust Cards
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setTrustCards(c => [...c, {
+                      id:       crypto.randomUUID(),
+                      title:    '',
+                      value:    '',
+                      icon:     'check',
+                      location: ['hero', 'about'] as TrustCardLocation[],
+                      enabled:  true,
+                    }])}
+                    className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                  >
+                    <Plus size={11} /> Add card
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Controls what appears in the hero trust pills and About section. Blank values show title only. If all disabled, smart defaults are used.
+                </p>
+                <div className="space-y-1.5">
+                  {trustCards.map((card, idx) => (
+                    <div key={card.id} className={`border rounded-xl p-3 space-y-2 transition-colors ${card.enabled ? 'bg-riden-muted border-riden-border' : 'bg-transparent border-slate-800 opacity-50'}`}>
+                      {/* Row 1: toggle · title · value · move · delete */}
+                      <div className="flex items-center gap-2">
+                        {/* Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => setTrustCards(cards => cards.map((c, i) => i === idx ? { ...c, enabled: !c.enabled } : c))}
+                          className={`relative w-7 h-4 rounded-full flex-shrink-0 transition-colors ${card.enabled ? 'bg-blue-500' : 'bg-slate-700'}`}
+                        >
+                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${card.enabled ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                        </button>
+                        {/* Title */}
+                        <input
+                          value={card.title}
+                          onChange={e => setTrustCards(cards => cards.map((c, i) => i === idx ? { ...c, title: e.target.value } : c))}
+                          placeholder="Card title (e.g. Fully Insured)"
+                          className="flex-1 bg-transparent border-b border-slate-700 focus:border-blue-500 text-sm text-white pb-0.5 outline-none placeholder:text-slate-600"
+                        />
+                        {/* Value (optional) */}
+                        <input
+                          value={card.value}
+                          onChange={e => setTrustCards(cards => cards.map((c, i) => i === idx ? { ...c, value: e.target.value } : c))}
+                          placeholder="Value"
+                          className="w-20 bg-transparent border-b border-slate-700 focus:border-blue-500 text-xs text-slate-300 pb-0.5 outline-none placeholder:text-slate-600 text-right"
+                        />
+                        {/* Move up */}
+                        <button type="button" onClick={() => setTrustCards(cards => { const a = [...cards]; [a[idx-1],a[idx]] = [a[idx],a[idx-1]]; return a; })} disabled={idx === 0} className="text-slate-700 hover:text-slate-400 disabled:opacity-20 transition-colors text-xs leading-none">▲</button>
+                        {/* Move down */}
+                        <button type="button" onClick={() => setTrustCards(cards => { const a = [...cards]; [a[idx],a[idx+1]] = [a[idx+1],a[idx]]; return a; })} disabled={idx === trustCards.length - 1} className="text-slate-700 hover:text-slate-400 disabled:opacity-20 transition-colors text-xs leading-none">▼</button>
+                        {/* Delete */}
+                        <button type="button" onClick={() => setTrustCards(cards => cards.filter((_, i) => i !== idx))} className="text-slate-700 hover:text-red-400 transition-colors flex-shrink-0"><X size={13} /></button>
+                      </div>
+                      {/* Row 2: icon · location */}
+                      <div className="flex items-center gap-3 pl-9">
+                        <select
+                          value={card.icon}
+                          onChange={e => setTrustCards(cards => cards.map((c, i) => i === idx ? { ...c, icon: e.target.value } : c))}
+                          className="text-[11px] bg-riden-surface border border-riden-border rounded-lg px-2 py-1 text-slate-300 outline-none"
+                        >
+                          {TRUST_CARD_ICONS.map(ic => <option key={ic} value={ic} className="bg-riden-surface">{ic}</option>)}
+                        </select>
+                        <span className="text-[11px] text-slate-500">Show in:</span>
+                        {(['hero', 'about'] as TrustCardLocation[]).map(loc => (
+                          <label key={loc} className="flex items-center gap-1 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={card.location.includes(loc)}
+                              onChange={e => setTrustCards(cards => cards.map((c, i) => {
+                                if (i !== idx) return c;
+                                const locs = e.target.checked
+                                  ? ([...c.location, loc] as TrustCardLocation[])
+                                  : c.location.filter(l => l !== loc);
+                                return { ...c, location: locs };
+                              }))}
+                              className="accent-blue-500 w-3 h-3"
+                            />
+                            <span className="text-[11px] text-slate-400 capitalize">{loc}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
