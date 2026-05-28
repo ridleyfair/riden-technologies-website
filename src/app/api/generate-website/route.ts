@@ -75,6 +75,14 @@ interface GenerateBody {
     location: string[];
     enabled:  boolean;
   }>;
+  aboutProofCards?: Array<{
+    id:       string;
+    title:    string;
+    value:    string;
+    subtitle: string;
+    icon:     string;
+    enabled:  boolean;
+  }>;
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
@@ -864,6 +872,11 @@ export async function POST(req: NextRequest) {
     // Inject user-defined trust cards — overrides anything Claude may have invented
     if (body.trustCards && body.trustCards.length > 0) {
       spec.trustCards = body.trustCards.filter(c => c.enabled && c.title.trim() !== '');
+    }
+
+    // Inject user-defined about proof cards — Claude never generates these
+    if (body.aboutProofCards && body.aboutProofCards.length > 0) {
+      spec.aboutProofCards = body.aboutProofCards.filter(c => c.enabled && c.title.trim() !== '');
     }
 
     // Strip any em/en dashes Claude snuck into the copy

@@ -74,7 +74,24 @@ type TrustCard = {
   enabled:  boolean;
 };
 
+type AboutProofCard = {
+  id:       string;
+  title:    string;
+  value:    string;
+  subtitle: string;
+  icon:     string;
+  enabled:  boolean;
+};
+
 const TRUST_CARD_ICONS = ['star', 'shield', 'check', 'clock', 'calendar', 'award', 'map-pin'] as const;
+
+const DEFAULT_ABOUT_PROOF_CARDS: AboutProofCard[] = [
+  { id: 'experience', title: 'Experience',    value: '',     subtitle: 'Years in business',   icon: 'calendar', enabled: true  },
+  { id: 'reviews',    title: 'Reviews',       value: '',     subtitle: 'Verified reviews',    icon: 'award',    enabled: true  },
+  { id: 'rating',     title: 'Rating',        value: '',     subtitle: 'Checkatrade rating',  icon: 'star',     enabled: true  },
+  { id: 'insured',    title: 'Fully Insured', value: 'Yes',  subtitle: 'Public liability',   icon: 'shield',   enabled: false },
+  { id: 'avail',      title: 'Availability',  value: '24/7', subtitle: 'Emergency enquiries', icon: 'clock',   enabled: false },
+];
 
 const DEFAULT_TRUST_CARDS: TrustCard[] = [
   { id: 'fully-insured', title: 'Fully Insured',   value: '',     icon: 'shield',   location: ['hero', 'about'], enabled: true  },
@@ -348,9 +365,10 @@ function ProjectDetailModal({
           secondary: String(rc.secondary ?? ""),
           tertiary:  String(rc.tertiary  ?? ""),
         } as BrandColours,
-        trustCards: Array.isArray(raw.trustCards) ? raw.trustCards as TrustCard[] : DEFAULT_TRUST_CARDS,
+        trustCards:      Array.isArray(raw.trustCards)      ? raw.trustCards      as TrustCard[]      : DEFAULT_TRUST_CARDS,
+        aboutProofCards: Array.isArray(raw.aboutProofCards) ? raw.aboutProofCards as AboutProofCard[] : DEFAULT_ABOUT_PROOF_CARDS,
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -363,7 +381,8 @@ function ProjectDetailModal({
   const galleryFileRef                          = useRef<HTMLInputElement>(null);
   const [heroHotspots, setHeroHotspots]         = useState<HeroHotspot[]>(parsedPhotos.heroHotspots);
   const [brandColours, setBrandColours]         = useState<BrandColours>(parsedPhotos.colours);
-  const [trustCards,   setTrustCards]           = useState<TrustCard[]>(parsedPhotos.trustCards ?? DEFAULT_TRUST_CARDS);
+  const [trustCards,       setTrustCards]       = useState<TrustCard[]>(parsedPhotos.trustCards ?? DEFAULT_TRUST_CARDS);
+  const [aboutProofCards, setAboutProofCards]   = useState<AboutProofCard[]>(parsedPhotos.aboutProofCards ?? DEFAULT_ABOUT_PROOF_CARDS);
   const [heroUploading, setHeroUploading]       = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -570,7 +589,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -590,7 +609,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards }) }),
     });
   }
 
@@ -804,7 +823,8 @@ function ProjectDetailModal({
             };
             return (c.primary || c.secondary || c.tertiary) ? c : undefined;
           })(),
-          trustCards: trustCards.filter(c => c.enabled && c.title.trim() !== ''),
+          trustCards:      trustCards.filter(c => c.enabled && c.title.trim() !== ''),
+          aboutProofCards: aboutProofCards.filter(c => c.enabled && c.title.trim() !== ''),
         }),
       });
       const data = await res.json();
@@ -1315,6 +1335,85 @@ function ProjectDetailModal({
                             <span className="text-[11px] text-slate-400 capitalize">{loc}</span>
                           </label>
                         ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* About Proof Cards */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Star size={11} /> About Proof Cards
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setAboutProofCards(c => [...c, {
+                      id:       crypto.randomUUID(),
+                      title:    '',
+                      value:    '',
+                      subtitle: '',
+                      icon:     'check',
+                      enabled:  true,
+                    }])}
+                    className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                  >
+                    <Plus size={11} /> Add card
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Controls the 3 stat cards in the About section (e.g. &quot;20+ yrs / Experience&quot;). If all disabled, smart defaults are used.
+                </p>
+                <div className="space-y-1.5">
+                  {aboutProofCards.map((card, idx) => (
+                    <div key={card.id} className={`border rounded-xl p-3 space-y-2 transition-colors ${card.enabled ? 'bg-riden-muted border-riden-border' : 'bg-transparent border-slate-800 opacity-50'}`}>
+                      {/* Row 1: toggle · value · title · move · delete */}
+                      <div className="flex items-center gap-2">
+                        {/* Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => setAboutProofCards(cards => cards.map((c, i) => i === idx ? { ...c, enabled: !c.enabled } : c))}
+                          className={`relative w-7 h-4 rounded-full flex-shrink-0 transition-colors ${card.enabled ? 'bg-blue-500' : 'bg-slate-700'}`}
+                        >
+                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${card.enabled ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                        </button>
+                        {/* Value (large number / text) */}
+                        <input
+                          value={card.value}
+                          onChange={e => setAboutProofCards(cards => cards.map((c, i) => i === idx ? { ...c, value: e.target.value } : c))}
+                          placeholder="Value (e.g. 20+)"
+                          className="w-24 bg-transparent border-b border-slate-700 focus:border-blue-500 text-sm text-white pb-0.5 outline-none placeholder:text-slate-600 font-mono"
+                        />
+                        {/* Title */}
+                        <input
+                          value={card.title}
+                          onChange={e => setAboutProofCards(cards => cards.map((c, i) => i === idx ? { ...c, title: e.target.value } : c))}
+                          placeholder="Title (e.g. Experience)"
+                          className="flex-1 bg-transparent border-b border-slate-700 focus:border-blue-500 text-sm text-slate-300 pb-0.5 outline-none placeholder:text-slate-600"
+                        />
+                        {/* Move up */}
+                        <button type="button" onClick={() => setAboutProofCards(cards => { const a = [...cards]; [a[idx-1],a[idx]] = [a[idx],a[idx-1]]; return a; })} disabled={idx === 0} className="text-slate-700 hover:text-slate-400 disabled:opacity-20 transition-colors text-xs leading-none">▲</button>
+                        {/* Move down */}
+                        <button type="button" onClick={() => setAboutProofCards(cards => { const a = [...cards]; [a[idx],a[idx+1]] = [a[idx+1],a[idx]]; return a; })} disabled={idx === aboutProofCards.length - 1} className="text-slate-700 hover:text-slate-400 disabled:opacity-20 transition-colors text-xs leading-none">▼</button>
+                        {/* Delete */}
+                        <button type="button" onClick={() => setAboutProofCards(cards => cards.filter((_, i) => i !== idx))} className="text-slate-700 hover:text-red-400 transition-colors flex-shrink-0"><X size={13} /></button>
+                      </div>
+                      {/* Row 2: icon · subtitle */}
+                      <div className="flex items-center gap-3 pl-9">
+                        <select
+                          value={card.icon}
+                          onChange={e => setAboutProofCards(cards => cards.map((c, i) => i === idx ? { ...c, icon: e.target.value } : c))}
+                          className="text-[11px] bg-riden-surface border border-riden-border rounded-lg px-2 py-1 text-slate-300 outline-none"
+                        >
+                          {TRUST_CARD_ICONS.map(ic => <option key={ic} value={ic} className="bg-riden-surface">{ic}</option>)}
+                        </select>
+                        <input
+                          value={card.subtitle}
+                          onChange={e => setAboutProofCards(cards => cards.map((c, i) => i === idx ? { ...c, subtitle: e.target.value } : c))}
+                          placeholder="Subtitle (e.g. Years in business)"
+                          className="flex-1 bg-transparent border-b border-slate-700 focus:border-blue-500 text-[11px] text-slate-400 pb-0.5 outline-none placeholder:text-slate-600"
+                        />
                       </div>
                     </div>
                   ))}
