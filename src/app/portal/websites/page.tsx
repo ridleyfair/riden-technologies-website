@@ -309,6 +309,8 @@ function DnsModal({ site, onClose, onRefresh }: { site: Site; onClose: () => voi
 
 function SiteCard({ site, onAction }: { site: Site; onAction: (a: string, s: Site) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos,  setMenuPos]  = useState({ top: 0, right: 0 });
+  const btnRef = React.useRef<HTMLButtonElement>(null);
   const status = (site.deploymentStatus ?? "preview_ready") as DeploymentStatus;
   const isLive = status === "live" || status === "update_available";
 
@@ -324,8 +326,16 @@ function SiteCard({ site, onAction }: { site: Site; onAction: (a: string, s: Sit
     { label: "Delete Website", action: "delete",    show: true,   danger: true },
   ].filter(i => i.show);
 
+  function openMenu() {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setMenuPos({ top: r.bottom + 6, right: window.innerWidth - r.right });
+    }
+    setMenuOpen(true);
+  }
+
   return (
-    <div className="glass-card rounded-2xl border border-riden-border overflow-visible hover:border-white/10 transition-all relative">
+    <div className="glass-card rounded-2xl border border-riden-border hover:border-white/10 transition-all">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-riden-border/50">
         <div className="flex items-start justify-between gap-2 mb-2.5">
@@ -335,23 +345,29 @@ function SiteCard({ site, onAction }: { site: Site; onAction: (a: string, s: Sit
               {site.clientName}{site.industry ? ` · ${site.industry}` : ""}
             </div>
           </div>
-          <div className="relative flex-shrink-0">
-            <button onClick={() => setMenuOpen(m => !m)}
+          <div className="flex-shrink-0">
+            <button ref={btnRef} onClick={openMenu}
               className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
               <MoreHorizontal size={14} />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-44 glass-card rounded-xl border border-riden-border overflow-hidden z-20 shadow-2xl"
-                onMouseLeave={() => setMenuOpen(false)}>
-                {menuItems.map(item => (
-                  <button key={item.action}
-                    onClick={() => { setMenuOpen(false); onAction(item.action, site); }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors hover:bg-riden-muted ${(item as {danger?: boolean}).danger ? "text-rose-400" : "text-slate-300 hover:text-white"}`}>
-                    {(item as {danger?: boolean}).danger && <AlertTriangle size={10} />}
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              <>
+                {/* Backdrop to close on outside click */}
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                <div
+                  className="fixed z-50 w-44 glass-card rounded-xl border border-riden-border overflow-hidden shadow-2xl"
+                  style={{ top: menuPos.top, right: menuPos.right }}
+                >
+                  {menuItems.map(item => (
+                    <button key={item.action}
+                      onClick={() => { setMenuOpen(false); onAction(item.action, site); }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs transition-colors hover:bg-riden-muted ${(item as {danger?: boolean}).danger ? "text-rose-400" : "text-slate-300 hover:text-white"}`}>
+                      {(item as {danger?: boolean}).danger && <AlertTriangle size={10} />}
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
