@@ -775,13 +775,15 @@ export async function POST(req: NextRequest) {
         page.sections = sections;
 
         // ── Contact services injection ────────────────────────────────────────
-        // Parse body.services (comma-separated) into an array and inject into
-        // every contact section so the dropdown is populated from the brief.
+        // Parse body.services into an array and inject into every contact section.
+        // Services can be separated by newlines, commas, semicolons, or bullet points.
         if (body.services) {
-          const serviceList = body.services
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+          const serviceList = [...new Set(
+            body.services
+              .split(/[\n\r,;•]+/)
+              .map((s) => s.replace(/^[-–—*·\s]+/, "").trim())
+              .filter(Boolean)
+          )];
           if (serviceList.length > 0) {
             for (const section of sections) {
               if ((section.type as string) !== "contact") continue;
