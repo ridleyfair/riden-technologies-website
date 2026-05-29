@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   const vercelResults: string[] = [];
   let deploymentStatus = "live";
-  let sslStatus = site.sslStatus ?? "pending";
+  const sslStatus = (site.sslStatus as string) ?? "pending";
 
   // Add domains to Vercel
   const domainsToAdd: string[] = [];
