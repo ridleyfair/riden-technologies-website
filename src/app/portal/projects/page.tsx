@@ -712,7 +712,7 @@ function ProjectDetailModal({
       // Import reviews
       if (Array.isArray(data.reviews) && data.reviews.length > 0) {
         const imported: Review[] = (data.reviews as Record<string, unknown>[]).map((r) => ({
-          author: String(r.author ?? "Customer"),
+          author: String(r.author ?? "Verified Customer"),
           rating: Number(r.rating ?? 5),
           body:   String(r.body   ?? ""),
           source: "checkatrade" as const,

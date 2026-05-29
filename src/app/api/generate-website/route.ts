@@ -376,7 +376,7 @@ function buildPagesJson(
           } else {
             // Pre-serialise real reviews so Claude copies them verbatim
             const safeItems = topReviews.map(r => ({
-              author:   r.author || "Customer",
+              author:   r.author || "Verified Customer",
               location: r.location || body.city,
               body:     r.body.trim().replace(/"/g, '“').replace(/'/g, '’'),
               rating:   r.rating > 5 ? Math.round(r.rating / 2) : Math.max(1, Math.min(5, r.rating)),
@@ -544,6 +544,7 @@ DO NOT:
 - Write generic filler copy
 - Invent services, certifications, or reviews not in the source data
 - Add or remove sections from any page
+- Replace reviewer names with "Anonymous" or any other name — preserve the author field exactly as supplied; if it is missing use "Verified Customer"
 
 The JSON must exactly match this structure (fill in all <placeholders> with real content):
 {
@@ -710,7 +711,7 @@ export async function POST(req: NextRequest) {
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 10);
     const canonicalReviews = postProcessReviews.map((r) => ({
-      author:   r.author || "Customer",
+      author:   r.author || "Verified Customer",
       location: r.location || body.city,
       body:     r.body.trim(),
       rating:   r.rating > 5 ? Math.round(r.rating / 2) : Math.max(1, Math.min(5, r.rating)),

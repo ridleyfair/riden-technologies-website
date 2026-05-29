@@ -436,11 +436,36 @@ export async function POST(req: NextRequest) {
       }
       if (bizLd?.review && Array.isArray(bizLd.review)) rawReviews.push(...(bizLd.review as RawReview[]));
     }
+    const ANON_NAMES = new Set(["anonymous", "anon", "customer", "user", "guest", "unknown", "hidden"]);
+    function resolveReviewerName(r: RawReview): string {
+      // Try nested reviewer / consumer / user / author objects (Checkatrade uses these)
+      for (const key of ["reviewer", "consumer", "user", "author", "customer", "member"]) {
+        const obj = r[key] as Record<string, unknown> | undefined;
+        if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+          const candidate =
+            str(obj.displayName ?? obj.fullName ?? obj.name ?? "")
+            || (() => {
+              const first = str(obj.firstName ?? obj.forename ?? "");
+              const last  = str(obj.lastName ?? obj.surname ?? obj.familyName ?? "");
+              return first ? (last ? `${first} ${last[0]}.` : first) : "";
+            })();
+          if (candidate && !ANON_NAMES.has(candidate.toLowerCase())) return candidate;
+        }
+      }
+      // Flat string fields
+      const flat = str(
+        r.reviewerName ?? r.customerName ?? r.displayName ??
+        r.firstName ?? r.name ?? r.author ?? ""
+      );
+      if (flat && !ANON_NAMES.has(flat.toLowerCase())) return flat;
+      return "";
+    }
+
     const reviews = rawReviews.slice(0, 10).map((r) => ({
-      author: str((r.author as Record<string, unknown>)?.name ?? r.author ?? r.reviewerName ?? r.customerName ?? "Customer"),
+      author: resolveReviewerName(r) || "Verified Customer",
       rating: Number((r.reviewRating as Record<string, unknown>)?.ratingValue ?? r.rating ?? r.stars ?? 5),
-      body:   str(r.reviewBody ?? r.body ?? r.text ?? r.comment ?? ""),
-      date:   str(r.datePublished ?? r.date ?? r.createdAt ?? ""),
+      body:   str(r.reviewBody ?? r.body ?? r.text ?? r.comment ?? r.description ?? ""),
+      date:   str(r.datePublished ?? r.date ?? r.createdAt ?? r.publishedAt ?? ""),
       source: "checkatrade" as const,
     }));
 
