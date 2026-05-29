@@ -774,6 +774,22 @@ export async function POST(req: NextRequest) {
         });
         page.sections = sections;
 
+        // ── Contact services injection ────────────────────────────────────────
+        // Parse body.services (comma-separated) into an array and inject into
+        // every contact section so the dropdown is populated from the brief.
+        if (body.services) {
+          const serviceList = body.services
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+          if (serviceList.length > 0) {
+            for (const section of sections) {
+              if ((section.type as string) !== "contact") continue;
+              (section.content as Record<string, unknown>).services = serviceList;
+            }
+          }
+        }
+
         const isHome = (page.slug as string) === "/";
 
         // Relative upload URLs like /api/media/{uuid}.webp are only valid on the
