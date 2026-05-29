@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Star, Quote } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
@@ -61,14 +61,58 @@ const testimonials = [
   },
 ];
 
-export default function Testimonials() {
+const slideVariants = {
+  enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir: number) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
+};
+
+function TestimonialCard({ t }: { t: (typeof testimonials)[0] }) {
   return (
-    <section className="relative py-16 sm:py-24 md:py-32 overflow-hidden">
+    <div className="glass-card rounded-2xl p-5 border border-riden-border hover:border-white/10 transition-all duration-300 group">
+      <Quote size={22} className="text-blue-400/30 mb-3" />
+      <div className="flex items-center gap-1 mb-3">
+        {Array.from({ length: t.rating }).map((_, j) => (
+          <Star key={j} size={13} className="text-amber-400 fill-current" />
+        ))}
+      </div>
+      <p className="text-sm text-slate-300 leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
+      <div className="flex items-center gap-3">
+        <div
+          className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-sm font-bold text-white shrink-0`}
+        >
+          {t.avatar}
+        </div>
+        <div>
+          <div className="text-sm font-semibold text-white">{t.name}</div>
+          <div className="text-xs text-slate-500">
+            {t.role} · {t.company}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Testimonials() {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const go = (index: number) => {
+    setDirection(index > current ? 1 : -1);
+    setCurrent(index);
+  };
+
+  const prev = () => go((current - 1 + testimonials.length) % testimonials.length);
+  const next = () => go((current + 1) % testimonials.length);
+
+  return (
+    <section className="relative py-12 sm:py-20 lg:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-riden-dark via-riden-surface to-riden-dark" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         {/* Header */}
-        <div className="text-center mb-10 sm:mb-16">
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -101,8 +145,71 @@ export default function Testimonials() {
           </motion.p>
         </div>
 
-        {/* Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Mobile / Tablet carousel — hidden on lg+ */}
+        <div className="lg:hidden">
+          <div className="relative overflow-hidden">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={current}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.28, ease: "easeInOut" }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.15}
+                onDragEnd={(_, info) => {
+                  if (info.offset.x < -50) next();
+                  else if (info.offset.x > 50) prev();
+                }}
+                className="flex justify-center cursor-grab active:cursor-grabbing select-none"
+              >
+                <div className="w-[92%]">
+                  <TestimonialCard t={testimonials[current]} />
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-4 mt-5">
+            <button
+              onClick={prev}
+              className="w-8 h-8 rounded-full glass border border-riden-border flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              aria-label="Previous review"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="flex items-center gap-2">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i)}
+                  className={`rounded-full transition-all duration-200 ${
+                    i === current
+                      ? "w-5 h-2 bg-blue-400"
+                      : "w-2 h-2 bg-slate-600 hover:bg-slate-400"
+                  }`}
+                  aria-label={`Go to review ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={next}
+              className="w-8 h-8 rounded-full glass border border-riden-border flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              aria-label="Next review"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop grid — unchanged, hidden below lg */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
@@ -112,20 +219,13 @@ export default function Testimonials() {
               transition={{ delay: i * 0.1, duration: 0.6 }}
               className="glass-card rounded-2xl p-6 border border-riden-border hover:border-white/10 transition-all duration-300 group"
             >
-              {/* Quote Icon */}
               <Quote size={24} className="text-blue-400/30 mb-4" />
-
-              {/* Stars */}
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: t.rating }).map((_, j) => (
                   <Star key={j} size={14} className="text-amber-400 fill-current" />
                 ))}
               </div>
-
-              {/* Text */}
               <p className="text-sm text-slate-300 leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
-
-              {/* Author */}
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-sm font-bold text-white`}
