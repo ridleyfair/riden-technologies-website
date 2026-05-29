@@ -252,6 +252,21 @@ export async function POST(req: NextRequest) {
   await step("Project.openingHours", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "openingHours" TEXT`);
   await step("Project.reviewsJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "reviewsJson" TEXT DEFAULT '[]'`);
 
+  // GeneratedSite — deployment & domain management columns
+  await step("GeneratedSite.liveDomain",          () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "liveDomain" TEXT`);
+  await step("GeneratedSite.wwwDomain",           () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "wwwDomain" TEXT`);
+  await step("GeneratedSite.apexDomain",          () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "apexDomain" TEXT`);
+  await step("GeneratedSite.publishTarget",       () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "publishTarget" TEXT DEFAULT 'both'`);
+  await step("GeneratedSite.deploymentStatus",    () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "deploymentStatus" TEXT DEFAULT 'preview_ready'`);
+  await step("GeneratedSite.dnsStatus",           () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "dnsStatus" TEXT DEFAULT 'pending'`);
+  await step("GeneratedSite.sslStatus",           () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "sslStatus" TEXT DEFAULT 'pending'`);
+  await step("GeneratedSite.lastPublishedAt",     () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "lastPublishedAt" TIMESTAMPTZ`);
+  await step("GeneratedSite.cloudflareZoneId",    () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "cloudflareZoneId" TEXT`);
+  await step("GeneratedSite.vercelDomainId",      () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "vercelDomainId" TEXT`);
+  await step("GeneratedSite.deploymentError",     () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "deploymentError" TEXT`);
+  await step("GeneratedSite.draftSpecJson",       () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "draftSpecJson" TEXT`);
+  await step("GeneratedSite.publishedSpecJson",   () => sql`ALTER TABLE "GeneratedSite" ADD COLUMN IF NOT EXISTS "publishedSpecJson" TEXT`);
+
   return NextResponse.json({
     ok: true,
     ran,
