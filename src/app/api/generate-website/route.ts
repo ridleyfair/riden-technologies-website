@@ -908,11 +908,44 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Save to DB ─────────────────────────────────────────────────────────────
-  const id = crypto.randomUUID();
-  const previewUrl = `https://sites.ridentechnologies.com/preview/${id}`;
-
   try {
     const sql = getDb();
+
+    // If this project already has a GeneratedSite, update it in place
+    if (body.projectId) {
+      const existing = await sql`
+        SELECT id, "deploymentStatus", "previewUrl" FROM "GeneratedSite"
+        WHERE "projectId" = ${body.projectId}
+        ORDER BY
+          CASE "deploymentStatus"
+            WHEN 'live'             THEN 0
+            WHEN 'update_available' THEN 1
+            ELSE 2
+          END,
+          "createdAt" DESC
+        LIMIT 1
+      `;
+      if (existing.length > 0) {
+        const site = existing[0];
+        const wasLive = site.deploymentStatus === 'live';
+        await sql`
+          UPDATE "GeneratedSite" SET
+            "specJson"          = ${specJson},
+            "businessName"      = ${body.businessName},
+            "clientName"        = ${body.clientName},
+            industry            = ${body.industry ?? "professional"},
+            tier                = ${body.tier ?? "pro_plus"},
+            "deploymentStatus"  = ${wasLive ? 'update_available' : 'draft'},
+            "updatedAt"         = NOW()
+          WHERE id = ${site.id as string}
+        `;
+        return NextResponse.json({ ok: true, siteId: site.id, previewUrl: site.previewUrl });
+      }
+    }
+
+    // No existing site — create a new one
+    const id = crypto.randomUUID();
+    const previewUrl = `https://sites.ridentechnologies.com/preview/${id}`;
     await sql`
       INSERT INTO "GeneratedSite"
         (id, "projectId", "clientName", "businessName", industry, tier, "specJson", username, password, "previewUrl", status, "createdAt", "updatedAt")
@@ -921,12 +954,11 @@ export async function POST(req: NextRequest) {
          ${body.industry ?? "professional"}, ${body.tier ?? "pro_plus"}, ${specJson},
          ${body.username}, ${body.password}, ${previewUrl}, 'ready', NOW(), NOW())
     `;
+    return NextResponse.json({ ok: true, siteId: id, previewUrl });
   } catch (e) {
     return NextResponse.json(
       { error: `Failed to save generated site: ${String(e)}` },
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ ok: true, siteId: id, previewUrl });
 }
