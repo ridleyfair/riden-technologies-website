@@ -66,6 +66,14 @@ interface GenerateBody {
   platformUrl?: string;
   platform?: string;
   reviews?: Review[];
+  reviewSettings?: {
+    platform:        string;
+    reviewCount?:    number;
+    averageRating?:  string;
+    platformUrl?:    string;
+    showReviewBadge: boolean;
+    showRatingBadge: boolean;
+  };
   photos?: string[];
   trustCards?: Array<{
     id:       string;
@@ -535,6 +543,7 @@ MANDATORY CONTENT RULES:
 4. About — professionally rewrite About text. Preserve ALL facts (dates, years, locations, capabilities).
 5. Testimonials — CRITICAL: testimonials.content.items are pre-populated. Copy them exactly as given. If items is [], keep it as [] — NEVER invent testimonials.
 6. Trust signals — ONLY from About/Accreditations. No invented certifications.
+   REVIEW COUNTS/RATINGS — NEVER write specific review counts or ratings (e.g. "10+ reviews", "170+ verified reviews", "9.69/10") anywhere in generated copy — not in hero, not in trust bars, not in about, not in CTAs. Review stats are injected post-generation from verified data. If you need to reference reviews, use generic phrases like "Verified Reviews" or "Customer Rating" without numbers.
 7. SEO — include specific services and ${city} location.
 8. Contact section — include real phone, email, address, opening hours from the brief.
 9. PUNCTUATION — NEVER use em dashes (—) or en dashes (–) anywhere in copy. Use commas, periods, or natural sentence structure instead. BAD: "Expert craftsmanship — fully insured". GOOD: "Expert craftsmanship, fully insured workmanship."${body.brandColours ? `\n10. BRAND COLOURS — The client has specified exact brand colours. Use them EXACTLY as provided — do not invent a different palette. accent="${body.brandColours.primary ?? 'n/a'}", primary="${body.brandColours.secondary ?? 'n/a'}", background="${body.brandColours.tertiary ?? 'n/a'}". These are already pre-filled in the brand.palette below — do not change them.` : ''}
@@ -719,6 +728,38 @@ export async function POST(req: NextRequest) {
       ...(r.date ? { date: r.date } : {}),
     }));
 
+    // ── Build reviewStats (source of truth for all review display) ────────────
+    // Priority: manual reviewSettings > scraped (rating/reviewCount) > About text > none
+    const aboutStats = parseReviewStatsFromAbout(body.about ?? "");
+    const rs = body.reviewSettings;
+    const effectiveCount = rs?.reviewCount ?? body.reviewCount ?? aboutStats.reviewCount;
+    const effectiveRating = (() => {
+      if (rs?.averageRating) return rs.averageRating.includes("/") ? rs.averageRating : `${rs.averageRating}/10`;
+      if (body.rating)       return body.rating.includes("/")      ? body.rating      : `${body.rating}/10`;
+      return aboutStats.rating;
+    })();
+    const effectivePlatform    = rs?.platform    ?? body.platform    ?? "Checkatrade";
+    const effectivePlatformUrl = rs?.platformUrl ?? body.platformUrl;
+    const showReviewBadge      = rs?.showReviewBadge ?? true;
+    const showRatingBadge      = rs?.showRatingBadge ?? true;
+    const reviewSource: "manual" | "scraped" | "none" = rs?.reviewCount || rs?.averageRating
+      ? "manual"
+      : body.reviewCount || body.rating ? "scraped"
+      : "none";
+
+    if (reviewSource !== "none") {
+      (spec as Record<string, unknown>).reviewStats = {
+        platform:           effectivePlatform,
+        reviewCount:        effectiveCount ?? 0,
+        displayReviewCount: effectiveCount ? formatReviewCount(effectiveCount) : "0",
+        averageRating:      effectiveRating ?? "",
+        platformUrl:        effectivePlatformUrl,
+        source:             reviewSource,
+        showReviewBadge,
+        showRatingBadge,
+      };
+    }
+
     if (Array.isArray(pages)) {
       for (const page of pages) {
         let sections = Array.isArray(page.sections) ? page.sections as Record<string, unknown>[] : null;
@@ -729,23 +770,12 @@ export async function POST(req: NextRequest) {
         // 2. Always inject platform metadata — never gated on platformUrl
         // 3. Remove testimonials sections with 0 items AND no rating metadata
 
-        // Resolve authoritative rating / count — brief fields take priority over About text
-        const aboutStats      = parseReviewStatsFromAbout(body.about ?? "");
-        const effectiveCount  = body.reviewCount ?? aboutStats.reviewCount;
-        const effectiveRating = (() => {
-          if (body.rating) {
-            // body.rating from Checkatrade scraper is a plain number string e.g. "9.69"
-            return body.rating.includes("/") ? body.rating : `${body.rating}/10`;
-          }
-          return aboutStats.rating; // already "X.XX/10" from parser
-        })();
-
         for (const section of sections) {
           if ((section.type as string) !== "testimonials") continue;
           const sc = section.content as Record<string, unknown>;
 
           sc.items    = canonicalReviews.length > 0 ? canonicalReviews : [];
-          sc.platform = body.platform ?? "Checkatrade";
+          sc.platform = effectivePlatform;
 
           if (effectiveCount !== undefined && effectiveCount > 0) {
             sc.totalReviews        = effectiveCount;
@@ -759,8 +789,8 @@ export async function POST(req: NextRequest) {
             sc.averageRating = effectiveRating;
           }
 
-          if (body.platformUrl) {
-            sc.platformUrl = body.platformUrl;
+          if (effectivePlatformUrl) {
+            sc.platformUrl = effectivePlatformUrl;
           }
         }
         // Remove testimonials sections that have no items and no rating metadata

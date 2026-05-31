@@ -83,6 +83,29 @@ type AboutProofCard = {
   enabled:  boolean;
 };
 
+type ReviewSettings = {
+  platform:        string;
+  reviewCount:     number | undefined;
+  averageRating:   string;
+  platformUrl:     string;
+  showReviewBadge: boolean;
+  showRatingBadge: boolean;
+};
+
+const DEFAULT_REVIEW_SETTINGS: ReviewSettings = {
+  platform:        "Checkatrade",
+  reviewCount:     undefined,
+  averageRating:   "",
+  platformUrl:     "",
+  showReviewBadge: true,
+  showRatingBadge: true,
+};
+
+function formatReviewCount(n: number): string {
+  if (n < 10) return String(n);
+  return `${Math.floor(n / 10) * 10}+`;
+}
+
 const TRUST_CARD_ICONS = ['star', 'shield', 'check', 'clock', 'calendar', 'award', 'map-pin'] as const;
 
 const DEFAULT_ABOUT_PROOF_CARDS: AboutProofCard[] = [
@@ -366,8 +389,9 @@ function ProjectDetailModal({
         } as BrandColours,
         trustCards:      Array.isArray(raw.trustCards)      ? raw.trustCards      as TrustCard[]      : DEFAULT_TRUST_CARDS,
         aboutProofCards: Array.isArray(raw.aboutProofCards) ? raw.aboutProofCards as AboutProofCard[] : DEFAULT_ABOUT_PROOF_CARDS,
+        reviewSettings:  raw.reviewSettings && typeof raw.reviewSettings === "object" ? raw.reviewSettings as ReviewSettings : DEFAULT_REVIEW_SETTINGS,
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -382,6 +406,7 @@ function ProjectDetailModal({
   const [brandColours, setBrandColours]         = useState<BrandColours>(parsedPhotos.colours);
   const [trustCards,       setTrustCards]       = useState<TrustCard[]>(parsedPhotos.trustCards ?? DEFAULT_TRUST_CARDS);
   const [aboutProofCards, setAboutProofCards]   = useState<AboutProofCard[]>(parsedPhotos.aboutProofCards ?? DEFAULT_ABOUT_PROOF_CARDS);
+  const [reviewSettings,  setReviewSettings]    = useState<ReviewSettings>(parsedPhotos.reviewSettings ?? DEFAULT_REVIEW_SETTINGS);
   const [heroUploading, setHeroUploading]       = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -588,7 +613,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -608,7 +633,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }) }),
     });
   }
 
@@ -799,8 +824,16 @@ function ProjectDetailModal({
           accreditations:  brief.accreditations || "",
           socialFacebook:  brief.socialFacebook  || undefined,
           socialInstagram: brief.socialInstagram || undefined,
-          rating:          checkatrade.rating,
-          reviewCount:     checkatrade.reviewCount,
+          rating:          reviewSettings.reviewCount ? undefined : checkatrade.rating,
+          reviewCount:     reviewSettings.reviewCount ? undefined : checkatrade.reviewCount,
+          reviewSettings:  {
+            platform:        reviewSettings.platform || "Checkatrade",
+            reviewCount:     reviewSettings.reviewCount || undefined,
+            averageRating:   reviewSettings.averageRating || undefined,
+            platformUrl:     reviewSettings.platformUrl || checkatrade.url || undefined,
+            showReviewBadge: reviewSettings.showReviewBadge,
+            showRatingBadge: reviewSettings.showRatingBadge,
+          },
           notes:           [brief.openingHours].filter(Boolean).join("\n"),
           tier:            "pro_plus",
           username:        project.clientName.toLowerCase().replace(/\s+/g, "-"),
@@ -1464,6 +1497,92 @@ function ProjectDetailModal({
                 )}
                 {checkatrade.error && (
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
+                )}
+              </div>
+
+              {/* Review Settings */}
+              <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3">
+                <h3 className="text-xs font-semibold text-amber-400 flex items-center gap-1.5">
+                  <Star size={11} /> Review Settings
+                </h3>
+                <p className="text-[11px] text-slate-500">Manual review values override any scraped data and are used as source of truth across the entire generated website.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400">Platform</label>
+                    <select
+                      value={reviewSettings.platform}
+                      onChange={e => setReviewSettings(s => ({ ...s, platform: e.target.value }))}
+                      className={inputCls}
+                    >
+                      {["Checkatrade","Google","Trustpilot","Houzz","Rated People","Which? Trusted Traders","Other"].map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400">Review Count (actual)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={reviewSettings.reviewCount ?? ""}
+                      onChange={e => setReviewSettings(s => ({ ...s, reviewCount: e.target.value ? parseInt(e.target.value) : undefined }))}
+                      placeholder="e.g. 176"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400">Display Count (auto)</label>
+                    <input
+                      readOnly
+                      value={reviewSettings.reviewCount != null ? formatReviewCount(reviewSettings.reviewCount) : ""}
+                      placeholder="e.g. 170+"
+                      className={`${inputCls} opacity-60 cursor-not-allowed`}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[11px] text-slate-400">Average Rating</label>
+                    <input
+                      value={reviewSettings.averageRating}
+                      onChange={e => setReviewSettings(s => ({ ...s, averageRating: e.target.value }))}
+                      placeholder="e.g. 9.69/10"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] text-slate-400">Platform URL</label>
+                  <input
+                    value={reviewSettings.platformUrl}
+                    onChange={e => setReviewSettings(s => ({ ...s, platformUrl: e.target.value }))}
+                    placeholder="e.g. https://www.checkatrade.com/trades/..."
+                    className={inputCls}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={reviewSettings.showReviewBadge}
+                      onChange={e => setReviewSettings(s => ({ ...s, showReviewBadge: e.target.checked }))}
+                      className="accent-amber-400"
+                    />
+                    Show Reviews Badge
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={reviewSettings.showRatingBadge}
+                      onChange={e => setReviewSettings(s => ({ ...s, showRatingBadge: e.target.checked }))}
+                      className="accent-amber-400"
+                    />
+                    Show Rating Badge
+                  </label>
+                </div>
+                {reviewSettings.reviewCount != null && (
+                  <p className="text-[11px] text-amber-400/80">
+                    Will display as: {formatReviewCount(reviewSettings.reviewCount)} Verified Reviews
+                    {reviewSettings.averageRating && ` · ${reviewSettings.averageRating} on ${reviewSettings.platform}`}
+                  </p>
                 )}
               </div>
 
