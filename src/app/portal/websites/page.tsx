@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe, RefreshCw, Eye, ExternalLink, Copy, Check, X,
@@ -350,9 +351,8 @@ function SiteCard({ site, onAction }: { site: Site; onAction: (a: string, s: Sit
               className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
               <MoreHorizontal size={14} />
             </button>
-            {menuOpen && (
+            {menuOpen && typeof document !== "undefined" && createPortal(
               <>
-                {/* Backdrop to close on outside click */}
                 <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                 <div
                   className="fixed z-50 w-44 glass-card rounded-xl border border-riden-border overflow-hidden shadow-2xl"
@@ -367,7 +367,8 @@ function SiteCard({ site, onAction }: { site: Site; onAction: (a: string, s: Sit
                     </button>
                   ))}
                 </div>
-              </>
+              </>,
+              document.body
             )}
           </div>
         </div>
