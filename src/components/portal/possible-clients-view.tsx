@@ -65,12 +65,19 @@ function ScrapeModal({
   loading,
 }: {
   onClose: () => void;
-  onStart: (city: string, keyword: string, maxResults: number) => void;
+  onStart: (city: string, keyword: string, maxResults: number, source: string) => void;
   loading: boolean;
 }) {
   const [city, setCity] = useState("");
   const [keyword, setKeyword] = useState("");
   const [maxResults, setMaxResults] = useState(100);
+  const [source, setSource] = useState("google_maps");
+
+  const keywordPlaceholder = source === "checkatrade"
+    ? "e.g. Plumber, Electrician, Roofer"
+    : "e.g. plumbers, electricians, roofers";
+
+  const keywordLabel = source === "checkatrade" ? "Trade type" : "Keyword";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -95,7 +102,7 @@ function ScrapeModal({
           </div>
           <div className="flex-1">
             <h3 className="text-base font-semibold text-white">New Scrape</h3>
-            <p className="text-xs text-slate-500">Search Google Maps for potential clients</p>
+            <p className="text-xs text-slate-500">Find potential clients with no website</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
             <X size={14} />
@@ -103,8 +110,31 @@ function ScrapeModal({
         </div>
 
         <div className="space-y-4">
+          {/* Source selector */}
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">City</label>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Source</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: "google_maps", label: "Google Maps" },
+                { value: "checkatrade", label: "Checkatrade" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSource(opt.value)}
+                  className={cn(
+                    "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    source === opt.value
+                      ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                      : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Location</label>
             <input
               type="text"
               placeholder="e.g. Manchester"
@@ -114,14 +144,19 @@ function ScrapeModal({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Keyword</label>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">{keywordLabel}</label>
             <input
               type="text"
-              placeholder="e.g. plumbers, electricians, roofers"
+              placeholder={keywordPlaceholder}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               className="w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
             />
+            {source === "checkatrade" && (
+              <p className="text-xs text-slate-500 mt-1">
+                Use the Checkatrade trade category, e.g. &quot;Plumber&quot; not &quot;plumbers&quot;
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Max results</label>
@@ -147,7 +182,7 @@ function ScrapeModal({
             Cancel
           </button>
           <button
-            onClick={() => onStart(city.trim(), keyword.trim(), maxResults)}
+            onClick={() => onStart(city.trim(), keyword.trim(), maxResults, source)}
             disabled={loading || !city.trim() || !keyword.trim()}
             className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
@@ -241,13 +276,13 @@ export default function PossibleClientsView() {
     return () => clearInterval(interval);
   }, [activeJob?.id, activeJob?.status]);
 
-  const handleStartScrape = async (scrapeCity: string, keyword: string, maxResults: number) => {
+  const handleStartScrape = async (scrapeCity: string, keyword: string, maxResults: number, source: string) => {
     setScrapeLoading(true);
     try {
       const res = await fetch("/api/possible-clients/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ city: scrapeCity, keyword, category: keyword, max_results: maxResults }),
+        body: JSON.stringify({ city: scrapeCity, keyword, category: keyword, max_results: maxResults, source }),
       });
       if (res.status === 503) { showToast("Scraper is offline. Start the FastAPI server.", "error"); return; }
       if (!res.ok) { showToast("Failed to start scrape.", "error"); return; }
