@@ -101,40 +101,70 @@ export async function POST(req: NextRequest) {
   const pages = Math.min(5, Math.max(1, Math.ceil(max_results / 20)));
 
   const debug: string[] = [];
+  const tradeSlug = trade.toLowerCase().replace(/\s+/g, "-");
+  const locationSlug = location.toLowerCase().replace(/\s+/g, "-");
+
+  // Step 1: get Next.js build ID from homepage
+  let buildId = "";
+  try {
+    const homeRes = await fetch("https://www.checkatrade.com/", { headers: HEADERS, cache: "no-store" });
+    debug.push(`homepage status=${homeRes.status}`);
+    if (homeRes.ok) {
+      const homeHtml = await homeRes.text();
+      const nd = extractNextData(homeHtml);
+      buildId = (nd as Record<string, unknown>)?.buildId as string ?? "";
+      debug.push(`buildId=${buildId}`);
+    }
+  } catch (e) {
+    debug.push(`homepage error: ${e}`);
+  }
 
   for (let page = 1; page <= pages; page++) {
-    const tradeSlug = trade.toLowerCase().replace(/\s+/g, "-");
-    const locationSlug = location.toLowerCase().replace(/\s+/g, "-");
-    const url = page === 1
-      ? `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}`
-      : `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`;
-    try {
-      const res = await fetch(url, { headers: HEADERS, cache: "no-store" });
-      debug.push(`page=${page} status=${res.status}`);
-      if (!res.ok) { debug.push(`non-200 breaking`); break; }
+    // Try Next.js data API first (pure JSON, lighter)
+    const urls = buildId
+      ? [
+          `https://www.checkatrade.com/_next/data/${buildId}/search/${tradeSlug}/${locationSlug}.json?page=${page}`,
+          `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`,
+        ]
+      : [
+          `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`,
+          `https://www.checkatrade.com/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
+        ];
 
-      const html = await res.text();
-      const hasNextData = html.includes("__NEXT_DATA__");
-      debug.push(`has_next_data=${hasNextData} html_len=${html.length}`);
-      if (!hasNextData) { debug.push(`no next data snippet: ${html.substring(0, 200)}`); break; }
+    let succeeded = false;
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { headers: HEADERS, cache: "no-store" });
+        debug.push(`url=${url} status=${res.status}`);
+        if (!res.ok) continue;
 
-      const nextData = extractNextData(html);
-      if (!nextData) { debug.push(`failed to parse next data`); break; }
+        const text = await res.text();
+        let data: Record<string, unknown> | null = null;
 
-      const members = deepFindMembers(nextData);
-      debug.push(`members_found=${members.length}`);
-      if (!members.length) break;
+        // Try JSON first (Next.js data API)
+        try { data = JSON.parse(text) as Record<string, unknown>; } catch { /* not JSON */ }
+        // Fall back to __NEXT_DATA__ HTML parsing
+        if (!data) data = extractNextData(text);
 
-      for (const m of members) {
-        const biz = parseMember(m, trade, location);
-        if (biz) businesses.push(biz);
+        if (!data) { debug.push(`no parseable data`); continue; }
+
+        const members = deepFindMembers(data);
+        debug.push(`members_found=${members.length}`);
+        if (!members.length) continue;
+
+        for (const m of members) {
+          const biz = parseMember(m, trade, location);
+          if (biz) businesses.push(biz);
+        }
+
+        succeeded = true;
+        if (members.length < 8) { pages; }
+        break;
+      } catch (e) {
+        debug.push(`error: ${e}`);
       }
-
-      if (members.length < 8) break;
-    } catch (e) {
-      debug.push(`error: ${e}`);
-      break;
     }
+    if (!succeeded) break;
   }
 
   if (!businesses.length) {
