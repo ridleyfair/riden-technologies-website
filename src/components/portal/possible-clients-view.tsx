@@ -302,6 +302,30 @@ export default function PossibleClientsView() {
 
   const handleStartScrape = async (scrapeCity: string, keyword: string, maxResults: number, source: string) => {
     setScrapeLoading(true);
+    setScrapeModal(false);
+
+    if (source === "checkatrade") {
+      showToast(`Scraping Checkatrade for "${keyword}" in ${scrapeCity}…`, "success");
+      try {
+        const res = await fetch("/api/possible-clients/checkatrade-scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trade: keyword, location: scrapeCity, max_results: maxResults }),
+        });
+        if (res.status === 503) { showToast("Scraper is offline.", "error"); return; }
+        if (!res.ok) { showToast("Checkatrade scrape failed.", "error"); return; }
+        const result = await res.json();
+        showToast(`Checkatrade done — ${result.saved ?? 0} new businesses saved`, "success");
+        fetchBusinesses(1);
+        setPage(1);
+      } catch {
+        showToast("Checkatrade scrape failed.", "error");
+      } finally {
+        setScrapeLoading(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/possible-clients/scrape", {
         method: "POST",
@@ -312,7 +336,6 @@ export default function PossibleClientsView() {
       if (!res.ok) { showToast("Failed to start scrape.", "error"); return; }
       const job: ScrapeJob = await res.json();
       setActiveJob(job);
-      setScrapeModal(false);
       showToast(`Scrape started — searching "${keyword}" in ${scrapeCity}`, "success");
     } catch {
       showToast("Could not reach scraper.", "error");
