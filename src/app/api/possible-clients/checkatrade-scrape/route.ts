@@ -103,7 +103,11 @@ export async function POST(req: NextRequest) {
   const debug: string[] = [];
 
   for (let page = 1; page <= pages; page++) {
-    const url = `https://www.checkatrade.com/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`;
+    const tradeSlug = trade.toLowerCase().replace(/\s+/g, "-");
+    const locationSlug = location.toLowerCase().replace(/\s+/g, "-");
+    const url = page === 1
+      ? `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}`
+      : `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`;
     try {
       const res = await fetch(url, { headers: HEADERS, cache: "no-store" });
       debug.push(`page=${page} status=${res.status}`);
