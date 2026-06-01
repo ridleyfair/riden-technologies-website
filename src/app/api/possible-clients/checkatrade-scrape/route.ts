@@ -111,8 +111,11 @@ export async function POST(req: NextRequest) {
     debug.push(`homepage status=${homeRes.status}`);
     if (homeRes.ok) {
       const homeHtml = await homeRes.text();
-      const nd = extractNextData(homeHtml);
-      buildId = (nd as Record<string, unknown>)?.buildId as string ?? "";
+      debug.push(`homepage_len=${homeHtml.length}`);
+      debug.push(`has_next_data=${homeHtml.includes("__NEXT_DATA__")}`);
+      debug.push(`snippet=${homeHtml.substring(0, 300).replace(/\n/g, " ")}`);
+      const nd = extractNextData(homeHtml) as Record<string, unknown> | null;
+      buildId = (nd?.buildId as string) ?? "";
       debug.push(`buildId=${buildId}`);
     }
   } catch (e) {
