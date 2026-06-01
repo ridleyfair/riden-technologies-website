@@ -124,16 +124,13 @@ export async function POST(req: NextRequest) {
   }
 
   for (let page = 1; page <= pages; page++) {
-    // Try Next.js data API first (pure JSON, lighter)
-    const urls = buildId
-      ? [
-          `https://www.checkatrade.com/_next/data/${buildId}/search/${tradeSlug}/${locationSlug}.json?page=${page}`,
-          `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`,
-        ]
-      : [
-          `https://www.checkatrade.com/search/${tradeSlug}/${locationSlug}?page=${page}`,
-          `https://www.checkatrade.com/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
-        ];
+    const urls = [
+      `https://www.checkatrade.com/api/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
+      `https://www.checkatrade.com/api/v1/members/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
+      `https://www.checkatrade.com/api/v2/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
+      `https://consumer-api.checkatrade.com/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`,
+      `https://www.checkatrade.com/find-a-tradesperson/${tradeSlug}/${locationSlug}?page=${page}`,
+    ];
 
     let succeeded = false;
     for (const url of urls) {
