@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
   const locationSlug = location.toLowerCase().replace(/\s+/g, "-");
 
   // Step 1: get Next.js build ID from homepage
-  let buildId = "";
+  const buildId = "";
   try {
     const homeRes = await fetch("https://www.checkatrade.com/", { headers: HEADERS, cache: "no-store" });
     debug.push(`homepage status=${homeRes.status}`);
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
         }
 
         succeeded = true;
-        if (members.length < 8) { pages; }
+        if (members.length < 8) break;
         break;
       } catch (e) {
         debug.push(`error: ${e}`);
