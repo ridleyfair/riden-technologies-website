@@ -20,6 +20,7 @@ import {
   LogOut,
   Shield,
   Sparkles,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/lib/theme-context";
@@ -35,6 +36,7 @@ const navItems = [
     section: "CRM",
     items: [
       { label: "Leads", href: "/portal/leads", icon: UserPlus },
+      { label: "Possible Clients", href: "/portal/possible-clients", icon: Flame },
       { label: "Bookings", href: "/portal/bookings", icon: Calendar },
       { label: "Clients", href: "/portal/clients", icon: Users },
     ],
