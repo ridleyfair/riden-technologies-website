@@ -112,11 +112,12 @@ export async function POST(req: NextRequest) {
     if (homeRes.ok) {
       const homeHtml = await homeRes.text();
       debug.push(`homepage_len=${homeHtml.length}`);
-      debug.push(`has_next_data=${homeHtml.includes("__NEXT_DATA__")}`);
-      debug.push(`snippet=${homeHtml.substring(0, 300).replace(/\n/g, " ")}`);
-      const nd = extractNextData(homeHtml) as Record<string, unknown> | null;
-      buildId = (nd?.buildId as string) ?? "";
-      debug.push(`buildId=${buildId}`);
+      // Extract hrefs that look like trade/search links
+      const hrefMatches = [...homeHtml.matchAll(/href="(\/[^"]*(?:trade|search|find|service)[^"]*?)"/gi)]
+        .map(m => m[1])
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .slice(0, 10);
+      debug.push(`trade_links=${JSON.stringify(hrefMatches)}`);
     }
   } catch (e) {
     debug.push(`homepage error: ${e}`);
