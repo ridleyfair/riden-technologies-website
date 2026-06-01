@@ -100,17 +100,25 @@ export async function POST(req: NextRequest) {
   const businesses = [];
   const pages = Math.min(5, Math.max(1, Math.ceil(max_results / 20)));
 
+  const debug: string[] = [];
+
   for (let page = 1; page <= pages; page++) {
     const url = `https://www.checkatrade.com/search?tradeType=${encodeURIComponent(trade)}&location=${encodeURIComponent(location)}&page=${page}`;
     try {
       const res = await fetch(url, { headers: HEADERS, cache: "no-store" });
-      if (!res.ok) break;
+      debug.push(`page=${page} status=${res.status}`);
+      if (!res.ok) { debug.push(`non-200 breaking`); break; }
 
       const html = await res.text();
+      const hasNextData = html.includes("__NEXT_DATA__");
+      debug.push(`has_next_data=${hasNextData} html_len=${html.length}`);
+      if (!hasNextData) { debug.push(`no next data snippet: ${html.substring(0, 200)}`); break; }
+
       const nextData = extractNextData(html);
-      if (!nextData) break;
+      if (!nextData) { debug.push(`failed to parse next data`); break; }
 
       const members = deepFindMembers(nextData);
+      debug.push(`members_found=${members.length}`);
       if (!members.length) break;
 
       for (const m of members) {
@@ -119,13 +127,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (members.length < 8) break;
-    } catch {
+    } catch (e) {
+      debug.push(`error: ${e}`);
       break;
     }
   }
 
   if (!businesses.length) {
-    return NextResponse.json({ saved: 0, scored: 0, businesses_found: 0 });
+    return NextResponse.json({ saved: 0, scored: 0, businesses_found: 0, debug });
   }
 
   // Save to Railway DB via batch import endpoint
