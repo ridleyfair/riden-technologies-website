@@ -25,6 +25,7 @@ type Business = {
   rating: number | null;
   reviews_count: number | null;
   maps_url: string | null;
+  place_id: string | null;
   is_facebook_only: boolean;
   website_analyzed: boolean;
   created_at: string;
@@ -41,6 +42,28 @@ type ScrapeJob = {
 };
 
 type Toast = { msg: string; type: "success" | "error" };
+
+function getSource(b: Business): "google_maps" | "checkatrade" {
+  if (b.place_id) return "google_maps";
+  if (b.maps_url?.includes("checkatrade.com")) return "checkatrade";
+  return b.place_id ? "google_maps" : "checkatrade";
+}
+
+function SourceBadge({ business }: { business: Business }) {
+  const source = getSource(business);
+  if (source === "checkatrade") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 border border-orange-500/20 text-orange-400">
+        Checkatrade
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400">
+      Google Maps
+    </span>
+  );
+}
 
 const TIER_CONFIG: Record<string, { label: string; dot: string; text: string; bg: string }> = {
   hot:  { label: "Hot",  dot: "bg-rose-500",   text: "text-rose-400",   bg: "bg-rose-500/10 border-rose-500/20" },
@@ -207,6 +230,7 @@ export default function PossibleClientsView() {
   const [category, setCategory] = useState("");
   const [tier, setTier] = useState("");
   const [noWebsiteOnly, setNoWebsiteOnly] = useState(false);
+  const [sourceFilter, setSourceFilter] = useState("");
 
   const [scrapeModal, setScrapeModal] = useState(false);
   const [scrapeLoading, setScrapeLoading] = useState(false);
@@ -310,6 +334,10 @@ export default function PossibleClientsView() {
       setImportingId(null);
     }
   };
+
+  const visibleBusinesses = sourceFilter
+    ? businesses.filter((b) => getSource(b) === sourceFilter)
+    : businesses;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const hotCount = businesses.filter((b) => b.lead_score?.lead_tier === "hot").length;
@@ -421,6 +449,15 @@ export default function PossibleClientsView() {
             <option value="cool">Cool</option>
             <option value="cold">Cold</option>
           </select>
+          <select
+            value={sourceFilter}
+            onChange={(e) => setSourceFilter(e.target.value)}
+            className="px-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50"
+          >
+            <option value="">All sources</option>
+            <option value="google_maps">Google Maps</option>
+            <option value="checkatrade">Checkatrade</option>
+          </select>
           <button
             onClick={() => { setNoWebsiteOnly((v) => !v); setPage(1); }}
             className={cn(
@@ -462,7 +499,7 @@ export default function PossibleClientsView() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-riden-border">
-                    {["Business", "City", "Category", "Rating", "Phone", "Website", "Tier", ""].map((h) => (
+                    {["Business", "Source", "City", "Category", "Rating", "Phone", "Website", "Tier", ""].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                         {h}
                       </th>
@@ -470,7 +507,7 @@ export default function PossibleClientsView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {businesses.map((b, i) => {
+                  {visibleBusinesses.map((b, i) => {
                     const isImported = importedIds.has(b.id);
                     const isImporting = importingId === b.id;
                     return (
@@ -483,6 +520,9 @@ export default function PossibleClientsView() {
                       >
                         <td className="px-4 py-3">
                           <div className="font-medium text-white max-w-[180px] truncate">{b.name}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <SourceBadge business={b} />
                         </td>
                         <td className="px-4 py-3 text-slate-400">{b.city ?? "—"}</td>
                         <td className="px-4 py-3 text-slate-400">{b.category ?? "—"}</td>
