@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!user) return unauthorized();
 
   const ids = req.nextUrl.searchParams.get("ids") ?? "";
-  const idList = ids.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 100);
+  const idList = ids.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 1000);
   if (idList.length === 0) return NextResponse.json([]);
 
   try {

@@ -460,6 +460,7 @@ export default function PossibleClientsView() {
   const [offline, setOffline] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const PAGE_SIZE = 25;
 
   // Filters
@@ -498,11 +499,11 @@ export default function PossibleClientsView() {
   // ── Data fetching ────────────────────────────────────────────────────────────
 
   const fetchBusinesses = useCallback(
-    async (p = page) => {
+    async (p = page, ps = pageSize) => {
       setLoading(true);
       setOffline(false);
       try {
-        const params = new URLSearchParams({ page: String(p), page_size: String(PAGE_SIZE) });
+        const params = new URLSearchParams({ page: String(p), page_size: String(ps) });
         if (city) params.set("city", city);
         if (category) params.set("category", category);
         if (tier) params.set("lead_tier", tier);
@@ -516,25 +517,28 @@ export default function PossibleClientsView() {
         setBusinesses(items);
         setTotal(data.total ?? 0);
 
-        // Load stored enrichments for this page
+        // Load stored enrichments — batch in groups of 100 to stay under URL limits
         if (items.length > 0) {
-          const ids = items.map((b) => b.id).join(",");
-          const eRes = await fetch(`/api/possible-clients/enrichments?ids=${ids}`);
-          if (eRes.ok) {
-            const rows: CheckatradeEnrichment[] = await eRes.json();
-            const map: Record<string, CheckatradeEnrichment> = {};
-            for (const row of rows) map[row.business_id] = row;
-            setEnrichments(map);
+          const map: Record<string, CheckatradeEnrichment> = {};
+          const BATCH = 100;
+          for (let i = 0; i < items.length; i += BATCH) {
+            const ids = items.slice(i, i + BATCH).map((b) => b.id).join(",");
+            const eRes = await fetch(`/api/possible-clients/enrichments?ids=${ids}`);
+            if (eRes.ok) {
+              const rows: CheckatradeEnrichment[] = await eRes.json();
+              for (const row of rows) map[row.business_id] = row;
+            }
           }
+          setEnrichments(map);
         }
       } finally {
         setLoading(false);
       }
     },
-    [page, city, category, tier, noWebsiteOnly]
+    [page, pageSize, city, category, tier, noWebsiteOnly]
   );
 
-  useEffect(() => { fetchBusinesses(page); }, [page, city, category, tier, noWebsiteOnly]);
+  useEffect(() => { fetchBusinesses(page, pageSize); }, [page, pageSize, city, category, tier, noWebsiteOnly]);
 
   // Poll active scrape job
   useEffect(() => {
@@ -820,7 +824,7 @@ export default function PossibleClientsView() {
               type="text"
               placeholder="Filter by city..."
               value={city}
-              onChange={(e) => { setCity(e.target.value); setPage(1); }}
+              onChange={(e) => { setCity(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
               className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
             />
           </div>
@@ -830,13 +834,13 @@ export default function PossibleClientsView() {
               type="text"
               placeholder="Filter by category..."
               value={category}
-              onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+              onChange={(e) => { setCategory(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
               className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
             />
           </div>
           <select
             value={tier}
-            onChange={(e) => { setTier(e.target.value); setPage(1); }}
+            onChange={(e) => { setTier(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
             className="px-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50"
           >
             <option value="">All tiers</option>
@@ -1140,28 +1144,55 @@ export default function PossibleClientsView() {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between">
+        {/* Pagination / Show All */}
+        {total > PAGE_SIZE && (
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <p className="text-xs text-slate-500">
-              Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+              {pageSize >= total
+                ? `Showing all ${total} businesses`
+                : `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}
               {(hasCheckatradeFilter || hotLeadsOnly) && ` (filtered: ${visibleBusinesses.length})`}
             </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1.5 rounded-lg text-xs bg-riden-muted border border-riden-border text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-lg text-xs bg-riden-muted border border-riden-border text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
-              >
-                Next
-              </button>
+
+            <div className="flex gap-2 items-center">
+              {/* Show All / Collapse */}
+              {pageSize < total ? (
+                <button
+                  onClick={() => { setPageSize(total); setPage(1); }}
+                  disabled={loading}
+                  className="px-4 py-1.5 rounded-lg text-xs font-medium bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                >
+                  Show all {total}
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setPageSize(PAGE_SIZE); setPage(1); }}
+                  disabled={loading}
+                  className="px-4 py-1.5 rounded-lg text-xs font-medium bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors disabled:opacity-40"
+                >
+                  Back to pages
+                </button>
+              )}
+
+              {/* Previous / Next (only when paginating) */}
+              {pageSize < total && (
+                <>
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1 || loading}
+                    className="px-3 py-1.5 rounded-lg text-xs bg-riden-muted border border-riden-border text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages || loading}
+                    className="px-3 py-1.5 rounded-lg text-xs bg-riden-muted border border-riden-border text-slate-400 hover:text-white disabled:opacity-40 transition-colors"
+                  >
+                    Next
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
