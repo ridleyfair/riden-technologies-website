@@ -42,15 +42,23 @@ async function pageFunction(context) {
   const allPhotos = new Set();
   (await collectVisible()).forEach(u => allPhotos.add(u));
 
-  // Try to click the Photos tab/button if present (opens full gallery)
+  // Click the Photos tab — Checkatrade profile has "Overview | Skills | Reviews | Photos" nav
   try {
-    const photoLinks = await page.$$('a[href*="photo"], button');
-    for (const el of photoLinks) {
-      const txt = (await el.textContent() || '').toLowerCase();
-      if (txt.includes('photo') || txt.includes('gallery')) {
-        await el.click();
-        await sleep(2000);
-        break;
+    // Try anchor links first (e.g. href="#photos")
+    const photoAnchor = await page.$('a[href="#photos"], a[href*="#photo"], nav a:has-text("Photos"), [role="tab"]:has-text("Photos")');
+    if (photoAnchor) {
+      await photoAnchor.click();
+      await sleep(2500);
+    } else {
+      // Fall back: find any link/button with text "Photos"
+      const allLinks = await page.$$('a, button');
+      for (const el of allLinks) {
+        const txt = ((await el.textContent()) || '').trim();
+        if (txt === 'Photos' || txt.startsWith('Photos ')) {
+          await el.click();
+          await sleep(2500);
+          break;
+        }
       }
     }
   } catch(e) {}
@@ -125,16 +133,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Go straight to the /photos sub-page — full gallery, not just the preview grid
-    const photosUrl = url.replace(/\/$/, "") + "/photos";
-
     const res = await fetch(
       `https://api.apify.com/v2/acts/apify~playwright-scraper/runs?token=${token}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          startUrls:            [{ url: photosUrl }],
+          startUrls:            [{ url }],
           pageFunction:         PAGE_FUNCTION,
           proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
           maxRequestsPerCrawl:  1,
