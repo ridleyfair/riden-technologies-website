@@ -256,19 +256,44 @@ function findProfile(pageProps: Record<string, unknown>): Record<string, unknown
       }
     }
   }
-  // 3. Smart hunt: find any object that looks like a company profile
+  // 2b. React Query dehydrated state: pageProps.dehydratedState.queries[].state.data
+  const dehydrated = (pageProps.dehydratedState ?? (pageProps as Record<string,unknown>)?.["dehydratedState"]) as Record<string, unknown> | undefined;
+  if (dehydrated?.queries && Array.isArray(dehydrated.queries)) {
+    for (const query of dehydrated.queries as Record<string, unknown>[]) {
+      const data = (query?.state as Record<string, unknown>)?.data;
+      if (!data || typeof data !== "object" || Array.isArray(data)) continue;
+      const dataRec = data as Record<string, unknown>;
+      // data itself might be the profile
+      if (typeof dataRec.name === "string" && dataRec.name.length > 1 &&
+          (typeof dataRec.description === "string" || Array.isArray(dataRec.skills) || Array.isArray(dataRec.trades))) {
+        return dataRec;
+      }
+      // or profile is nested one level inside data
+      for (const key of PROFILE_KEYS) {
+        const v = dataRec[key];
+        if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+      }
+    }
+  }
+  // 3. Smart hunt: find any object that looks like a company profile.
+  //    hunt() now traverses arrays so React Query / SWR nested structures are reached.
   const candidates: Array<{ score: number; obj: Record<string, unknown> }> = [];
   function hunt(obj: unknown, depth = 0): void {
-    if (depth > 8 || !obj || typeof obj !== "object" || Array.isArray(obj)) return;
+    if (depth > 10 || !obj) return;
+    if (Array.isArray(obj)) {
+      for (const item of obj) hunt(item, depth + 1);
+      return;
+    }
+    if (typeof obj !== "object") return;
     const rec = obj as Record<string, unknown>;
     let score = 0;
-    if (typeof rec.name        === "string" && rec.name.length > 1)    score += 3;
+    if (typeof rec.name        === "string" && rec.name.length > 1)         score += 3;
     if (typeof rec.description === "string" && rec.description.length > 20) score += 3;
-    if (typeof rec.about       === "string" && rec.about.length > 20)  score += 2;
+    if (typeof rec.about       === "string" && rec.about.length > 20)       score += 2;
     if (typeof rec.phone       === "string" || typeof rec.telephone === "string") score += 2;
     if (typeof rec.city        === "string" || typeof rec.town === "string") score += 1;
-    if (typeof rec.postcode    === "string") score += 1;
-    if (Array.isArray(rec.skills) || Array.isArray(rec.trades))        score += 2;
+    if (typeof rec.postcode    === "string")                                 score += 1;
+    if (Array.isArray(rec.skills) || Array.isArray(rec.trades))             score += 2;
     if (score >= 5) candidates.push({ score, obj: rec });
     for (const v of Object.values(rec)) hunt(v, depth + 1);
   }
@@ -577,11 +602,16 @@ export async function POST(req: NextRequest) {
       reviews,
       photos,
       _found: {
-        hasNextData:  !!nextData,
-        hasPageProps: !!pageProps,
-        hasProfile:   !!profile,
-        profileKeys:  profile ? Object.keys(profile).slice(0, 40) : [],
-        hasJsonLd:    jsonLds.length > 0,
+        hasNextData:    !!nextData,
+        hasPageProps:   !!pageProps,
+        hasProfile:     !!profile,
+        profileKeys:    profile ? Object.keys(profile).slice(0, 40) : [],
+        pagePropsKeys:  pageProps ? Object.keys(pageProps).slice(0, 30) : [],
+        hasDehydrated:  !!(pageProps as Record<string,unknown>)?.dehydratedState,
+        queryCount:     Array.isArray(((pageProps as Record<string,unknown>)?.dehydratedState as Record<string,unknown>)?.queries)
+                          ? ((((pageProps as Record<string,unknown>).dehydratedState as Record<string,unknown>).queries) as unknown[]).length
+                          : 0,
+        hasJsonLd:      jsonLds.length > 0,
       },
     });
   } catch (err) {
