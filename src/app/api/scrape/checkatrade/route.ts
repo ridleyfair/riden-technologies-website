@@ -186,22 +186,45 @@ function collectImages(obj: unknown, found: Set<string>, depth = 0): void {
 
 function extractPhotosFromHtml(html: string): string[] {
   const found = new Set<string>();
-  const nextRe = /\/_next\/image\?url=([^&"'\s>]+)/g;
   let m: RegExpExecArray | null;
+
+  // /_next/image?url=ENCODED&w=...&q=... — the encoded URL is a private GCS object.
+  // Use the full proxied URL on Checkatrade's server instead of decoding to raw GCS.
+  // We collect all widths then keep only the largest per source image.
+  const nextWidths = new Map<string, { w: number; fullUrl: string }>();
+  const nextRe = /\/_next\/image\?([^"'\s>]+)/g;
   while ((m = nextRe.exec(html)) !== null) {
-    try { const d = decodeURIComponent(m[1]); if (d.startsWith("http") && isPhoto(d)) found.add(d); } catch { /* skip */ }
+    try {
+      const qs     = m[1];
+      const params = new URLSearchParams(qs);
+      const rawUrl = decodeURIComponent(params.get("url") ?? "");
+      if (!rawUrl || !isPhoto(rawUrl)) continue;
+      const w = parseInt(params.get("w") ?? "0", 10);
+      const existing = nextWidths.get(rawUrl);
+      if (!existing || w > existing.w) {
+        nextWidths.set(rawUrl, { w, fullUrl: `https://www.checkatrade.com/_next/image?${qs}` });
+      }
+    } catch { /* skip */ }
   }
+  for (const { fullUrl } of nextWidths.values()) found.add(fullUrl);
+
+  // Skip any raw storage.googleapis.com URLs — they require auth tokens
+  const isPrivateGcs = (u: string) => u.includes("storage.googleapis.com") || u.includes("storage.cloud.google.com");
+
   const imgRe  = /<img[^>]+>/gi;
   const attrRe = /(?:src|data-src|data-lazy-src)=["']([^"']+)["']/i;
   while ((m = imgRe.exec(html)) !== null) {
     const a = attrRe.exec(m[0]);
-    if (a) { const src = a[1].startsWith("//") ? "https:" + a[1] : a[1]; if (src.startsWith("http") && isPhoto(src)) found.add(src); }
+    if (a) {
+      const src = a[1].startsWith("//") ? "https:" + a[1] : a[1];
+      if (src.startsWith("http") && isPhoto(src) && !isPrivateGcs(src)) found.add(src);
+    }
   }
   const srcsetRe = /srcset=["']([^"']+)["']/gi;
   while ((m = srcsetRe.exec(html)) !== null) {
     for (const part of m[1].split(",")) {
       const u = part.trim().split(/\s+/)[0];
-      if (u.startsWith("http") && isPhoto(u)) found.add(u);
+      if (u.startsWith("http") && isPhoto(u) && !isPrivateGcs(u)) found.add(u);
     }
   }
   return [...found].slice(0, 20);
@@ -507,10 +530,13 @@ export async function POST(req: NextRequest) {
     for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
 
     // og:image is often the main company photo and a reliable fallback
+    // (skip private GCS URLs — they need auth tokens to open)
     const ogImage = metaContent(html, "og:image");
-    if (ogImage && isPhoto(ogImage)) photoSet.add(ogImage);
+    const isPrivateGcs = (u: string) => u.includes("storage.googleapis.com") || u.includes("storage.cloud.google.com");
+    if (ogImage && isPhoto(ogImage) && !isPrivateGcs(ogImage)) photoSet.add(ogImage);
 
-    const photos = [...photoSet].filter(isPhoto).slice(0, 20);
+    // Filter out private GCS URLs that collectImages may have found in __NEXT_DATA__
+    const photos = [...photoSet].filter(u => isPhoto(u) && !isPrivateGcs(u)).slice(0, 20);
 
     // ── Return ────────────────────────────────────────────────────────────────
     return NextResponse.json({
