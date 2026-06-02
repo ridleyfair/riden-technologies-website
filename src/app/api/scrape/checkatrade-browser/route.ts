@@ -21,30 +21,51 @@ async function pageFunction(context) {
   try { await page.waitForLoadState('networkidle', { timeout: 30000 }); } catch(e) {}
   await sleep(2000);
 
-  // Scroll to trigger lazy-loaded images
+  // Try to click a "See all photos" / "View photos" button to open the full gallery
   try {
-    const h = await page.evaluate(() => document.body.scrollHeight);
-    for (let y = 0; y <= h; y += 400) {
-      await page.evaluate(yy => window.scrollTo(0, yy), y);
-      await sleep(120);
+    const btn = await page.$('button:has-text("photo"), a:has-text("photo"), button:has-text("Photo"), a:has-text("Photo")');
+    if (btn) { await btn.click(); await sleep(2000); }
+  } catch(e) {}
+
+  // Scroll the full page height twice — second pass catches images loaded by first scroll
+  try {
+    for (let pass = 0; pass < 2; pass++) {
+      const h = await page.evaluate(() => document.body.scrollHeight);
+      for (let y = 0; y <= h; y += 300) {
+        await page.evaluate(yy => window.scrollTo(0, yy), y);
+        await sleep(80);
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await sleep(1200);
     }
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await sleep(1500);
   } catch(e) {}
 
   const SKIP = ['icon','logo','favicon','star','badge','tick','avatar',
                 '1x1','seal','arrow','sprite','placeholder','ct-logo','trustmark'];
 
-  // All rendered images >= 150 px wide — img.src is the resolved proxy URL
+  // Collect from src, srcset, and data-src so lazy images aren't missed.
+  // Filter by URL pattern rather than naturalWidth (unloaded images have width=0).
   const photos = await page.evaluate((skip) => {
-    return [...new Set(
-      Array.from(document.images)
-        .filter(img => img.src.startsWith('http') &&
-                       img.naturalWidth  >= 150 &&
-                       img.naturalHeight >= 100)
-        .map(img => img.src)
-        .filter(src => !skip.some(s => src.toLowerCase().includes(s)))
-    )].slice(0, 30);
+    const CDN = ['_next/image','checkatrade','ctmedia','cloudinary','storage.googleapis','imagedelivery'];
+    const found = new Set();
+    document.querySelectorAll('img').forEach(img => {
+      // resolved src
+      if (img.src.startsWith('http')) found.add(img.src);
+      // srcset — pick the highest-width entry
+      if (img.srcset) {
+        img.srcset.split(',').forEach(part => {
+          const u = part.trim().split(/\s+/)[0];
+          if (u.startsWith('http')) found.add(u);
+        });
+      }
+      // data-src for lazy loaders
+      const ds = img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
+      if (ds.startsWith('http')) found.add(ds);
+    });
+    return [...found]
+      .filter(src => CDN.some(c => src.includes(c)))
+      .filter(src => !skip.some(s => src.toLowerCase().includes(s)))
+      .slice(0, 100);
   }, SKIP);
 
   // Skills — try common class/data-testid patterns
