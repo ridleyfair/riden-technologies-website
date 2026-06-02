@@ -232,6 +232,47 @@ function CheckatradeCell({
   );
 }
 
+// ── Scrape modal data ──────────────────────────────────────────────────────────
+
+const UK_AREAS = [
+  "London", "Manchester", "Birmingham", "Leeds", "Liverpool", "Bristol",
+  "Sheffield", "Edinburgh", "Glasgow", "Cardiff", "Newcastle upon Tyne",
+  "Nottingham", "Leicester", "Coventry", "Brighton", "Southampton",
+  "Portsmouth", "Reading", "Oxford", "Cambridge", "Plymouth", "Derby",
+  "Stoke-on-Trent", "Wolverhampton", "Swansea", "Aberdeen", "Dundee",
+  "Sunderland", "Milton Keynes", "Exeter", "Norwich", "Ipswich", "Luton",
+  "Peterborough", "Northampton", "Middlesbrough", "Bolton", "Wigan",
+  "Blackpool", "Blackburn", "Huddersfield", "Barnsley", "York", "Chester",
+  "Doncaster", "Rotherham", "Stockport", "Salford", "Oldham", "Wakefield",
+];
+
+const GOOGLE_TRADES = [
+  "plumbers", "electricians", "gas engineers", "roofers", "builders",
+  "painters and decorators", "plasterers", "joiners", "carpenters",
+  "kitchen fitters", "bathroom fitters", "tilers", "flooring specialists",
+  "landscapers", "gardeners", "fencers", "tree surgeons",
+  "driveway installers", "window fitters", "locksmiths",
+  "drainage specialists", "pest control", "heating engineers",
+  "boiler engineers", "solar panel installers", "loft conversion specialists",
+  "extension builders", "groundworkers", "glaziers", "scaffolders",
+];
+
+const CHECKATRADE_TRADES = [
+  "Plumber", "Electrician", "Gas Engineer", "Roofer", "Builder",
+  "Painter & Decorator", "Plasterer", "Joiner", "Carpenter",
+  "Kitchen Fitter", "Bathroom Fitter", "Tiler", "Flooring Specialist",
+  "Landscaper", "Gardener", "Fencer", "Tree Surgeon",
+  "Driveway Contractor", "Window Fitter", "Locksmith",
+  "Drainage Specialist", "Pest Control Specialist", "Heating Engineer",
+  "Boiler Engineer", "Solar Panel Installer", "Loft Conversion Specialist",
+  "Extension Builder", "Groundworker", "Glazier", "Scaffolder",
+];
+
+const SELECT_CLASS =
+  "w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20";
+const INPUT_CLASS =
+  "w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20";
+
 // ── Scrape modal ───────────────────────────────────────────────────────────────
 
 function ScrapeModal({
@@ -243,16 +284,25 @@ function ScrapeModal({
   onStart: (city: string, keyword: string, maxResults: number, source: string) => void;
   loading: boolean;
 }) {
-  const [city, setCity] = useState("");
-  const [keyword, setKeyword] = useState("");
+  const [citySelect, setCitySelect] = useState("");
+  const [cityCustom, setCityCustom] = useState("");
+  const [keywordSelect, setKeywordSelect] = useState("");
+  const [keywordCustom, setKeywordCustom] = useState("");
   const [maxResults, setMaxResults] = useState(100);
   const [source, setSource] = useState("google_maps");
 
-  const keywordPlaceholder =
-    source === "checkatrade"
-      ? "e.g. Plumber, Electrician, Roofer"
-      : "e.g. plumbers, electricians, roofers";
+  const city    = citySelect    === "__other__" ? cityCustom    : citySelect;
+  const keyword = keywordSelect === "__other__" ? keywordCustom : keywordSelect;
+
+  const trades = source === "checkatrade" ? CHECKATRADE_TRADES : GOOGLE_TRADES;
   const keywordLabel = source === "checkatrade" ? "Trade type" : "Keyword";
+
+  // Reset keyword when source changes (lists are different)
+  const handleSourceChange = (val: string) => {
+    setSource(val);
+    setKeywordSelect("");
+    setKeywordCustom("");
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -288,6 +338,7 @@ function ScrapeModal({
         </div>
 
         <div className="space-y-4">
+          {/* Source */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Source</label>
             <div className="grid grid-cols-2 gap-2">
@@ -297,7 +348,7 @@ function ScrapeModal({
               ].map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => setSource(opt.value)}
+                  onClick={() => handleSourceChange(opt.value)}
                   className={cn(
                     "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
                     source === opt.value
@@ -310,37 +361,66 @@ function ScrapeModal({
               ))}
             </div>
           </div>
+
+          {/* Location */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Location</label>
-            <input
-              type="text"
-              placeholder="e.g. Manchester"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">{keywordLabel}</label>
-            <input
-              type="text"
-              placeholder={keywordPlaceholder}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              className="w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20"
-            />
-            {source === "checkatrade" && (
-              <p className="text-xs text-slate-500 mt-1">
-                Use the Checkatrade trade category, e.g. &quot;Plumber&quot; not &quot;plumbers&quot;
-              </p>
+            <select
+              value={citySelect}
+              onChange={(e) => setCitySelect(e.target.value)}
+              className={SELECT_CLASS}
+            >
+              <option value="">— Select area —</option>
+              {UK_AREAS.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+              <option value="__other__">Other — type your own</option>
+            </select>
+            {citySelect === "__other__" && (
+              <input
+                type="text"
+                placeholder="e.g. Bury St Edmunds"
+                value={cityCustom}
+                onChange={(e) => setCityCustom(e.target.value)}
+                className={cn(INPUT_CLASS, "mt-2")}
+                autoFocus
+              />
             )}
           </div>
+
+          {/* Trade / Keyword */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">{keywordLabel}</label>
+            <select
+              value={keywordSelect}
+              onChange={(e) => setKeywordSelect(e.target.value)}
+              className={SELECT_CLASS}
+            >
+              <option value="">— Select trade —</option>
+              {trades.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+              <option value="__other__">Other — type your own</option>
+            </select>
+            {keywordSelect === "__other__" && (
+              <input
+                type="text"
+                placeholder={source === "checkatrade" ? "e.g. Flooring Fitter" : "e.g. solar panel installers"}
+                value={keywordCustom}
+                onChange={(e) => setKeywordCustom(e.target.value)}
+                className={cn(INPUT_CLASS, "mt-2")}
+                autoFocus
+              />
+            )}
+          </div>
+
+          {/* Max results */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Max results</label>
             <select
               value={maxResults}
               onChange={(e) => setMaxResults(Number(e.target.value))}
-              className="w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+              className={SELECT_CLASS}
             >
               <option value={25}>25</option>
               <option value={50}>50</option>
