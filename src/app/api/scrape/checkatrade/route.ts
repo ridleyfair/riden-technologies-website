@@ -512,31 +512,44 @@ export async function POST(req: NextRequest) {
     }));
 
     // ── Photos ────────────────────────────────────────────────────────────────
-    const photoSet = new Set<string>();
+    const rawPhotoSet = new Set<string>();
 
-    // Collect from structured data
-    if (profile) collectImages(profile, photoSet);
+    // Collect from structured data (may include private GCS URLs — handled below)
+    if (profile) collectImages(profile, rawPhotoSet);
     if (pageProps) {
       for (const k of [
         "images","photos","gallery","media","portfolioImages","workImages",
         "portfolio","work","companyImages","profileImages","companyMedia",
         "tradeImages","workPhotos","companyPhotos","memberImages",
       ]) {
-        if (pageProps[k]) collectImages(pageProps[k], photoSet);
+        if (pageProps[k]) collectImages(pageProps[k], rawPhotoSet);
       }
     }
 
-    // Always also scan HTML — catches /_next/image? URLs and og:image
-    for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
+    // Always also scan HTML — catches /_next/image? proxy URLs
+    for (const p of extractPhotosFromHtml(html)) rawPhotoSet.add(p);
 
-    // og:image is often the main company photo and a reliable fallback
-    // (skip private GCS URLs — they need auth tokens to open)
+    // og:image is often the main company photo
     const ogImage = metaContent(html, "og:image");
-    const isPrivateGcs = (u: string) => u.includes("storage.googleapis.com") || u.includes("storage.cloud.google.com");
-    if (ogImage && isPhoto(ogImage) && !isPrivateGcs(ogImage)) photoSet.add(ogImage);
+    if (ogImage && isPhoto(ogImage)) rawPhotoSet.add(ogImage);
 
-    // Filter out private GCS URLs that collectImages may have found in __NEXT_DATA__
-    const photos = [...photoSet].filter(u => isPhoto(u) && !isPrivateGcs(u)).slice(0, 20);
+    // JSON-LD may have an image field
+    for (const img of (Array.isArray(bizLd?.image) ? bizLd!.image : bizLd?.image ? [bizLd.image] : []) as string[]) {
+      if (typeof img === "string" && isPhoto(img)) rawPhotoSet.add(img);
+    }
+
+    // Checkatrade stores images in a private GCS bucket. Raw GCS URLs return
+    // "Access Denied" but the same images ARE publicly accessible via Checkatrade's
+    // /_next/image proxy (which has server-side GCS credentials). Wrap them.
+    const isGcs = (u: string) => u.includes("storage.googleapis.com") || u.includes("storage.cloud.google.com");
+    const toPublicUrl = (url: string): string =>
+      isGcs(url)
+        ? `https://www.checkatrade.com/_next/image?url=${encodeURIComponent(url)}&w=1920&q=75`
+        : url;
+
+    const photos = [...new Set(
+      [...rawPhotoSet].filter(isPhoto).map(toPublicUrl)
+    )].slice(0, 20);
 
     // ── Return ────────────────────────────────────────────────────────────────
     return NextResponse.json({
