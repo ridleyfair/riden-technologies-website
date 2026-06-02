@@ -4,18 +4,19 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   User, Bell, Shield, CreditCard, Globe, Key, Save, Eye, EyeOff,
-  Copy, RefreshCw, CheckCircle, Zap, Link, MessageSquare, BarChart2,
+  Copy, RefreshCw, CheckCircle, Zap, Link, MessageSquare, BarChart2, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const sections = [
-  { id: "profile", label: "Profile", icon: User },
+  { id: "profile",       label: "Profile",       icon: User },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
-  { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "integrations", label: "Integrations", icon: Globe },
-  { id: "api", label: "API Keys", icon: Key },
+  { id: "security",      label: "Security",      icon: Shield },
+  { id: "billing",       label: "Billing",       icon: CreditCard },
+  { id: "email",         label: "Email",         icon: Mail },
+  { id: "integrations",  label: "Integrations",  icon: Globe },
+  { id: "api",           label: "API Keys",      icon: Key },
 ];
 
 const inputCls = "w-full bg-riden-muted border border-riden-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors placeholder:text-slate-600";
@@ -76,6 +77,7 @@ export default function SettingsPage() {
         {activeSection === "notifications" && <NotificationsSection showToast={showToast} />}
         {activeSection === "security" && <SecuritySection showToast={showToast} />}
         {activeSection === "billing" && <BillingSection />}
+        {activeSection === "email"         && <EmailSection showToast={showToast} />}
         {activeSection === "integrations" && <IntegrationsSection showToast={showToast} />}
         {activeSection === "api" && <ApiKeysSection showToast={showToast} />}
       </motion.div>
@@ -455,6 +457,62 @@ function ApiKeysSection({ showToast }: { showToast: (m: string, t?: "success" | 
           <Plus size={14} /> Generate
         </Button>
       </div>
+    </div>
+  );
+}
+
+/* ── Email ───────────────────────────────────────────────────────── */
+function EmailSection({ showToast }: { showToast: (m: string, t?: "success" | "error") => void }) {
+  const [client, setClient] = React.useState<"default" | "outlook_web">("default");
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("email_client") as "default" | "outlook_web" | null;
+    if (saved) setClient(saved);
+  }, []);
+
+  function save() {
+    localStorage.setItem("email_client", client);
+    showToast("Email preference saved");
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-base font-semibold text-white mb-1">Email Settings</h3>
+        <p className="text-xs text-slate-500">Choose how the &quot;Email Website Preview&quot; button opens your email.</p>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm text-slate-400">Email client</label>
+        {[
+          { value: "default",     label: "Default mail app",   desc: "Opens your system default — Outlook desktop, Apple Mail, etc." },
+          { value: "outlook_web", label: "Outlook Web",        desc: "Opens Outlook in your browser at outlook.office.com" },
+        ].map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setClient(opt.value as "default" | "outlook_web")}
+            className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-colors ${
+              client === opt.value
+                ? "bg-blue-500/10 border-blue-500/30"
+                : "bg-riden-muted border-riden-border hover:border-slate-500"
+            }`}
+          >
+            <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 flex items-center justify-center ${
+              client === opt.value ? "border-blue-400" : "border-slate-600"
+            }`}>
+              {client === opt.value && <div className="w-2 h-2 rounded-full bg-blue-400" />}
+            </div>
+            <div>
+              <div className="text-sm font-medium text-white">{opt.label}</div>
+              <div className="text-xs text-slate-500 mt-0.5">{opt.desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <Button variant="gradient" onClick={save} className="gap-2">
+        <Save size={14} /> Save preference
+      </Button>
     </div>
   );
 }

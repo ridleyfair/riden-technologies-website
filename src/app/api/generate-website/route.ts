@@ -978,11 +978,12 @@ export async function POST(req: NextRequest) {
     const previewUrl = `https://sites.ridentechnologies.com/preview/${id}`;
     await sql`
       INSERT INTO "GeneratedSite"
-        (id, "projectId", "clientName", "businessName", industry, tier, "specJson", username, password, "previewUrl", status, "createdAt", "updatedAt")
+        (id, "projectId", "clientName", "businessName", industry, tier, "specJson", username, password, "previewUrl", status, "outreachEmail", "outreachStatus", "createdAt", "updatedAt")
       VALUES
         (${id}, ${body.projectId ?? null}, ${body.clientName}, ${body.businessName},
          ${body.industry ?? "professional"}, ${body.tier ?? "pro_plus"}, ${specJson},
-         ${body.username}, ${body.password}, ${previewUrl}, 'ready', NOW(), NOW())
+         ${body.username}, ${body.password}, ${previewUrl}, 'ready',
+         ${body.email ?? null}, 'not_contacted', NOW(), NOW())
     `;
     return NextResponse.json({ ok: true, siteId: id, previewUrl });
   } catch (e) {

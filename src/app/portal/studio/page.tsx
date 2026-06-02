@@ -13,7 +13,10 @@ import {
   ImagePlus,
   Upload,
   Images,
+  Mail,
+  AlertTriangle,
 } from "lucide-react";
+import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -30,6 +33,9 @@ type GeneratedSite = {
   password: string;
   previewUrl?: string;
   status: string;
+  outreachEmail?: string;
+  lastOutreachAt?: string;
+  outreachStatus?: string;
   createdAt: string;
 };
 
@@ -621,6 +627,7 @@ export default function StudioPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [emailWarning, setEmailWarning] = useState<string | null>(null);
 
   const fetchSites = useCallback(async () => {
     setLoading(true);
@@ -649,6 +656,30 @@ export default function StudioPage() {
     navigator.clipboard.writeText(text).catch(() => null);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  }
+
+  async function handleEmailPreview(site: GeneratedSite) {
+    if (!site.previewUrl) return;
+    if (!site.outreachEmail) {
+      setEmailWarning(site.id);
+      setTimeout(() => setEmailWarning(null), 4000);
+      return;
+    }
+    const email = buildWebsitePreviewEmail({
+      businessName: site.businessName,
+      contactEmail: site.outreachEmail,
+      previewUrl: site.previewUrl,
+      industry: site.industry,
+    });
+    openEmailCompose(email);
+    // Track the outreach
+    await fetch(`/api/generated-sites/${site.id}/outreach`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "Preview Email Prepared" }),
+    });
+    // Refresh to show updated status
+    fetchSites();
   }
 
   return (
@@ -779,14 +810,53 @@ export default function StudioPage() {
                   </Button>
                 </div>
 
-                {/* Date */}
-                <div className="text-[10px] text-slate-600 border-t border-riden-border pt-3">
-                  Generated{" "}
-                  {new Date(site.createdAt).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                {/* Email Website Preview button */}
+                {site.previewUrl && (
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs text-violet-400 border-violet-500/30 hover:border-violet-500/60 hover:bg-violet-500/10"
+                      onClick={() => handleEmailPreview(site)}
+                    >
+                      <Mail size={11} />
+                      Email Website Preview
+                    </Button>
+                    {emailWarning === site.id && (
+                      <p className="flex items-center gap-1 text-[11px] text-amber-400 mt-1.5">
+                        <AlertTriangle size={11} />
+                        No email saved for this business — add one in Website Brief
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Outreach status + date */}
+                <div className="flex items-center justify-between border-t border-riden-border pt-3">
+                  <div className="text-[10px] text-slate-600">
+                    Generated{" "}
+                    {new Date(site.createdAt).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                  {site.outreachStatus && site.outreachStatus !== "not_contacted" && (
+                    <div className="text-right">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                        <Mail size={9} />
+                        {site.outreachStatus}
+                      </span>
+                      {site.lastOutreachAt && (
+                        <div className="text-[10px] text-slate-600 mt-0.5">
+                          {new Date(site.lastOutreachAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}

@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Plus, X, RefreshCw, CheckCircle, AlertTriangle,
   ExternalLink, Phone, Globe, MapPin, Star, Flame, Loader2,
-  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap,
+  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail,
 } from "lucide-react";
+import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -691,6 +692,23 @@ export default function PossibleClientsView() {
     [showToast]
   );
 
+  const handleEmailOutreach = useCallback(
+    (business: Business) => {
+      const email = buildWebsitePreviewEmail({
+        businessName: business.name,
+        // Google Maps scraping rarely returns email — user fills it in manually
+        contactEmail: undefined,
+        previewUrl: undefined,
+        location: business.city ?? undefined,
+      });
+      if (!email.recipient) {
+        showToast("No email found — compose window will open with blank recipient", "success");
+      }
+      openEmailCompose(email);
+    },
+    [showToast]
+  );
+
   // ── Derived data ─────────────────────────────────────────────────────────────
 
   let visibleBusinesses = businesses;
@@ -1094,6 +1112,15 @@ export default function PossibleClientsView() {
                                 <ClipboardCopy size={13} />
                               </button>
                             )}
+
+                            {/* Email outreach */}
+                            <button
+                              onClick={() => handleEmailOutreach(b)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                              title="Write outreach email"
+                            >
+                              <Mail size={13} />
+                            </button>
 
                             {/* Add to CRM */}
                             <button

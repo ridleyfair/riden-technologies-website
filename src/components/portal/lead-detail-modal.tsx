@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Mail, Phone, Building2, Calendar, Tag, Star, ExternalLink,
   FolderPlus, CheckCircle, ArrowRight, Video, Copy, Clock,
-  AlertTriangle, RefreshCw, XCircle, CalendarPlus, ChevronDown,
+  AlertTriangle, RefreshCw, XCircle, CalendarPlus, ChevronDown, Sparkles,
 } from "lucide-react";
+import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -591,9 +592,29 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [linkedSite, setLinkedSite] = useState<{ id: string; previewUrl: string; businessName: string; outreachEmail?: string } | null>(null);
 
   // Sync when parent passes a new lead
   useEffect(() => { setLocalLead(lead); setShowCreateProject(false); setBookingOpen(false); }, [lead]);
+
+  // Check if a GeneratedSite exists for this lead's company
+  useEffect(() => {
+    if (!lead?.company) return;
+    fetch("/api/generated-sites")
+      .then((r) => r.json())
+      .then((sites: Array<{ id: string; businessName: string; previewUrl?: string; outreachEmail?: string }>) => {
+        const company = lead.company!.toLowerCase();
+        const match = sites.find(
+          (s) =>
+            s.previewUrl &&
+            (s.businessName.toLowerCase() === company ||
+              s.businessName.toLowerCase().includes(company) ||
+              company.includes(s.businessName.toLowerCase()))
+        );
+        setLinkedSite(match ? { id: match.id, previewUrl: match.previewUrl!, businessName: match.businessName, outreachEmail: match.outreachEmail } : null);
+      })
+      .catch(() => {});
+  }, [lead?.company]);
 
   if (!localLead) return null;
 
@@ -765,7 +786,29 @@ export default function LeadDetailModal({ lead, onClose, onStatusChange, onDelet
             {/* Footer */}
             <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-riden-border flex-shrink-0">
               <button onClick={() => { onDelete(localLead); onClose(); }} className="text-sm text-red-400 hover:text-red-300 transition-colors">Delete lead</button>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {linkedSite && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-violet-400 border-violet-500/30 hover:border-violet-500/60 hover:bg-violet-500/10"
+                    onClick={() => {
+                      const email = buildWebsitePreviewEmail({
+                        businessName: linkedSite.businessName,
+                        contactEmail: linkedSite.outreachEmail || localLead.email || "",
+                        previewUrl: linkedSite.previewUrl,
+                      });
+                      openEmailCompose(email);
+                      fetch(`/api/generated-sites/${linkedSite.id}/outreach`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "Preview Email Prepared" }),
+                      }).catch(() => {});
+                    }}
+                  >
+                    <Sparkles size={13} /> Email Website Preview
+                  </Button>
+                )}
                 {!showCreateProject && (
                   <Button variant="outline" size="sm" onClick={() => setShowCreateProject(true)} className="gap-1.5 text-blue-400 border-blue-500/30 hover:border-blue-500/60">
                     <FolderPlus size={13} /> Create Project

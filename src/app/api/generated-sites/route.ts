@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
       "cloudflareZoneId",
       "deploymentError",
       "lastPublishedAt",
+      "outreachEmail",
+      "lastOutreachAt",
+      "outreachStatus",
       "createdAt",
       "updatedAt"
     FROM "GeneratedSite"
