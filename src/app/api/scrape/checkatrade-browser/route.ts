@@ -144,8 +144,7 @@ export async function POST(req: NextRequest) {
           pageFunction:         PAGE_FUNCTION,
           proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"], apifyProxyCountry: "GB" },
           maxRequestsPerCrawl:  1,
-          navigationTimeoutSecs: 120,
-          pageLoadTimeoutSecs:  120,
+          maxRequestRetries:    8,
           stealth:              true,
         }),
       }
