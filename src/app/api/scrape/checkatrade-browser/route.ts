@@ -21,52 +21,41 @@ async function pageFunction(context) {
   try { await page.waitForLoadState('networkidle', { timeout: 30000 }); } catch(e) {}
   await sleep(2000);
 
-  // Try to click a "See all photos" / "View photos" button to open the full gallery
-  try {
-    const btn = await page.$('button:has-text("photo"), a:has-text("photo"), button:has-text("Photo"), a:has-text("Photo")');
-    if (btn) { await btn.click(); await sleep(2000); }
-  } catch(e) {}
+  const SKIP = ['favicon','star','badge','tick','1x1','seal','arrow',
+                'sprite','placeholder','ct-logo','trustmark','.svg','data:image'];
 
-  // Scroll the full page height twice — second pass catches images loaded by first scroll
-  try {
-    for (let pass = 0; pass < 2; pass++) {
-      const h = await page.evaluate(() => document.body.scrollHeight);
-      for (let y = 0; y <= h; y += 300) {
-        await page.evaluate(yy => window.scrollTo(0, yy), y);
-        await sleep(80);
-      }
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await sleep(1200);
-    }
-  } catch(e) {}
-
-  const SKIP = ['icon','logo','favicon','star','badge','tick','avatar',
-                '1x1','seal','arrow','sprite','placeholder','ct-logo','trustmark'];
-
-  // Collect from src, srcset, and data-src so lazy images aren't missed.
-  // Filter by URL pattern rather than naturalWidth (unloaded images have width=0).
-  const photos = await page.evaluate((skip) => {
-    const CDN = ['_next/image','checkatrade','ctmedia','cloudinary','storage.googleapis','imagedelivery'];
-    const found = new Set();
+  // Collect all currently-visible content images from the DOM
+  const collectVisible = () => page.evaluate((skip) => {
+    const found = [];
     document.querySelectorAll('img').forEach(img => {
-      // resolved src
-      if (img.src.startsWith('http')) found.add(img.src);
-      // srcset — pick the highest-width entry
-      if (img.srcset) {
-        img.srcset.split(',').forEach(part => {
-          const u = part.trim().split(/\s+/)[0];
-          if (u.startsWith('http')) found.add(u);
-        });
-      }
-      // data-src for lazy loaders
+      const srcs = [img.src];
+      if (img.srcset) img.srcset.split(',').forEach(p => { const u = p.trim().split(/\s+/)[0]; if (u) srcs.push(u); });
       const ds = img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
-      if (ds.startsWith('http')) found.add(ds);
+      if (ds) srcs.push(ds);
+      srcs.forEach(src => {
+        if (src && src.startsWith('http') && !skip.some(s => src.toLowerCase().includes(s))) found.push(src);
+      });
     });
-    return [...found]
-      .filter(src => CDN.some(c => src.includes(c)))
-      .filter(src => !skip.some(s => src.toLowerCase().includes(s)))
-      .slice(0, 100);
-  }, SKIP);
+    return found;
+  }, skip);
+
+  // Checkatrade uses virtual scrolling — photos outside the viewport are unmounted.
+  // Collect at EVERY scroll step so we capture each batch before it disappears.
+  const allPhotos = new Set();
+  (await collectVisible()).forEach(u => allPhotos.add(u));
+
+  try {
+    const pageH = await page.evaluate(() => document.body.scrollHeight);
+    for (let y = 250; y <= pageH + 250; y += 250) {
+      await page.evaluate(yy => window.scrollTo(0, yy), y);
+      await sleep(250);
+      (await collectVisible()).forEach(u => allPhotos.add(u));
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await sleep(1000);
+  } catch(e) {}
+
+  const photos = [...allPhotos].slice(0, 150);
 
   // Skills — try common class/data-testid patterns
   const skills = await page.evaluate(() => {
