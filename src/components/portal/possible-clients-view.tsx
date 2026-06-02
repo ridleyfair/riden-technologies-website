@@ -153,16 +153,32 @@ function CheckatradeCell({
 
   // Checked — not found
   if (!enrichment.has_checkatrade && enrichment.match_confidence !== "possible") {
-    return <span className="text-slate-600 text-xs">Not found</span>;
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-slate-600 text-xs">Not found</span>
+        <button
+          onClick={onCheck}
+          className="p-0.5 rounded text-slate-600 hover:text-slate-400 transition-colors"
+          title="Re-check"
+        >
+          <RefreshCw size={11} />
+        </button>
+      </div>
+    );
   }
 
   // Possible match — needs review
   if (enrichment.match_confidence === "possible" && enrichment.checkatrade_url) {
     return (
       <div className="space-y-0.5">
-        <div className="flex items-center gap-1 text-yellow-500 text-xs">
-          <HelpCircle size={11} />
-          Possible match
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 text-yellow-500 text-xs">
+            <HelpCircle size={11} />
+            Possible match
+          </div>
+          <button onClick={onCheck} className="p-0.5 rounded text-slate-600 hover:text-slate-400 transition-colors" title="Re-check">
+            <RefreshCw size={11} />
+          </button>
         </div>
         <a
           href={enrichment.checkatrade_url}
@@ -197,6 +213,9 @@ function CheckatradeCell({
         {conf === "low" && (
           <span className="text-xs text-orange-600">?low</span>
         )}
+        <button onClick={onCheck} className="p-0.5 rounded text-slate-600 hover:text-slate-400 transition-colors" title="Re-check">
+          <RefreshCw size={11} />
+        </button>
       </div>
       {(enrichment.checkatrade_rating != null || enrichment.checkatrade_review_count > 0) && (
         <div className="flex items-center gap-1 text-amber-400 text-xs">
@@ -556,9 +575,12 @@ export default function PossibleClientsView() {
   );
 
   const handleCheckAll = useCallback(async () => {
-    const unchecked = businesses.filter((b) => !enrichments[b.id] && !checkingIds.has(b.id));
+    // Include "not found" results so they get a second chance with the improved search
+    const unchecked = businesses.filter(
+      (b) => !checkingIds.has(b.id) && (!enrichments[b.id] || !enrichments[b.id].has_checkatrade)
+    );
     if (unchecked.length === 0) {
-      showToast("All businesses on this page already checked", "success");
+      showToast("All businesses on this page already have Checkatrade profiles", "success");
       return;
     }
     setCheckingAll(true);
@@ -597,7 +619,9 @@ export default function PossibleClientsView() {
   const hotLeadCount  = visibleBusinesses.filter(
     (b) => !b.website && enrichments[b.id]?.has_checkatrade
   ).length;
-  const uncheckedCount = businesses.filter((b) => !enrichments[b.id]).length;
+  const uncheckedCount = businesses.filter(
+    (b) => !enrichments[b.id] || !enrichments[b.id].has_checkatrade
+  ).length;
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
