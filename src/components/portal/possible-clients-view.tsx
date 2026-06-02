@@ -5,14 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Plus, X, RefreshCw, CheckCircle, AlertTriangle,
   ExternalLink, Phone, Globe, MapPin, Star, Flame, Loader2,
-  WifiOff,
+  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type LeadScore = {
-  total_score: number;
-  lead_tier: string;
-};
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+type LeadScore = { total_score: number; lead_tier: string };
 
 type Business = {
   id: string;
@@ -32,6 +31,20 @@ type Business = {
   lead_score: LeadScore | null;
 };
 
+type CheckatradeEnrichment = {
+  business_id: string;
+  has_checkatrade: boolean;
+  checkatrade_url: string | null;
+  checkatrade_rating: number | null;
+  checkatrade_review_count: number;
+  checkatrade_category: string | null;
+  checkatrade_location: string | null;
+  checkatrade_phone: string | null;
+  match_confidence: string;
+  opportunity_score: number;
+  checked_at: string;
+};
+
 type ScrapeJob = {
   id: string;
   status: string;
@@ -43,15 +56,40 @@ type ScrapeJob = {
 
 type Toast = { msg: string; type: "success" | "error" };
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
 function getSource(b: Business): "google_maps" | "checkatrade" {
   if (b.place_id) return "google_maps";
   if (b.maps_url?.includes("checkatrade.com")) return "checkatrade";
-  return b.place_id ? "google_maps" : "checkatrade";
+  return "google_maps";
 }
 
+function opportunityTier(score: number): { label: string; bg: string; text: string } {
+  if (score >= 70) return { label: "Hot Lead",  bg: "bg-rose-500/10 border-rose-500/20",   text: "text-rose-400" };
+  if (score >= 50) return { label: "Warm Lead", bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400" };
+  if (score >= 30) return { label: "Good Lead", bg: "bg-blue-500/10 border-blue-500/20",   text: "text-blue-400" };
+  return            { label: "Cold",      bg: "bg-slate-500/10 border-slate-500/20",  text: "text-slate-500" };
+}
+
+function buildOutreachMessage(business: Business, enrichment: CheckatradeEnrichment): string {
+  const reviews = enrichment.checkatrade_review_count > 0
+    ? `${enrichment.checkatrade_review_count} reviews` + (enrichment.checkatrade_rating ? ` and a ${enrichment.checkatrade_rating}/10 rating` : "")
+    : "great reviews";
+  return `Hi there,
+
+I came across ${business.name} on Checkatrade — with ${reviews}, it's clear you do fantastic work!
+
+I noticed you don't currently have a website, which means potential customers might struggle to find your contact details online. We build professional websites for tradespeople that help you get found on Google and turn visitors into real enquiries.
+
+Would you be open to a quick 10-minute chat about how we could help grow your business online?
+
+Best regards`;
+}
+
+// ── Small components ───────────────────────────────────────────────────────────
+
 function SourceBadge({ business }: { business: Business }) {
-  const source = getSource(business);
-  if (source === "checkatrade") {
+  if (getSource(business) === "checkatrade") {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500/10 border border-orange-500/20 text-orange-400">
         Checkatrade
@@ -82,6 +120,101 @@ function TierBadge({ tier, score }: { tier: string; score: number }) {
   );
 }
 
+function CheckatradeCell({
+  business,
+  enrichment,
+  isChecking,
+  onCheck,
+}: {
+  business: Business;
+  enrichment: CheckatradeEnrichment | undefined;
+  isChecking: boolean;
+  onCheck: () => void;
+}) {
+  if (isChecking) {
+    return (
+      <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+        <Loader2 size={12} className="animate-spin" />
+        Checking…
+      </div>
+    );
+  }
+
+  if (!enrichment) {
+    return (
+      <button
+        onClick={onCheck}
+        className="px-2 py-1 rounded-md text-xs font-medium border border-riden-border bg-riden-muted text-slate-400 hover:text-white hover:border-orange-500/40 hover:bg-orange-500/10 transition-colors"
+      >
+        Check
+      </button>
+    );
+  }
+
+  // Checked — not found
+  if (!enrichment.has_checkatrade && enrichment.match_confidence !== "possible") {
+    return <span className="text-slate-600 text-xs">Not found</span>;
+  }
+
+  // Possible match — needs review
+  if (enrichment.match_confidence === "possible" && enrichment.checkatrade_url) {
+    return (
+      <div className="space-y-0.5">
+        <div className="flex items-center gap-1 text-yellow-500 text-xs">
+          <HelpCircle size={11} />
+          Possible match
+        </div>
+        <a
+          href={enrichment.checkatrade_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-0.5"
+        >
+          Review <ExternalLink size={9} />
+        </a>
+      </div>
+    );
+  }
+
+  // Confirmed Checkatrade profile
+  const conf = enrichment.match_confidence;
+  return (
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-1.5">
+        <a
+          href={enrichment.checkatrade_url ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-orange-400 hover:text-orange-300 text-xs font-medium transition-colors"
+        >
+          <BadgeCheck size={12} />
+          Checkatrade
+          <ExternalLink size={9} />
+        </a>
+        {conf === "medium" && (
+          <span className="text-xs text-yellow-600">~match</span>
+        )}
+        {conf === "low" && (
+          <span className="text-xs text-orange-600">?low</span>
+        )}
+      </div>
+      {(enrichment.checkatrade_rating != null || enrichment.checkatrade_review_count > 0) && (
+        <div className="flex items-center gap-1 text-amber-400 text-xs">
+          <Star size={10} fill="currentColor" />
+          {enrichment.checkatrade_rating != null
+            ? `${enrichment.checkatrade_rating}/10`
+            : "—"}
+          {enrichment.checkatrade_review_count > 0 && (
+            <span className="text-slate-500">· {enrichment.checkatrade_review_count} reviews</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Scrape modal ───────────────────────────────────────────────────────────────
+
 function ScrapeModal({
   onClose,
   onStart,
@@ -96,10 +229,10 @@ function ScrapeModal({
   const [maxResults, setMaxResults] = useState(100);
   const [source, setSource] = useState("google_maps");
 
-  const keywordPlaceholder = source === "checkatrade"
-    ? "e.g. Plumber, Electrician, Roofer"
-    : "e.g. plumbers, electricians, roofers";
-
+  const keywordPlaceholder =
+    source === "checkatrade"
+      ? "e.g. Plumber, Electrician, Roofer"
+      : "e.g. plumbers, electricians, roofers";
   const keywordLabel = source === "checkatrade" ? "Trade type" : "Keyword";
 
   return (
@@ -127,13 +260,15 @@ function ScrapeModal({
             <h3 className="text-base font-semibold text-white">New Scrape</h3>
             <p className="text-xs text-slate-500">Find potential clients with no website</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors"
+          >
             <X size={14} />
           </button>
         </div>
 
         <div className="space-y-4">
-          {/* Source selector */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Source</label>
             <div className="grid grid-cols-2 gap-2">
@@ -210,13 +345,15 @@ function ScrapeModal({
             className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-            {loading ? "Starting..." : "Start Scrape"}
+            {loading ? "Starting…" : "Start Scrape"}
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+
+// ── Main view ──────────────────────────────────────────────────────────────────
 
 export default function PossibleClientsView() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -226,19 +363,30 @@ export default function PossibleClientsView() {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 25;
 
+  // Filters
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("");
   const [tier, setTier] = useState("");
   const [noWebsiteOnly, setNoWebsiteOnly] = useState(false);
   const [sourceFilter, setSourceFilter] = useState("");
+  const [hasCheckatradeFilter, setHasCheckatradeFilter] = useState(false);
+  const [hotLeadsOnly, setHotLeadsOnly] = useState(false);
 
+  // Scrape
   const [scrapeModal, setScrapeModal] = useState(false);
   const [scrapeLoading, setScrapeLoading] = useState(false);
   const [activeJob, setActiveJob] = useState<ScrapeJob | null>(null);
 
+  // Import
   const [importedIds, setImportedIds] = useState<Set<string>>(new Set());
   const [importingId, setImportingId] = useState<string | null>(null);
 
+  // Checkatrade enrichment
+  const [enrichments, setEnrichments] = useState<Record<string, CheckatradeEnrichment>>({});
+  const [checkingIds, setCheckingIds] = useState<Set<string>>(new Set());
+  const [checkingAll, setCheckingAll] = useState(false);
+
+  // Toast
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -248,35 +396,50 @@ export default function PossibleClientsView() {
     toastTimer.current = setTimeout(() => setToast(null), 3500);
   }, []);
 
-  const fetchBusinesses = useCallback(async (p = page) => {
-    setLoading(true);
-    setOffline(false);
-    try {
-      const params = new URLSearchParams({ page: String(p), page_size: String(PAGE_SIZE) });
-      if (city) params.set("city", city);
-      if (category) params.set("category", category);
-      if (tier) params.set("lead_tier", tier);
-      if (noWebsiteOnly) params.set("has_website", "false");
+  // ── Data fetching ────────────────────────────────────────────────────────────
 
-      const res = await fetch(`/api/possible-clients?${params}`);
-      if (res.status === 503) { setOffline(true); setBusinesses([]); return; }
-      if (!res.ok) return;
-      const data = await res.json();
-      setBusinesses(data.items ?? []);
-      setTotal(data.total ?? 0);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, city, category, tier, noWebsiteOnly]);
+  const fetchBusinesses = useCallback(
+    async (p = page) => {
+      setLoading(true);
+      setOffline(false);
+      try {
+        const params = new URLSearchParams({ page: String(p), page_size: String(PAGE_SIZE) });
+        if (city) params.set("city", city);
+        if (category) params.set("category", category);
+        if (tier) params.set("lead_tier", tier);
+        if (noWebsiteOnly) params.set("has_website", "false");
 
-  useEffect(() => {
-    fetchBusinesses(page);
-  }, [page, city, category, tier, noWebsiteOnly]);
+        const res = await fetch(`/api/possible-clients?${params}`);
+        if (res.status === 503) { setOffline(true); setBusinesses([]); return; }
+        if (!res.ok) return;
+        const data = await res.json();
+        const items: Business[] = data.items ?? [];
+        setBusinesses(items);
+        setTotal(data.total ?? 0);
+
+        // Load stored enrichments for this page
+        if (items.length > 0) {
+          const ids = items.map((b) => b.id).join(",");
+          const eRes = await fetch(`/api/possible-clients/enrichments?ids=${ids}`);
+          if (eRes.ok) {
+            const rows: CheckatradeEnrichment[] = await eRes.json();
+            const map: Record<string, CheckatradeEnrichment> = {};
+            for (const row of rows) map[row.business_id] = row;
+            setEnrichments(map);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page, city, category, tier, noWebsiteOnly]
+  );
+
+  useEffect(() => { fetchBusinesses(page); }, [page, city, category, tier, noWebsiteOnly]);
 
   // Poll active scrape job
   useEffect(() => {
     if (!activeJob || activeJob.status === "completed" || activeJob.status === "failed") return;
-
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/possible-clients/scrape/${activeJob.id}`);
@@ -292,15 +455,19 @@ export default function PossibleClientsView() {
             showToast("Scrape failed. Check the scraper logs.", "error");
           }
         }
-      } catch {
-        // ignore polling errors
-      }
+      } catch { /* ignore */ }
     }, 4000);
-
     return () => clearInterval(interval);
   }, [activeJob?.id, activeJob?.status]);
 
-  const handleStartScrape = async (scrapeCity: string, keyword: string, maxResults: number, source: string) => {
+  // ── Scrape handlers ──────────────────────────────────────────────────────────
+
+  const handleStartScrape = async (
+    scrapeCity: string,
+    keyword: string,
+    maxResults: number,
+    source: string
+  ) => {
     setScrapeLoading(true);
     setScrapeModal(false);
 
@@ -344,6 +511,8 @@ export default function PossibleClientsView() {
     }
   };
 
+  // ── Import handler ───────────────────────────────────────────────────────────
+
   const handleImport = async (business: Business) => {
     setImportingId(business.id);
     try {
@@ -358,13 +527,79 @@ export default function PossibleClientsView() {
     }
   };
 
-  const visibleBusinesses = sourceFilter
-    ? businesses.filter((b) => getSource(b) === sourceFilter)
-    : businesses;
+  // ── Checkatrade lookup handlers ──────────────────────────────────────────────
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const hotCount = businesses.filter((b) => b.lead_score?.lead_tier === "hot").length;
-  const warmCount = businesses.filter((b) => b.lead_score?.lead_tier === "warm").length;
+  const handleCheckCheckatrade = useCallback(
+    async (business: Business) => {
+      setCheckingIds((prev) => new Set(prev).add(business.id));
+      try {
+        const res = await fetch(`/api/possible-clients/${business.id}/checkatrade-lookup`, {
+          method: "POST",
+        });
+        if (!res.ok) {
+          showToast(`Checkatrade lookup failed for ${business.name}`, "error");
+          return;
+        }
+        const enrichment: CheckatradeEnrichment = await res.json();
+        setEnrichments((prev) => ({ ...prev, [business.id]: enrichment }));
+      } catch {
+        showToast("Checkatrade lookup failed.", "error");
+      } finally {
+        setCheckingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(business.id);
+          return next;
+        });
+      }
+    },
+    [showToast]
+  );
+
+  const handleCheckAll = useCallback(async () => {
+    const unchecked = businesses.filter((b) => !enrichments[b.id] && !checkingIds.has(b.id));
+    if (unchecked.length === 0) {
+      showToast("All businesses on this page already checked", "success");
+      return;
+    }
+    setCheckingAll(true);
+    const CONCURRENCY = 3;
+    for (let i = 0; i < unchecked.length; i += CONCURRENCY) {
+      const batch = unchecked.slice(i, i + CONCURRENCY);
+      await Promise.all(batch.map((b) => handleCheckCheckatrade(b)));
+      if (i + CONCURRENCY < unchecked.length) {
+        await new Promise((r) => setTimeout(r, 800));
+      }
+    }
+    setCheckingAll(false);
+    showToast(`Checked ${unchecked.length} businesses for Checkatrade`, "success");
+  }, [businesses, enrichments, checkingIds, handleCheckCheckatrade, showToast]);
+
+  const handleCopyOutreach = useCallback(
+    (business: Business, enrichment: CheckatradeEnrichment) => {
+      const msg = buildOutreachMessage(business, enrichment);
+      navigator.clipboard
+        .writeText(msg)
+        .then(() => showToast("Outreach message copied!", "success"))
+        .catch(() => showToast("Could not copy to clipboard", "error"));
+    },
+    [showToast]
+  );
+
+  // ── Derived data ─────────────────────────────────────────────────────────────
+
+  let visibleBusinesses = businesses;
+  if (sourceFilter)           visibleBusinesses = visibleBusinesses.filter((b) => getSource(b) === sourceFilter);
+  if (hasCheckatradeFilter)   visibleBusinesses = visibleBusinesses.filter((b) => enrichments[b.id]?.has_checkatrade);
+  if (hotLeadsOnly)           visibleBusinesses = visibleBusinesses.filter((b) => !b.website && enrichments[b.id]?.has_checkatrade);
+
+  const totalPages    = Math.ceil(total / PAGE_SIZE);
+  const checkatradeCount = Object.values(enrichments).filter((e) => e.has_checkatrade).length;
+  const hotLeadCount  = visibleBusinesses.filter(
+    (b) => !b.website && enrichments[b.id]?.has_checkatrade
+  ).length;
+  const uncheckedCount = businesses.filter((b) => !enrichments[b.id]).length;
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col h-full">
@@ -373,16 +608,32 @@ export default function PossibleClientsView() {
         <div>
           <h1 className="text-xl font-semibold text-white">Possible Clients</h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Businesses scraped from Google Maps — no or weak website
+            Businesses scraped from Google Maps — find Checkatrade profiles without websites
           </p>
         </div>
-        <button
-          onClick={() => setScrapeModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
-        >
-          <Plus size={15} />
-          Run Scrape
-        </button>
+        <div className="flex items-center gap-2">
+          {uncheckedCount > 0 && (
+            <button
+              onClick={handleCheckAll}
+              disabled={checkingAll || checkingIds.size > 0}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600/80 hover:bg-orange-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {checkingAll ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <BadgeCheck size={15} />
+              )}
+              {checkingAll ? "Checking…" : `Check Checkatrade (${uncheckedCount})`}
+            </button>
+          )}
+          <button
+            onClick={() => setScrapeModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+          >
+            <Plus size={15} />
+            Run Scrape
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -422,14 +673,32 @@ export default function PossibleClientsView() {
           )}
         </AnimatePresence>
 
+        {/* Hot leads callout */}
+        {hotLeadCount > 0 && !hotLeadsOnly && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 cursor-pointer"
+            onClick={() => setHotLeadsOnly(true)}
+          >
+            <Flame size={16} className="text-rose-400 flex-shrink-0" />
+            <div className="flex-1">
+              <span className="text-rose-400 font-semibold text-sm">{hotLeadCount} Hot Lead{hotLeadCount !== 1 ? "s" : ""}</span>
+              <span className="text-slate-400 text-sm"> — no website, on Checkatrade, ready to pitch</span>
+            </div>
+            <span className="text-xs text-rose-400 font-medium">View only →</span>
+          </motion.div>
+        )}
+
         {/* Stats row */}
         {!offline && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {[
-              { label: "Total scraped", value: total, color: "text-white" },
-              { label: "Hot leads", value: businesses.filter(b => b.lead_score?.lead_tier === "hot").length, color: "text-rose-400" },
-              { label: "Warm leads", value: businesses.filter(b => b.lead_score?.lead_tier === "warm").length, color: "text-amber-400" },
-              { label: "No website", value: businesses.filter(b => !b.website).length, color: "text-violet-400" },
+              { label: "Total scraped",    value: total,                   color: "text-white" },
+              { label: "Hot leads",        value: businesses.filter((b) => b.lead_score?.lead_tier === "hot").length, color: "text-rose-400" },
+              { label: "Warm leads",       value: businesses.filter((b) => b.lead_score?.lead_tier === "warm").length, color: "text-amber-400" },
+              { label: "No website",       value: businesses.filter((b) => !b.website).length, color: "text-violet-400" },
+              { label: "On Checkatrade",   value: checkatradeCount,         color: "text-orange-400" },
             ].map((stat) => (
               <div key={stat.label} className="glass-card rounded-xl border border-riden-border p-4">
                 <div className={cn("text-2xl font-bold", stat.color)}>{stat.value}</div>
@@ -481,6 +750,8 @@ export default function PossibleClientsView() {
             <option value="google_maps">Google Maps</option>
             <option value="checkatrade">Checkatrade</option>
           </select>
+
+          {/* Toggle filters */}
           <button
             onClick={() => { setNoWebsiteOnly((v) => !v); setPage(1); }}
             className={cn(
@@ -490,7 +761,35 @@ export default function PossibleClientsView() {
                 : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
             )}
           >
-            No website only
+            No website
+          </button>
+          <button
+            onClick={() => { setHasCheckatradeFilter((v) => !v); setHotLeadsOnly(false); }}
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+              hasCheckatradeFilter
+                ? "bg-orange-500/10 border-orange-500/30 text-orange-400"
+                : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+            )}
+          >
+            <span className="flex items-center gap-1.5">
+              <BadgeCheck size={13} />
+              Has Checkatrade
+            </span>
+          </button>
+          <button
+            onClick={() => { setHotLeadsOnly((v) => !v); setHasCheckatradeFilter(false); }}
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+              hotLeadsOnly
+                ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+            )}
+          >
+            <span className="flex items-center gap-1.5">
+              <Flame size={13} />
+              Hot Leads
+            </span>
           </button>
           <button
             onClick={() => fetchBusinesses(page)}
@@ -507,14 +806,20 @@ export default function PossibleClientsView() {
             <div className="flex items-center justify-center py-16">
               <Loader2 size={24} className="animate-spin text-slate-600" />
             </div>
-          ) : businesses.length === 0 ? (
+          ) : visibleBusinesses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-12 h-12 rounded-xl bg-riden-muted border border-riden-border flex items-center justify-center mb-3">
                 <Flame size={20} className="text-slate-600" />
               </div>
-              <p className="text-sm text-slate-400 font-medium">No businesses yet</p>
+              <p className="text-sm text-slate-400 font-medium">
+                {hasCheckatradeFilter || hotLeadsOnly ? "No matches for this filter" : "No businesses yet"}
+              </p>
               <p className="text-xs text-slate-600 mt-1">
-                {offline ? "Start the scraper to begin" : "Run a scrape to find potential clients"}
+                {offline
+                  ? "Start the scraper to begin"
+                  : hasCheckatradeFilter || hotLeadsOnly
+                  ? "Run 'Check Checkatrade' to populate results"
+                  : "Run a scrape to find potential clients"}
               </p>
             </div>
           ) : (
@@ -522,36 +827,68 @@ export default function PossibleClientsView() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-riden-border">
-                    {["Business", "Source", "City", "Category", "Rating", "Phone", "Website", "Tier", ""].map((h) => (
-                      <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        {h}
-                      </th>
-                    ))}
+                    {["Business", "Source", "City", "Category", "Rating", "Phone", "Website", "Checkatrade", "Tier", ""].map(
+                      (h) => (
+                        <th
+                          key={h}
+                          className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
+                      )
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {visibleBusinesses.map((b, i) => {
+                    const enrichment = enrichments[b.id];
                     const isImported = importedIds.has(b.id);
                     const isImporting = importingId === b.id;
+                    const isChecking = checkingIds.has(b.id);
+                    const opTier = enrichment
+                      ? opportunityTier(enrichment.opportunity_score)
+                      : null;
+                    const isHotLead = !!enrichment?.has_checkatrade && !b.website;
+
                     return (
                       <motion.tr
                         key={b.id}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.02 }}
-                        className="border-b border-riden-border/50 hover:bg-riden-muted/30 transition-colors"
+                        className={cn(
+                          "border-b border-riden-border/50 hover:bg-riden-muted/30 transition-colors",
+                          isHotLead && "bg-rose-500/5"
+                        )}
                       >
+                        {/* Business name + hot lead indicator */}
                         <td className="px-4 py-3">
-                          <div className="font-medium text-white max-w-[180px] truncate">{b.name}</div>
+                          <div className="flex items-center gap-2">
+                            {isHotLead && <Flame size={12} className="text-rose-400 flex-shrink-0" />}
+                            <span className="font-medium text-white max-w-[180px] truncate">{b.name}</span>
+                          </div>
+                          {enrichment && opTier && (
+                            <div className={cn("text-xs mt-0.5 font-medium", opTier.text)}>
+                              {isHotLead ? "🔥 " : ""}{opTier.label}
+                            </div>
+                          )}
                         </td>
+
                         <td className="px-4 py-3">
                           <SourceBadge business={b} />
                         </td>
-                        <td className="px-4 py-3 text-slate-400">{b.city ?? "—"}</td>
-                        <td className="px-4 py-3 text-slate-400">{b.category ?? "—"}</td>
+
+                        <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
+                          {b.city ?? "—"}
+                        </td>
+
+                        <td className="px-4 py-3 text-slate-400 max-w-[120px] truncate">
+                          {b.category ?? "—"}
+                        </td>
+
                         <td className="px-4 py-3">
                           {b.rating != null ? (
-                            <span className="flex items-center gap-1 text-amber-400">
+                            <span className="flex items-center gap-1 text-amber-400 whitespace-nowrap">
                               <Star size={12} fill="currentColor" />
                               {b.rating.toFixed(1)}
                               <span className="text-slate-500 text-xs">({b.reviews_count ?? 0})</span>
@@ -560,11 +897,12 @@ export default function PossibleClientsView() {
                             <span className="text-slate-600">—</span>
                           )}
                         </td>
+
                         <td className="px-4 py-3">
                           {b.phone ? (
                             <a
                               href={`tel:${b.phone}`}
-                              className="flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
+                              className="flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors whitespace-nowrap"
                             >
                               <Phone size={11} />
                               {b.phone}
@@ -573,6 +911,7 @@ export default function PossibleClientsView() {
                             <span className="text-slate-600">—</span>
                           )}
                         </td>
+
                         <td className="px-4 py-3">
                           {b.website ? (
                             <a
@@ -589,6 +928,17 @@ export default function PossibleClientsView() {
                             <span className="text-rose-400/70 text-xs">No website</span>
                           )}
                         </td>
+
+                        {/* Checkatrade column */}
+                        <td className="px-4 py-3 min-w-[140px]">
+                          <CheckatradeCell
+                            business={b}
+                            enrichment={enrichment}
+                            isChecking={isChecking}
+                            onCheck={() => handleCheckCheckatrade(b)}
+                          />
+                        </td>
+
                         <td className="px-4 py-3">
                           {b.lead_score ? (
                             <TierBadge tier={b.lead_score.lead_tier} score={b.lead_score.total_score} />
@@ -596,8 +946,11 @@ export default function PossibleClientsView() {
                             <span className="text-slate-600">—</span>
                           )}
                         </td>
+
+                        {/* Actions */}
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
+                            {/* Google Maps link */}
                             {b.maps_url && (
                               <a
                                 href={b.maps_url}
@@ -609,6 +962,32 @@ export default function PossibleClientsView() {
                                 <MapPin size={13} />
                               </a>
                             )}
+
+                            {/* Checkatrade link (if confirmed) */}
+                            {enrichment?.has_checkatrade && enrichment.checkatrade_url && (
+                              <a
+                                href={enrichment.checkatrade_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-orange-400 hover:bg-orange-500/10 transition-colors"
+                                title="View Checkatrade profile"
+                              >
+                                <BadgeCheck size={13} />
+                              </a>
+                            )}
+
+                            {/* Copy outreach (hot leads only) */}
+                            {isHotLead && enrichment && (
+                              <button
+                                onClick={() => handleCopyOutreach(b, enrichment)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                title="Copy outreach message"
+                              >
+                                <ClipboardCopy size={13} />
+                              </button>
+                            )}
+
+                            {/* Add to CRM */}
                             <button
                               onClick={() => !isImported && handleImport(b)}
                               disabled={isImporting || isImported}
@@ -639,11 +1018,30 @@ export default function PossibleClientsView() {
           )}
         </div>
 
+        {/* Opportunity legend */}
+        {checkatradeCount > 0 && (
+          <div className="flex items-center gap-4 text-xs text-slate-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              Hot Lead = No website + Checkatrade
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Zap size={11} className="text-amber-500" />
+              Score 50–69 = Warm
+            </span>
+            <span>
+              <HelpCircle size={11} className="inline text-yellow-600 mr-1" />
+              Possible = name didn&apos;t match closely — review manually
+            </span>
+          </div>
+        )}
+
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-xs text-slate-500">
               Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
+              {(hasCheckatradeFilter || hotLeadsOnly) && ` (filtered: ${visibleBusinesses.length})`}
             </p>
             <div className="flex gap-2">
               <button

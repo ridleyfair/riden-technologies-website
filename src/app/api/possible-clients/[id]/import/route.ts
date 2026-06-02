@@ -15,6 +15,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!scraperRes.ok) return NextResponse.json({ error: "Business not found" }, { status: 404 });
 
     const b = await scraperRes.json();
+    const sql = getDb();
+
+    // Look up any existing Checkatrade enrichment
+    let enrichment: Record<string, unknown> | null = null;
+    try {
+      const [row] = await sql`
+        SELECT * FROM "CheckatradeEnrichment" WHERE business_id = ${id} LIMIT 1
+      `;
+      enrichment = row ?? null;
+    } catch { /* table may not exist yet */ }
 
     const notes = [
       b.city ? `City: ${b.city}` : null,
@@ -23,9 +33,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       b.website ? `Existing website: ${b.website}` : "No website",
       b.maps_url ? `Google Maps: ${b.maps_url}` : null,
       b.lead_score ? `Lead tier: ${b.lead_score.lead_tier?.toUpperCase()} (score: ${b.lead_score.total_score})` : null,
+      enrichment?.has_checkatrade
+        ? `Checkatrade: ${enrichment.checkatrade_url} (${enrichment.checkatrade_review_count} reviews, ${enrichment.checkatrade_rating}/10, confidence: ${enrichment.match_confidence})`
+        : null,
+      enrichment?.has_checkatrade && !b.website
+        ? "⚡ Hot Lead: Has Checkatrade profile but no website"
+        : null,
     ].filter(Boolean).join("\n");
-
-    const sql = getDb();
     const leadId = crypto.randomUUID();
     const now = new Date();
 
