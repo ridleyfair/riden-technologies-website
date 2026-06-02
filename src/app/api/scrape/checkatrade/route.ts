@@ -198,7 +198,7 @@ function extractPhotosFromHtml(html: string): string[] {
       const qs     = m[1];
       const params = new URLSearchParams(qs);
       const rawUrl = decodeURIComponent(params.get("url") ?? "");
-      if (!rawUrl || !isPhoto(rawUrl)) continue;
+      if (!rawUrl || !rawUrl.startsWith("http")) continue;
       const w = parseInt(params.get("w") ?? "0", 10);
       const existing = nextWidths.get(rawUrl);
       if (!existing || w > existing.w) {
@@ -394,7 +394,12 @@ export async function POST(req: NextRequest) {
     const email =
       str(findFirst(profile, ["email","emailAddress","contactEmail"]))
       || str(bizLd?.email)
-      || (() => { const m = plainText.match(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i); return m ? m[0] : ""; })();
+      || (() => {
+          const m = plainText.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,6}/);
+          const e = m ? m[0] : "";
+          // Reject filenames like checkatrade-logo@2x.png
+          return e && !/\.(png|jpg|jpeg|gif|webp|svg|ico|avif)$/i.test(e) ? e : "";
+        })();
 
     // ── Address ───────────────────────────────────────────────────────────────
     const addrObj = (profile?.address ?? profile?.location ?? bizLd?.address) as Record<string, unknown> | undefined;
@@ -612,6 +617,8 @@ export async function POST(req: NextRequest) {
                           ? ((((pageProps as Record<string,unknown>).dehydratedState as Record<string,unknown>).queries) as unknown[]).length
                           : 0,
         hasJsonLd:      jsonLds.length > 0,
+        ogImage:        metaContent(html, "og:image").slice(0, 120) || "(none)",
+        photoCount:     photos.length,
       },
     });
   } catch (err) {
