@@ -39,16 +39,36 @@ async function pageFunction(context) {
     return found;
   }, SKIP);
 
-  // Checkatrade uses virtual scrolling — photos outside the viewport are unmounted.
-  // Collect at EVERY scroll step so we capture each batch before it disappears.
   const allPhotos = new Set();
   (await collectVisible()).forEach(u => allPhotos.add(u));
 
+  // Try to find and click the Photos tab/button to open the full gallery
+  try {
+    const photoLinks = await page.$$('a[href*="photo"], button');
+    for (const el of photoLinks) {
+      const txt = (await el.textContent() || '').toLowerCase();
+      if (txt.includes('photo') || txt.includes('image') || txt.includes('gallery')) {
+        await el.click();
+        await sleep(2000);
+        break;
+      }
+    }
+  } catch(e) {}
+
+  // Also try navigating to the /photos sub-page directly
+  try {
+    const currentUrl = page.url();
+    const photosUrl = currentUrl.replace(/\/$/, '') + '/photos';
+    await page.goto(photosUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await sleep(2000);
+  } catch(e) {}
+
+  // Scroll and collect at every step — handles virtual scrolling (unmounts off-screen rows)
   try {
     const pageH = await page.evaluate(() => document.body.scrollHeight);
     for (let y = 250; y <= pageH + 250; y += 250) {
       await page.evaluate(yy => window.scrollTo(0, yy), y);
-      await sleep(250);
+      await sleep(300);
       (await collectVisible()).forEach(u => allPhotos.add(u));
     }
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -114,7 +134,7 @@ export async function POST(req: NextRequest) {
           pageFunction:         PAGE_FUNCTION,
           proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
           maxRequestsPerCrawl:  1,
-          navigationTimeoutSecs: 60,
+          navigationTimeoutSecs: 120,
         }),
       }
     );
