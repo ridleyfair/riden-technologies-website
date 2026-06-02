@@ -29,7 +29,6 @@ function nameSim(a: string, b: string): number {
   if (!na || !nb) return 0;
   if (na === nb) return 1.0;
   if (na.includes(nb) || nb.includes(na)) return 0.85;
-  // Bigram Jaccard
   const bigrams = (s: string) => {
     const set = new Set<string>();
     for (let i = 0; i < s.length - 1; i++) set.add(s.slice(i, i + 2));
@@ -42,9 +41,112 @@ function nameSim(a: string, b: string): number {
   return union === 0 ? 0 : inter / union;
 }
 
-// ── Search strategies ──────────────────────────────────────────────────────────
+// ── Strategy 1: Slug guessing ─────────────────────────────────────────────────
+// Checkatrade URLs follow the pattern: /trades/{CompanyNameNoSpaces}
+// We generate several plausible variations and probe with HEAD requests.
 
-// Strategy 1: DuckDuckGo HTML (free, no API key needed)
+function toCheckatradeSlug(name: string): string {
+  // "Dave's Plumbing & Heating Ltd" → "DavesPlumbingHeatingLtd"
+  return name
+    .replace(/&/g, "And")
+    .replace(/'/g, "")
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("");
+}
+
+function slugVariants(name: string): string[] {
+  const base = toCheckatradeSlug(name);
+  // Strip common suffixes
+  const noSuffix = base
+    .replace(/Limited$/, "")
+    .replace(/Ltd$/, "")
+    .replace(/Plc$/, "")
+    .replace(/Inc$/, "")
+    .replace(/Co$/, "");
+
+  const variants = [
+    base,           // DavesPlumbingAndHeatingLtd
+    noSuffix,       // DavesPlumbingAndHeating
+  ];
+
+  // Also try lowercase hyphenated (some older profiles)
+  const hyphen = name
+    .replace(/&/g, "and")
+    .replace(/'/g, "")
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .join("-");
+  variants.push(hyphen);
+
+  // Remove duplicates and empty strings
+  return [...new Set(variants.filter(Boolean))];
+}
+
+async function searchBySlugs(name: string): Promise<string | null> {
+  const variants = slugVariants(name);
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    Accept: "text/html",
+  };
+
+  for (const slug of variants) {
+    const url = `https://www.checkatrade.com/trades/${slug}`;
+    try {
+      const resp = await fetch(url, {
+        method: "HEAD",
+        headers,
+        redirect: "follow",
+        signal: AbortSignal.timeout(6000),
+      });
+      // 200 = real profile; 301/302 to the same path = also valid
+      if (resp.ok || (resp.status === 301 && resp.headers.get("location")?.includes("/trades/"))) {
+        // Return the final URL after any redirect
+        return resp.url.split("?")[0] || url;
+      }
+    } catch { /* try next */ }
+  }
+  return null;
+}
+
+// ── Strategy 2: Bing HTML search ──────────────────────────────────────────────
+// Bing is significantly less aggressive about blocking server-side requests
+// compared to Google or DuckDuckGo, and works from Cloudflare edge.
+
+async function searchBing(name: string, city: string): Promise<string | null> {
+  const q = encodeURIComponent(`site:checkatrade.com/trades "${name}" ${city}`);
+  try {
+    const resp = await fetch(`https://www.bing.com/search?q=${q}&count=5&setlang=en-GB`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) return null;
+    const html = await resp.text();
+    // Bing puts URLs in <cite> tags and <a href="..."> — check both
+    const m =
+      html.match(/https?:\/\/(?:www\.)?checkatrade\.com\/trades\/([A-Za-z0-9_%-]+)/i) ??
+      html.match(/checkatrade\.com%2Ftrades%2F([A-Za-z0-9_%-]+)/i);
+    if (m) {
+      const raw = m[0].startsWith("http") ? m[0] : decodeURIComponent(m[0]);
+      return raw.split("?")[0].replace(/&amp;.*/,"");
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+// ── Strategy 3: DuckDuckGo HTML ───────────────────────────────────────────────
+
 async function searchDDG(name: string, city: string): Promise<string | null> {
   const q = encodeURIComponent(`site:checkatrade.com/trades "${name}" ${city}`);
   try {
@@ -59,14 +161,16 @@ async function searchDDG(name: string, city: string): Promise<string | null> {
     if (!resp.ok) return null;
     const html = await resp.text();
     const m = html.match(
-      /https?:\/\/(?:www\.)?checkatrade\.com\/trades\/([A-Za-z0-9_%-]+)/
+      /https?:\/\/(?:www\.)?checkatrade\.com\/trades\/([A-Za-z0-9_%-]+)/i
     );
     if (m) return m[0].split("?")[0];
   } catch { /* ignore */ }
   return null;
 }
 
-// Strategy 2: Apify Google Search (reliable, costs Apify credits)
+// ── Strategy 4: Apify Google Search ──────────────────────────────────────────
+// Requires APIFY_API_TOKEN set as a Cloudflare Workers env binding.
+
 async function searchApify(
   name: string,
   city: string,
@@ -222,8 +326,8 @@ function calcOpportunityScore(p: {
   confidence: Confidence;
 }): number {
   let s = 0;
-  if (!p.hasWebsite)      s += 40;
-  if (p.hasCheckatrade)   s += 30;
+  if (!p.hasWebsite)           s += 40;
+  if (p.hasCheckatrade)        s += 30;
   if      (p.reviewCount > 50) s += 20;
   else if (p.reviewCount > 20) s += 15;
   else if (p.reviewCount >  5) s +=  8;
@@ -269,25 +373,58 @@ export async function POST(
   }
 
   const { name, phone, city, website } = business;
+  const debug: Record<string, unknown> = { name, city, tried: [] as string[] };
+  const tried = debug.tried as string[];
 
-  // Search for matching Checkatrade profile URL
+  // Run search strategies in order, stop at first hit
   let checkatradeUrl: string | null = null;
 
-  // 1. Try DuckDuckGo (free)
-  checkatradeUrl = await searchDDG(name, city ?? "");
+  // 1. Slug guessing — fastest, no external API needed
+  tried.push("slug_guess");
+  checkatradeUrl = await searchBySlugs(name);
+  debug.slugVariants = slugVariants(name);
+  debug.slugResult = checkatradeUrl;
 
-  // 2. Try Apify Google Search as fallback
+  // 2. Bing HTML search — good success rate from Cloudflare edge
   if (!checkatradeUrl) {
-    checkatradeUrl = await searchApify(name, city ?? "", getApifyToken());
+    tried.push("bing");
+    checkatradeUrl = await searchBing(name, city ?? "");
+    debug.bingResult = checkatradeUrl;
   }
 
-  // Fetch and parse the profile if found
+  // 3. DuckDuckGo HTML — free fallback
+  if (!checkatradeUrl) {
+    tried.push("duckduckgo");
+    checkatradeUrl = await searchDDG(name, city ?? "");
+    debug.ddgResult = checkatradeUrl;
+  }
+
+  // 4. Apify Google Search — most reliable, requires APIFY_API_TOKEN in CF env
+  if (!checkatradeUrl) {
+    const apifyToken = getApifyToken();
+    debug.apifyTokenSet = !!apifyToken;
+    if (apifyToken) {
+      tried.push("apify");
+      checkatradeUrl = await searchApify(name, city ?? "", apifyToken);
+      debug.apifyResult = checkatradeUrl;
+    } else {
+      debug.apifySkipped = "APIFY_API_TOKEN not set in Cloudflare env";
+    }
+  }
+
+  debug.finalUrl = checkatradeUrl;
+
+  // Fetch and parse the profile if a URL was found
   let profile: ProfileSnap | null = null;
   if (checkatradeUrl) {
     profile = await fetchProfile(checkatradeUrl);
+    debug.profileFetched = !!profile;
+    debug.profileName = profile?.name;
   }
 
   const confidence = calcConfidence(name, phone ?? null, profile);
+  debug.confidence = confidence;
+
   // Only treat as confirmed if confidence is not "none" or "possible"
   const hasCheckatrade =
     !!checkatradeUrl && confidence !== "none" && confidence !== "possible";
@@ -356,5 +493,6 @@ export async function POST(
     match_confidence: confidence,
     opportunity_score: opportunityScore,
     checked_at: new Date().toISOString(),
+    _debug: debug,
   });
 }
