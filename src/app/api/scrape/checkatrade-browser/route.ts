@@ -42,25 +42,17 @@ async function pageFunction(context) {
   const allPhotos = new Set();
   (await collectVisible()).forEach(u => allPhotos.add(u));
 
-  // Try to find and click the Photos tab/button to open the full gallery
+  // Try to click the Photos tab/button if present (opens full gallery)
   try {
     const photoLinks = await page.$$('a[href*="photo"], button');
     for (const el of photoLinks) {
       const txt = (await el.textContent() || '').toLowerCase();
-      if (txt.includes('photo') || txt.includes('image') || txt.includes('gallery')) {
+      if (txt.includes('photo') || txt.includes('gallery')) {
         await el.click();
         await sleep(2000);
         break;
       }
     }
-  } catch(e) {}
-
-  // Also try navigating to the /photos sub-page directly
-  try {
-    const currentUrl = page.url();
-    const photosUrl = currentUrl.replace(/\/$/, '') + '/photos';
-    await page.goto(photosUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await sleep(2000);
   } catch(e) {}
 
   // Scroll and collect at every step — handles virtual scrolling (unmounts off-screen rows)
@@ -124,13 +116,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Go straight to the /photos sub-page — full gallery, not just the preview grid
+    const photosUrl = url.replace(/\/$/, "") + "/photos";
+
     const res = await fetch(
       `https://api.apify.com/v2/acts/apify~playwright-scraper/runs?token=${token}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          startUrls:            [{ url }],
+          startUrls:            [{ url: photosUrl }],
           pageFunction:         PAGE_FUNCTION,
           proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
           maxRequestsPerCrawl:  1,
