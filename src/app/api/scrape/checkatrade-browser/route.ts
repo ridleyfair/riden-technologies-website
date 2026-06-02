@@ -37,7 +37,7 @@ async function pageFunction(context) {
       });
     });
     return found;
-  }, skip);
+  }, SKIP);
 
   // Checkatrade uses virtual scrolling — photos outside the viewport are unmounted.
   // Collect at EVERY scroll step so we capture each batch before it disappears.
