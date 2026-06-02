@@ -598,9 +598,10 @@ Return ONLY the JSON object.`;
     `about.included=${userPrompt.includes(aboutBlock.slice(0, 20))}`,
   );
 
-  // Multi-page sites with 5 pages can exceed 8 K tokens — use extended output.
-  // Single-page sites rarely reach 4 K but give headroom for large about/reviews.
-  const maxTokens = templateDef.siteType === "multi-page" ? 16000 : 8000;
+  // Cloudflare Workers has a 30-second hard limit on outbound subrequests.
+  // Actual JSON output for a full site is ~2000–4000 tokens; these limits give
+  // 50–100% headroom while keeping the Anthropic call well under 30 s.
+  const maxTokens = templateDef.siteType === "multi-page" ? 6000 : 4000;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -608,7 +609,6 @@ Return ONLY the JSON object.`;
       "Content-Type": "application/json",
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
-      "anthropic-beta": "output-128k-2025-02-19",
     },
     body: JSON.stringify({
       model: "claude-haiku-4-5-20251001",
@@ -687,21 +687,7 @@ export async function POST(req: NextRequest) {
     `pages=${templateDef.pages.map((p) => p.slug).join(",")}`,
   );
 
-  // Capture origin before entering the stream (req is consumed by that point)
   const crmOrigin = new URL(req.url).origin;
-
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (event: string, data: unknown) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
-      };
-
-      // Send a ping immediately — this resets Cloudflare's idle-connection timer
-      // so the 524 doesn't fire while we wait for the Claude API response.
-      send("progress", { status: "Generating site…" });
-
-      try {
 
   // ── Generate spec ──────────────────────────────────────────────────────────
   let specJson: string;
@@ -945,9 +931,10 @@ export async function POST(req: NextRequest) {
     // Strip any em/en dashes Claude snuck into the copy
     specJson = JSON.stringify(cleanDashesInSpec(spec));
   } catch (e) {
-    send("error", { error: `Failed to generate site spec: ${String(e)}` });
-    controller.close();
-    return;
+    return NextResponse.json(
+      { error: `Failed to generate site spec: ${String(e)}` },
+      { status: 500 },
+    );
   }
 
   // ── Save to DB ─────────────────────────────────────────────────────────────
@@ -982,9 +969,7 @@ export async function POST(req: NextRequest) {
             "updatedAt"         = NOW()
           WHERE id = ${site.id as string}
         `;
-        send("done", { ok: true, siteId: site.id, previewUrl: site.previewUrl });
-        controller.close();
-        return;
+        return NextResponse.json({ ok: true, siteId: site.id, previewUrl: site.previewUrl });
       }
     }
 
@@ -1000,25 +985,11 @@ export async function POST(req: NextRequest) {
          ${body.username}, ${body.password}, ${previewUrl}, 'ready',
          ${body.email ?? null}, 'not_contacted', NOW(), NOW())
     `;
-    send("done", { ok: true, siteId: id, previewUrl });
+    return NextResponse.json({ ok: true, siteId: id, previewUrl });
   } catch (e) {
-    send("error", { error: `Failed to save generated site: ${String(e)}` });
-  } finally {
-    controller.close();
+    return NextResponse.json(
+      { error: `Failed to save generated site: ${String(e)}` },
+      { status: 500 },
+    );
   }
-
-      } catch (e) {
-        send("error", { error: `Generation failed: ${String(e)}` });
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      "X-Accel-Buffering": "no",
-    },
-  });
 }
