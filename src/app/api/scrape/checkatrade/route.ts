@@ -18,6 +18,11 @@ function strArr(v: unknown): string[] {
             ?? (item as Record<string, unknown>)?.label
             ?? (item as Record<string, unknown>)?.title
             ?? (item as Record<string, unknown>)?.value
+            ?? (item as Record<string, unknown>)?.skill
+            ?? (item as Record<string, unknown>)?.category
+            ?? (item as Record<string, unknown>)?.trade
+            ?? (item as Record<string, unknown>)?.text
+            ?? (item as Record<string, unknown>)?.displayName
             ?? item)
         : item
     );
@@ -145,9 +150,9 @@ function findFirst(obj: unknown, keys: string[]): unknown {
 // ── Photo helpers ─────────────────────────────────────────────────────────────
 
 const PHOTO_BLACKLIST = [
-  "icon","logo","avatar","star","badge","trusted","tick","arrow","sprite",
+  "icon","star","badge","trusted","tick","arrow","sprite",
   "pixel","1x1","tracking","blank","placeholder","ct-logo","favicon",
-  "profile-pic","default-user","rating","seal","shield",
+  "default-user","rating","seal","shield",
 ];
 
 function isPhoto(url: string): boolean {
@@ -156,7 +161,8 @@ function isPhoto(url: string): boolean {
   const hasExt = /\.(jpg|jpeg|png|webp|avif)/i.test(lower);
   const isCdn  = lower.includes("checkatrade") || lower.includes("cloudfront") ||
                  lower.includes("s3.amazonaws") || lower.includes("imagedelivery") ||
-                 lower.includes("ctmedia");
+                 lower.includes("ctmedia") || lower.includes("cloudinary") ||
+                 lower.includes("ctassets") || lower.includes("media.ct");
   return hasExt || isCdn;
 }
 
@@ -208,6 +214,8 @@ const PROFILE_KEYS = [
   "company","business","member","trade","tradesperson","contractor","tradesman",
   "companyProfile","businessProfile","memberProfile","companyData","businessData",
   "memberData","traderInfo","memberInfo","profileData","pageData","serverData",
+  "tradepersonData","tradePersonData","traderDetails","companyDetails",
+  "tradeInfo","businessInfo","listingData","traderListing","profileInfo",
 ];
 
 function findProfile(pageProps: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -354,8 +362,19 @@ export async function POST(req: NextRequest) {
       || extractPostcode(plainText.substring(0, 60000));
 
     // ── Skills / trades ───────────────────────────────────────────────────────
-    const rawSkills = (findFirst(profile, ["skills","trades","categories","serviceTypes","workTypes","services","tradeTypes","specialisms"]) ?? []) as unknown[];
-    const skills = strArr(rawSkills);
+    const rawSkills = (findFirst(profile, [
+      "skills","trades","categories","serviceTypes","workTypes","services",
+      "tradeTypes","specialisms","tradeCategories","tradingCategories",
+      "serviceOfferings","tradeInformation","primaryTrades","additionalTrades",
+      "tradeSkills","expertise","offerings","tradesList","skillsList",
+    ]) ?? []) as unknown[];
+    // If profile-level search fails, try searching entire pageProps for trade arrays
+    const skills = strArr(rawSkills).length > 0
+      ? strArr(rawSkills)
+      : pageProps ? strArr((findFirst(pageProps, [
+          "skills","trades","tradeCategories","serviceTypes","tradeTypes",
+          "categories","specialisms","offerings",
+        ]) ?? []) as unknown[]) : [];
 
     // ── Accreditations ────────────────────────────────────────────────────────
     const rawCerts = (findFirst(profile, ["accreditations","certifications","memberships","qualifications","badges","approvals","endorsements"]) ?? []) as unknown[];
@@ -471,13 +490,26 @@ export async function POST(req: NextRequest) {
 
     // ── Photos ────────────────────────────────────────────────────────────────
     const photoSet = new Set<string>();
-    if (profile)    collectImages(profile, photoSet);
+
+    // Collect from structured data
+    if (profile) collectImages(profile, photoSet);
     if (pageProps) {
-      for (const k of ["images","photos","gallery","media","portfolioImages","workImages","portfolio","work"]) {
+      for (const k of [
+        "images","photos","gallery","media","portfolioImages","workImages",
+        "portfolio","work","companyImages","profileImages","companyMedia",
+        "tradeImages","workPhotos","companyPhotos","memberImages",
+      ]) {
         if (pageProps[k]) collectImages(pageProps[k], photoSet);
       }
     }
-    if (photoSet.size === 0) for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
+
+    // Always also scan HTML — catches /_next/image? URLs and og:image
+    for (const p of extractPhotosFromHtml(html)) photoSet.add(p);
+
+    // og:image is often the main company photo and a reliable fallback
+    const ogImage = metaContent(html, "og:image");
+    if (ogImage && isPhoto(ogImage)) photoSet.add(ogImage);
+
     const photos = [...photoSet].filter(isPhoto).slice(0, 20);
 
     // ── Return ────────────────────────────────────────────────────────────────
