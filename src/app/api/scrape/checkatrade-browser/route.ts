@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           startUrls:            [{ url }],
           pageFunction:         PAGE_FUNCTION,
-          proxyConfiguration:   { useApifyProxy: true },
+          proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
           maxRequestsPerCrawl:  1,
           navigationTimeoutSecs: 60,
         }),
