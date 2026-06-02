@@ -18,8 +18,9 @@ async function pageFunction(context) {
   const { page } = context;
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-  try { await page.waitForLoadState('networkidle', { timeout: 30000 }); } catch(e) {}
-  await sleep(2000);
+  // Use 'load' not 'networkidle' — Checkatrade's React app never reaches networkidle
+  try { await page.waitForLoadState('load', { timeout: 30000 }); } catch(e) {}
+  await sleep(3000);
 
   const SKIP = ['favicon','star','badge','tick','1x1','seal','arrow',
                 'sprite','placeholder','ct-logo','trustmark','.svg','data:image'];
@@ -141,9 +142,11 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           startUrls:            [{ url }],
           pageFunction:         PAGE_FUNCTION,
-          proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"] },
+          proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"], apifyProxyCountry: "GB" },
           maxRequestsPerCrawl:  1,
           navigationTimeoutSecs: 120,
+          pageLoadTimeoutSecs:  120,
+          stealth:              true,
         }),
       }
     );
