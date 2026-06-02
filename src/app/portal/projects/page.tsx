@@ -859,9 +859,33 @@ function ProjectDetailModal({
           aboutProofCards: aboutProofCards.filter(c => c.enabled && c.title.trim() !== ''),
         }),
       });
-      const data = await res.json();
-      if (data.ok) setGeneratedUrl(data.previewUrl);
-      else setError(data.error ?? "Generation failed.");
+
+      // The API returns SSE (text/event-stream) to keep the Cloudflare connection
+      // alive during the long Claude generation. Read until we get a done/error event.
+      if (!res.ok || !res.body) {
+        const text = await res.text().catch(() => "");
+        try { const d = JSON.parse(text); setError(d.error ?? "Generation failed."); }
+        catch { setError("Generation failed."); }
+      } else {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() ?? "";
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const data = JSON.parse(line.slice(6)) as { ok?: boolean; previewUrl?: string; error?: string };
+              if (data.ok) { setGeneratedUrl(data.previewUrl ?? ""); break outer; }
+              if (data.error) { setError(data.error); break outer; }
+            } catch { /* partial line — keep buffering */ }
+          }
+        }
+      }
     } catch {
       setError("Network error during generation.");
     } finally {

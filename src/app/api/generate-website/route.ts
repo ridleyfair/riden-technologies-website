@@ -642,6 +642,8 @@ Return ONLY the JSON object.`;
 }
 
 // ── POST /api/generate-website ────────────────────────────────────────────────
+// Returns a text/event-stream (SSE) response so Cloudflare Workers don't 524-timeout
+// while waiting for Claude. The browser reads events until it gets "done" or "error".
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
@@ -684,6 +686,22 @@ export async function POST(req: NextRequest) {
     `siteType="${templateDef.siteType}"`,
     `pages=${templateDef.pages.map((p) => p.slug).join(",")}`,
   );
+
+  // Capture origin before entering the stream (req is consumed by that point)
+  const crmOrigin = new URL(req.url).origin;
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: string, data: unknown) => {
+        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      };
+
+      // Send a ping immediately — this resets Cloudflare's idle-connection timer
+      // so the 524 doesn't fire while we wait for the Claude API response.
+      send("progress", { status: "Generating site…" });
+
+      try {
 
   // ── Generate spec ──────────────────────────────────────────────────────────
   let specJson: string;
@@ -824,10 +842,6 @@ export async function POST(req: NextRequest) {
 
         const isHome = (page.slug as string) === "/";
 
-        // Relative upload URLs like /api/media/{uuid}.webp are only valid on the
-        // CRM domain. The template engine is a separate deployment, so they must
-        // be stored as absolute URLs so <img src="..."> resolves correctly there.
-        const crmOrigin = new URL(req.url).origin;
         const toAbsUrl = (url: string) =>
           url.startsWith("/") ? `${crmOrigin}${url}` : url;
 
@@ -931,10 +945,9 @@ export async function POST(req: NextRequest) {
     // Strip any em/en dashes Claude snuck into the copy
     specJson = JSON.stringify(cleanDashesInSpec(spec));
   } catch (e) {
-    return NextResponse.json(
-      { error: `Failed to generate site spec: ${String(e)}` },
-      { status: 500 },
-    );
+    send("error", { error: `Failed to generate site spec: ${String(e)}` });
+    controller.close();
+    return;
   }
 
   // ── Save to DB ─────────────────────────────────────────────────────────────
@@ -969,7 +982,9 @@ export async function POST(req: NextRequest) {
             "updatedAt"         = NOW()
           WHERE id = ${site.id as string}
         `;
-        return NextResponse.json({ ok: true, siteId: site.id, previewUrl: site.previewUrl });
+        send("done", { ok: true, siteId: site.id, previewUrl: site.previewUrl });
+        controller.close();
+        return;
       }
     }
 
@@ -985,11 +1000,25 @@ export async function POST(req: NextRequest) {
          ${body.username}, ${body.password}, ${previewUrl}, 'ready',
          ${body.email ?? null}, 'not_contacted', NOW(), NOW())
     `;
-    return NextResponse.json({ ok: true, siteId: id, previewUrl });
+    send("done", { ok: true, siteId: id, previewUrl });
   } catch (e) {
-    return NextResponse.json(
-      { error: `Failed to save generated site: ${String(e)}` },
-      { status: 500 },
-    );
+    send("error", { error: `Failed to save generated site: ${String(e)}` });
+  } finally {
+    controller.close();
   }
+
+      } catch (e) {
+        send("error", { error: `Generation failed: ${String(e)}` });
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
