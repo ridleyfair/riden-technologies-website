@@ -94,7 +94,16 @@ async function pageFunction(context) {
     photos.unshift(meta.ogImage);
   }
 
-  return { photos, skills, meta };
+  // Debug: raw sample so we can see what the browser actually found
+  const debugRaw = await page.evaluate(() =>
+    Array.from(document.images).slice(0, 5).map(img => ({
+      src: img.src.slice(0, 120),
+      w: img.naturalWidth,
+      h: img.naturalHeight,
+    }))
+  );
+
+  return { photos, skills, meta, _debug: { finalUrl: page.url(), imgCount: (await page.$$('img')).length, rawSample: debugRaw, totalCollected: allPhotos.size } };
 }
 `;
 
