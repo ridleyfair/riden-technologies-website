@@ -195,7 +195,8 @@ function extractPhotosFromHtml(html: string): string[] {
   const nextRe = /\/_next\/image\?([^"'\s>]+)/g;
   while ((m = nextRe.exec(html)) !== null) {
     try {
-      const qs     = m[1];
+      // HTML encodes & as &amp; inside attribute values — decode before parsing
+      const qs     = m[1].replace(/&amp;/g, "&");
       const params = new URLSearchParams(qs);
       const rawUrl = decodeURIComponent(params.get("url") ?? "");
       if (!rawUrl || !rawUrl.startsWith("http")) continue;
