@@ -696,6 +696,39 @@ function ProjectDetailModal({
     photos: string[];
   }[] | null>(null);
 
+  // Album URL import (user pastes a specific Checkatrade album URL)
+  const [albumUrlInput, setAlbumUrlInput] = useState("");
+  const [albumImporting, setAlbumImporting] = useState(false);
+  const [albumImportError, setAlbumImportError] = useState("");
+
+  async function importAlbumUrl() {
+    const albumUrl = albumUrlInput.trim();
+    if (!albumUrl.includes("checkatrade.com/trades") || !albumUrl.includes("/albums/")) return;
+    setAlbumImporting(true);
+    setAlbumImportError("");
+    try {
+      const res = await fetch("/api/scrape/checkatrade-browser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: albumUrl }),
+      });
+      const data = await res.json();
+      const galleries = Array.isArray(data.galleries)
+        ? (data.galleries as { name: string; photos: string[] }[]).filter(g => g.photos.length > 0)
+        : [];
+      if (galleries.length > 0) {
+        setImportedGalleries(prev => [...(prev ?? []), ...galleries]);
+        setAlbumUrlInput("");
+      } else {
+        setAlbumImportError(data.error ?? "No photos found in that album.");
+      }
+    } catch {
+      setAlbumImportError("Could not fetch album.");
+    } finally {
+      setAlbumImporting(false);
+    }
+  }
+
 
   // Google Maps scraper state
   const [googleMaps, setGoogleMaps] = useState<{
@@ -1668,6 +1701,32 @@ function ProjectDetailModal({
                 )}
                 {checkatrade.error && (
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
+                )}
+
+                {/* Album URL importer — paste a specific album URL from Checkatrade */}
+                {checkatrade.imported && (
+                  <div className="pt-1 space-y-1.5">
+                    <p className="text-[11px] text-slate-500">
+                      To import more photos, browse your Checkatrade profile → click an album → paste its URL here.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        value={albumUrlInput}
+                        onChange={e => setAlbumUrlInput(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && importAlbumUrl()}
+                        placeholder="e.g. checkatrade.com/trades/slug/albums/abc123"
+                        className={`${inputCls} flex-1 text-xs`}
+                      />
+                      <button
+                        onClick={importAlbumUrl}
+                        disabled={albumImporting || !albumUrlInput.includes("/albums/")}
+                        className="px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-40 flex-shrink-0"
+                      >
+                        {albumImporting ? <RefreshCw size={11} className="animate-spin" /> : "Import"}
+                      </button>
+                    </div>
+                    {albumImportError && <p className="text-[10px] text-amber-400">{albumImportError}</p>}
+                  </div>
                 )}
               </div>
 

@@ -166,21 +166,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Checkatrade albums live at /trades/{slug}/albums/{albumId}.
-    // The albums list page at /trades/{slug}/albums shows all albums grouped —
-    // scraping it gives us galleries in one request.
-    // Strip any trailing path segments after the profile slug so we always
-    // start from the canonical profile URL.
-    const profileUrl = url
-      .replace(/#.*$/, "")           // strip hash
-      .replace(/\/+$/, "")           // strip trailing slash
-      .replace(/\/(albums|photos|reviews|skills)(\/.*)?$/, ""); // strip any tab paths
+    const cleanUrl = url.replace(/#.*$/, "").replace(/\/+$/, "");
 
-    const albumsUrl = `${profileUrl}/albums`;
+    // If the user pasted a specific album URL (/trades/{slug}/albums/{albumId}),
+    // scrape it directly — album pages render all photos for that album.
+    // Otherwise scrape the profile page which shows recent work photos.
+    const albumMatch = cleanUrl.match(/\/albums\/([^/]+)$/);
+    const scrapeUrl = albumMatch
+      ? cleanUrl
+      : cleanUrl.replace(/\/(albums|photos|reviews|skills)(\/.*)?$/, "");
 
     const params = new URLSearchParams({
       api_key:       apiKey,
-      url:           albumsUrl,
+      url:           scrapeUrl,
       render_js:     "true",
       stealth_proxy: "true",
       wait:          "5000",
@@ -195,13 +193,21 @@ export async function POST(req: NextRequest) {
     }
 
     const html = await res.text();
-    const galleries = extractGalleries(html);
+    let galleries = extractGalleries(html);
+
+    // If we scraped a specific album URL and the parser returned everything as
+    // "Portfolio", rename it to the album name from the page <h1>.
+    if (albumMatch && galleries.length === 1 && galleries[0].name === "Portfolio") {
+      const h1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      if (h1?.[1]) galleries[0] = { ...galleries[0], name: h1[1].trim() };
+    }
+
     const photos = galleries.flatMap(g => g.photos);
 
     return NextResponse.json({
       galleries,
       photos,
-      _debug: { htmlLength: html.length, galleryCount: galleries.length, totalPhotos: photos.length },
+      _debug: { htmlLength: html.length, galleryCount: galleries.length, totalPhotos: photos.length, scrapedUrl: scrapeUrl },
     });
   } catch (err) {
     console.error("Checkatrade ScrapingBee error:", err);
