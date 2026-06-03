@@ -101,6 +101,129 @@ const DEFAULT_REVIEW_SETTINGS: ReviewSettings = {
   showRatingBadge: true,
 };
 
+// ── Checkatrade import parser ─────────────────────────────────────────────────
+
+type ParsedCheckatradeImport = {
+  phone: string;
+  email: string;
+  city: string;
+  postcode: string;
+  services: string;
+  about: string;
+  accreditations: string;
+  openingHours: string;
+  socialFacebook: string;
+  socialInstagram: string;
+  newReviews: Review[];
+  newPhotos: string[];
+  newReviewSettings: ReviewSettings;
+};
+
+const CT_NAV_WORDS = new Set([
+  "overview","skills","reviews","photos","company info","company information",
+  "view services","website","request a quote","get a free quote","contact",
+  "share","save","report","flag","print","menu","back","get quotes",
+]);
+
+const CT_NOISE_RE = /\b(overview|skills|reviews|photos|company\s+info(?:rmation)?|request\s+a\s+quote|view\s+services|get\s+quotes)\b/gi;
+
+function parseCheckatradeImport(
+  data: Record<string, unknown>,
+  profileUrl: string
+): ParsedCheckatradeImport {
+  const skillsList = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
+  const areasList  = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
+  const acredList  = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
+  const capsList   = Array.isArray(data.capabilities)   ? (data.capabilities   as string[]) : [];
+
+  // Services: one per line, deduplicated, nav words removed
+  const seenSvc = new Set<string>();
+  const cleanServices: string[] = [];
+  for (const s of skillsList) {
+    const t = s.trim();
+    const lower = t.toLowerCase();
+    if (t && !CT_NAV_WORDS.has(lower) && !seenSvc.has(lower)) {
+      seenSvc.add(lower);
+      cleanServices.push(t);
+    }
+  }
+  const services = cleanServices.join("\n");
+
+  // About: description only — no metadata dump
+  let about = ((data.description as string) ?? "").trim();
+  about = about.replace(CT_NOISE_RE, "").replace(/\s{2,}/g, " ").trim();
+
+  // Generate fallback if description is absent or too short
+  if (about.length < 80) {
+    const parts: string[] = [];
+    const bName = (data.name as string) ?? "";
+    const bCity = (data.city as string) ?? "";
+    if (bName) {
+      const top = cleanServices.slice(0, 3);
+      if (top.length > 0) {
+        parts.push(`${bName} provides ${top.join(", ").toLowerCase()} services${bCity ? ` across ${bCity}` : ""}.`);
+      } else if (bCity) {
+        parts.push(`${bName} is based in ${bCity}.`);
+      }
+    }
+    if (areasList.length > 0) {
+      parts.push(`Covering ${areasList.slice(0, 5).join(", ")}.`);
+    }
+    if (capsList.some((c) => /free estimates?/i.test(c))) {
+      parts.push("Free estimates available.");
+    }
+    const rc = data.reviewCount ? Number(data.reviewCount) : 0;
+    const rg = data.rating ? String(data.rating) : "";
+    if (rc > 0) {
+      parts.push(`With ${rc} verified reviews${rg ? ` (${rg}/10)` : ""} on Checkatrade, they are a trusted local business.`);
+    }
+    if (parts.length > 0) about = parts.join(" ");
+  }
+
+  // Accreditations: array only (not vatRegistered — that's company metadata)
+  const accreditations = acredList.join(", ");
+
+  // Reviews
+  const newReviews: Review[] = Array.isArray(data.reviews)
+    ? (data.reviews as Record<string, unknown>[]).map((r) => ({
+        author: String(r.author ?? "Verified Customer"),
+        rating: Number(r.rating ?? 5),
+        body:   String(r.body   ?? ""),
+        source: "checkatrade" as const,
+        date:   String(r.date   ?? ""),
+      }))
+    : [];
+
+  // Photos
+  const newPhotos: string[] = Array.isArray(data.photos) ? (data.photos as string[]) : [];
+
+  // Review settings
+  const newReviewSettings: ReviewSettings = {
+    platform:        "Checkatrade",
+    reviewCount:     data.reviewCount ? Number(data.reviewCount) : undefined,
+    averageRating:   data.rating ? String(data.rating) : "",
+    platformUrl:     profileUrl || "",
+    showReviewBadge: true,
+    showRatingBadge: true,
+  };
+
+  return {
+    phone:           (data.phone           as string) ?? "",
+    email:           (data.email           as string) ?? "",
+    city:            (data.city            as string) ?? "",
+    postcode:        (data.postcode        as string) ?? "",
+    services,
+    about,
+    accreditations,
+    openingHours:    (data.openingHours    as string) ?? "",
+    socialFacebook:  (data.socialFacebook  as string) ?? "",
+    socialInstagram: (data.socialInstagram as string) ?? "",
+    newReviews,
+    newPhotos,
+    newReviewSettings,
+  };
+}
+
 function formatReviewCount(n: number): string {
   if (n < 10) return String(n);
   return `${Math.floor(n / 10) * 10}+`;
@@ -547,6 +670,9 @@ function ProjectDetailModal({
     error:   string;
   }>({ runId: "", loading: false, error: "" });
 
+  // Parsed import held for user review before applying to brief
+  const [ctParsedImport, setCtParsedImport] = useState<ParsedCheckatradeImport | null>(null);
+
   // Google Maps scraper state
   const [googleMaps, setGoogleMaps] = useState<{
     query:   string;
@@ -739,56 +865,10 @@ function ProjectDetailModal({
         setCheckatrade((s) => ({ ...s, loading: false, error: data.error ?? "Failed to fetch page." }));
         return;
       }
-      // Auto-import all available business info
-      const skillsList   = Array.isArray(data.skills)         ? (data.skills         as string[]) : [];
-      const areasList    = Array.isArray(data.areas)          ? (data.areas          as string[]) : [];
-      const acredList    = Array.isArray(data.accreditations) ? (data.accreditations as string[]) : [];
-      const capsList     = Array.isArray(data.capabilities)   ? (data.capabilities   as string[]) : [];
+      // Parse scraped data into structured fields for user review
+      const parsed = parseCheckatradeImport(data as Record<string, unknown>, checkatrade.url);
+      setCtParsedImport(parsed);
 
-      // Build a rich about section from all company facts
-      const aboutParts = [
-        data.description as string || "",
-        data.owner             ? `Owner: ${data.owner}` : "",
-        data.companyType       ? `Company type: ${data.companyType}` : "",
-        data.vatRegistered     ? String(data.vatRegistered) : "",
-        data.yearsOnCheckatrade ? `${data.yearsOnCheckatrade} years on Checkatrade` : "",
-        data.tradingYears      ? `Trading for ${data.tradingYears} years` : "",
-        capsList.length        ? `Capabilities: ${capsList.join(", ")}` : "",
-        areasList.length       ? `Areas covered: ${areasList.join(", ")}` : "",
-      ].filter(Boolean);
-
-      setBrief((b) => ({
-        ...b,
-        phone:           (data.phone           as string) || b.phone,
-        email:           (data.email           as string) || b.email,
-        city:            (data.city            as string) || b.city,
-        postcode:        (data.postcode        as string) || b.postcode,
-        services:        skillsList.length ? skillsList.join(", ") : b.services,
-        about:           aboutParts.join("\n")            || b.about,
-        accreditations:  acredList.length  ? acredList.join(", ")  : b.accreditations,
-        openingHours:    (data.openingHours    as string) || b.openingHours,
-        socialFacebook:  (data.socialFacebook  as string) || b.socialFacebook,
-        socialInstagram: (data.socialInstagram as string) || b.socialInstagram,
-      }));
-      // Import reviews
-      if (Array.isArray(data.reviews) && data.reviews.length > 0) {
-        const imported: Review[] = (data.reviews as Record<string, unknown>[]).map((r) => ({
-          author: String(r.author ?? "Verified Customer"),
-          rating: Number(r.rating ?? 5),
-          body:   String(r.body   ?? ""),
-          source: "checkatrade" as const,
-          date:   String(r.date   ?? ""),
-        }));
-        setReviews((prev) => [...prev, ...imported]);
-      }
-      // Import photos
-      if (Array.isArray(data.photos) && data.photos.length > 0) {
-        setPhotos((prev) => {
-          const existing = new Set(prev);
-          const newPhotos = (data.photos as string[]).filter((p) => !existing.has(p));
-          return [...prev, ...newPhotos];
-        });
-      }
       const found = data._found as { hasNextData?: boolean; hasProfile?: boolean } | undefined;
       setCheckatrade((s) => ({
         ...s,
@@ -1534,18 +1614,18 @@ function ProjectDetailModal({
                   </p>
                 )}
                 {checkatrade.imported && (
-                  <div className="text-xs flex flex-col gap-0.5">
+                  <div className="text-xs flex flex-col gap-1">
                     <span className={`flex items-center gap-1.5 ${checkatrade.noProfile ? "text-amber-400" : "text-emerald-400"}`}>
                       <CheckCircle size={11} />
-                      {checkatrade.noProfile
-                        ? "Partial import — some fields pulled from page meta only. Check fields below."
-                        : "Business info, skills, and reviews imported successfully."}
+                      {ctParsedImport
+                        ? "Data parsed — review and apply below."
+                        : checkatrade.noProfile
+                          ? "Applied (partial — check fields below)."
+                          : "Applied to Website Brief."}
                     </span>
-                    {(checkatrade.rating || photos.length > 0) && (
+                    {checkatrade.rating && (
                       <span className="text-slate-400 pl-4">
-                        {checkatrade.rating && <>{checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews</>}
-                        {checkatrade.rating && photos.length > 0 && " · "}
-                        {photos.length > 0 && <>{photos.length} photos</>}
+                        {checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews
                       </span>
                     )}
                   </div>
@@ -1563,6 +1643,205 @@ function ProjectDetailModal({
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
                 )}
               </div>
+
+              {/* Checkatrade Import Review Panel */}
+              {ctParsedImport && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle size={11} /> Review Imported Data
+                    </h3>
+                    <button
+                      onClick={() => setCtParsedImport(null)}
+                      className="text-slate-500 hover:text-white transition-colors"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Review the parsed fields below. Edit anything that needs changing. Empty fields will not overwrite existing values.
+                  </p>
+
+                  <div className="space-y-3">
+                    {/* About */}
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">About</label>
+                      <textarea
+                        rows={4}
+                        value={ctParsedImport.about}
+                        onChange={(e) => setCtParsedImport((p) => p ? { ...p, about: e.target.value } : p)}
+                        className={`${inputCls} resize-none text-xs`}
+                      />
+                    </div>
+
+                    {/* Services */}
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Services (one per line)</label>
+                      <textarea
+                        rows={5}
+                        value={ctParsedImport.services}
+                        onChange={(e) => setCtParsedImport((p) => p ? { ...p, services: e.target.value } : p)}
+                        className={`${inputCls} resize-none text-xs font-mono`}
+                      />
+                    </div>
+
+                    {/* Location */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">City</label>
+                        <input
+                          value={ctParsedImport.city}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, city: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Postcode</label>
+                        <input
+                          value={ctParsedImport.postcode}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, postcode: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contact */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Phone</label>
+                        <input
+                          value={ctParsedImport.phone}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, phone: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Email</label>
+                        <input
+                          value={ctParsedImport.email}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, email: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Accreditations */}
+                    {ctParsedImport.accreditations && (
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Accreditations</label>
+                        <input
+                          value={ctParsedImport.accreditations}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, accreditations: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                    )}
+
+                    {/* Opening hours */}
+                    {ctParsedImport.openingHours && (
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Opening Hours</label>
+                        <input
+                          value={ctParsedImport.openingHours}
+                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, openingHours: e.target.value } : p)}
+                          className={`${inputCls} text-xs`}
+                        />
+                      </div>
+                    )}
+
+                    {/* Social */}
+                    {(ctParsedImport.socialFacebook || ctParsedImport.socialInstagram) && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {ctParsedImport.socialFacebook && (
+                          <div>
+                            <label className="block text-[11px] text-slate-400 mb-1">Facebook</label>
+                            <input
+                              value={ctParsedImport.socialFacebook}
+                              onChange={(e) => setCtParsedImport((p) => p ? { ...p, socialFacebook: e.target.value } : p)}
+                              className={`${inputCls} text-xs`}
+                            />
+                          </div>
+                        )}
+                        {ctParsedImport.socialInstagram && (
+                          <div>
+                            <label className="block text-[11px] text-slate-400 mb-1">Instagram</label>
+                            <input
+                              value={ctParsedImport.socialInstagram}
+                              onChange={(e) => setCtParsedImport((p) => p ? { ...p, socialInstagram: e.target.value } : p)}
+                              className={`${inputCls} text-xs`}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Summary stats */}
+                    <div className="flex flex-wrap gap-3 text-[11px] pt-1 border-t border-riden-border">
+                      {ctParsedImport.newReviews.length > 0 && (
+                        <span className="text-emerald-400">{ctParsedImport.newReviews.length} reviews ready to import</span>
+                      )}
+                      {ctParsedImport.newPhotos.length > 0 && (
+                        <span className="text-blue-400">{ctParsedImport.newPhotos.length} photos ready to import</span>
+                      )}
+                      {ctParsedImport.newReviewSettings.reviewCount != null && (
+                        <span className="text-amber-400">
+                          {ctParsedImport.newReviewSettings.reviewCount} reviews · {ctParsedImport.newReviewSettings.averageRating}/10 on Checkatrade
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 justify-end pt-1">
+                    <Button variant="ghost" size="sm" onClick={() => setCtParsedImport(null)}>
+                      Dismiss
+                    </Button>
+                    <Button
+                      variant="gradient"
+                      size="sm"
+                      onClick={() => {
+                        if (!ctParsedImport) return;
+                        setBrief((b) => ({
+                          ...b,
+                          phone:           ctParsedImport.phone           || b.phone,
+                          email:           ctParsedImport.email           || b.email,
+                          city:            ctParsedImport.city            || b.city,
+                          postcode:        ctParsedImport.postcode        || b.postcode,
+                          services:        ctParsedImport.services        || b.services,
+                          about:           ctParsedImport.about           || b.about,
+                          accreditations:  ctParsedImport.accreditations  || b.accreditations,
+                          openingHours:    ctParsedImport.openingHours    || b.openingHours,
+                          socialFacebook:  ctParsedImport.socialFacebook  || b.socialFacebook,
+                          socialInstagram: ctParsedImport.socialInstagram || b.socialInstagram,
+                        }));
+                        if (ctParsedImport.newReviews.length > 0) {
+                          setReviews((prev) => [...prev, ...ctParsedImport.newReviews]);
+                        }
+                        if (ctParsedImport.newPhotos.length > 0) {
+                          setPhotos((prev) => {
+                            const existing = new Set(prev);
+                            return [...prev, ...ctParsedImport.newPhotos.filter((p) => !existing.has(p))];
+                          });
+                        }
+                        setReviewSettings((s) => ({
+                          ...ctParsedImport.newReviewSettings,
+                          reviewCount:     s.reviewCount     ?? ctParsedImport.newReviewSettings.reviewCount,
+                          averageRating:   s.averageRating   || ctParsedImport.newReviewSettings.averageRating,
+                          platformUrl:     s.platformUrl     || ctParsedImport.newReviewSettings.platformUrl,
+                          showReviewBadge: s.showReviewBadge,
+                          showRatingBadge: s.showRatingBadge,
+                        }));
+                        setCtParsedImport(null);
+                      }}
+                    >
+                      <CheckCircle size={13} /> Apply to Website Brief
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Review Settings */}
               <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3">
