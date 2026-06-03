@@ -533,7 +533,7 @@ Industry: ${body.industry}
 City/Location: ${city}
 Phone: ${body.phone}
 Email: ${body.email}
-Services: ${body.services}${body.accreditations ? `\nAccreditations: ${body.accreditations}` : ""}${body.rating ? `\nCheckatrade Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}${body.notes ? `\nOpening Hours: ${body.notes}` : ""}${body.socialFacebook ? `\nFacebook: ${body.socialFacebook}` : ""}${body.socialInstagram ? `\nInstagram: ${body.socialInstagram}` : ""}
+Services: ${(body.services ?? "").split(/[\n,]/).map(s => s.trim()).filter(Boolean).slice(0, 25).join("\n")}${body.accreditations ? `\nAccreditations: ${body.accreditations}` : ""}${body.rating ? `\nCheckatrade Rating: ${body.rating}/10 from ${body.reviewCount ?? 0} verified reviews` : ""}${body.notes ? `\nOpening Hours: ${body.notes}` : ""}${body.socialFacebook ? `\nFacebook: ${body.socialFacebook}` : ""}${body.socialInstagram ? `\nInstagram: ${body.socialInstagram}` : ""}
 ${reviewsBlock}
 
 MANDATORY CONTENT RULES:
@@ -599,9 +599,9 @@ Return ONLY the JSON object.`;
   );
 
   // Cloudflare Workers has a 30-second hard limit on outbound subrequests.
-  // Actual JSON output for a full site is ~2000–4000 tokens; these limits give
-  // 50–100% headroom while keeping the Anthropic call well under 30 s.
-  const maxTokens = templateDef.siteType === "multi-page" ? 6000 : 4000;
+  // Long service lists (e.g. scraped from Checkatrade) can push output above the
+  // old caps, causing mid-generation truncation. Raised to give enough headroom.
+  const maxTokens = templateDef.siteType === "multi-page" ? 10000 : 7000;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
