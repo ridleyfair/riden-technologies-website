@@ -949,6 +949,12 @@ export async function POST(req: NextRequest) {
             sections.splice(idx, 0, { type: "gallery", content: injectedContent });
           }
         }
+
+        // Strip CTA sections from gallery pages — MMGallery renders its own
+        // CTA at the bottom, so a page-level CTA creates a duplicate.
+        if (sections.some((s) => s.type === "gallery")) {
+          (page as Record<string, unknown>).sections = sections.filter((s) => s.type !== "cta");
+        }
       }
 
       // Debug output
