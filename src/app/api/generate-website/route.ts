@@ -412,14 +412,14 @@ function buildPagesJson(
         case "gallery": {
           const activeAlbums = (body.projectAlbums ?? []).filter(a => a.enabled);
           if (activeAlbums.length > 0) {
-            const allItems = activeAlbums.flatMap(a =>
-              a.photos.map(p => ({ src: p.url, alt: p.alt || `${body.businessName} ${a.title}`, caption: p.caption || "", album: a.title }))
-            );
-            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "Browse our recent projects", "albums": ${JSON.stringify(activeAlbums.map(a => ({ id: a.id, title: a.title, description: a.description ?? "", category: a.category ?? "", coverUrl: a.coverImageUrl ?? (a.photos[0]?.url ?? ""), photoCount: a.photos.length })))}, "items": ${JSON.stringify(allItems)} } }`);
+            // Photo URLs are injected by post-processing — only pass album metadata to Claude
+            // so the prompt stays small regardless of photo count.
+            const albumMeta = activeAlbums.map(a => ({ id: a.id, title: a.title, description: a.description ?? "", category: a.category ?? "", photoCount: a.photos.length }));
+            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "<one-line description of the portfolio>", "albums": ${JSON.stringify(albumMeta)}, "items": [] } }`);
           } else if (hasPhotos) {
-            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of recent projects", "items": ${JSON.stringify(body.photos!.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } }`);
+            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of recent projects", "items": [] } }`);
           }
-          // if no photos provided, omit gallery section entirely
+          // items: [] is a placeholder — post-processing injects real photo URLs
           break;
         }
 
