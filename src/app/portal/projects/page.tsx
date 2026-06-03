@@ -670,8 +670,6 @@ function ProjectDetailModal({
     error:   string;
   }>({ runId: "", loading: false, error: "" });
 
-  // Parsed import held for user review before applying to brief
-  const [ctParsedImport, setCtParsedImport] = useState<ParsedCheckatradeImport | null>(null);
 
   // Google Maps scraper state
   const [googleMaps, setGoogleMaps] = useState<{
@@ -865,9 +863,38 @@ function ProjectDetailModal({
         setCheckatrade((s) => ({ ...s, loading: false, error: data.error ?? "Failed to fetch page." }));
         return;
       }
-      // Parse scraped data into structured fields for user review
+      // Parse scraped data and populate the existing brief fields directly
       const parsed = parseCheckatradeImport(data as Record<string, unknown>, checkatrade.url);
-      setCtParsedImport(parsed);
+      setBrief((b) => ({
+        ...b,
+        phone:           parsed.phone           || b.phone,
+        email:           parsed.email           || b.email,
+        city:            parsed.city            || b.city,
+        postcode:        parsed.postcode        || b.postcode,
+        services:        parsed.services        || b.services,
+        about:           parsed.about           || b.about,
+        accreditations:  parsed.accreditations  || b.accreditations,
+        openingHours:    parsed.openingHours    || b.openingHours,
+        socialFacebook:  parsed.socialFacebook  || b.socialFacebook,
+        socialInstagram: parsed.socialInstagram || b.socialInstagram,
+      }));
+      if (parsed.newReviews.length > 0) {
+        setReviews((prev) => [...prev, ...parsed.newReviews]);
+      }
+      if (parsed.newPhotos.length > 0) {
+        setPhotos((prev) => {
+          const existing = new Set(prev);
+          return [...prev, ...parsed.newPhotos.filter((p) => !existing.has(p))];
+        });
+      }
+      setReviewSettings((s) => ({
+        ...parsed.newReviewSettings,
+        reviewCount:     s.reviewCount     ?? parsed.newReviewSettings.reviewCount,
+        averageRating:   s.averageRating   || parsed.newReviewSettings.averageRating,
+        platformUrl:     s.platformUrl     || parsed.newReviewSettings.platformUrl,
+        showReviewBadge: s.showReviewBadge,
+        showRatingBadge: s.showRatingBadge,
+      }));
 
       const found = data._found as { hasNextData?: boolean; hasProfile?: boolean } | undefined;
       setCheckatrade((s) => ({
@@ -1614,18 +1641,18 @@ function ProjectDetailModal({
                   </p>
                 )}
                 {checkatrade.imported && (
-                  <div className="text-xs flex flex-col gap-1">
+                  <div className="text-xs flex flex-col gap-0.5">
                     <span className={`flex items-center gap-1.5 ${checkatrade.noProfile ? "text-amber-400" : "text-emerald-400"}`}>
                       <CheckCircle size={11} />
-                      {ctParsedImport
-                        ? "Data parsed — review and apply below."
-                        : checkatrade.noProfile
-                          ? "Applied (partial — check fields below)."
-                          : "Applied to Website Brief."}
+                      {checkatrade.noProfile
+                        ? "Partial import — some fields pulled from page meta only. Check fields below."
+                        : "Business info, skills, and reviews imported successfully."}
                     </span>
-                    {checkatrade.rating && (
+                    {(checkatrade.rating || photos.length > 0) && (
                       <span className="text-slate-400 pl-4">
-                        {checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews
+                        {checkatrade.rating && <>{checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews</>}
+                        {checkatrade.rating && photos.length > 0 && " · "}
+                        {photos.length > 0 && <>{photos.length} photos</>}
                       </span>
                     )}
                   </div>
@@ -1643,205 +1670,6 @@ function ProjectDetailModal({
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
                 )}
               </div>
-
-              {/* Checkatrade Import Review Panel */}
-              {ctParsedImport && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
-                      <CheckCircle size={11} /> Review Imported Data
-                    </h3>
-                    <button
-                      onClick={() => setCtParsedImport(null)}
-                      className="text-slate-500 hover:text-white transition-colors"
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-                  <p className="text-[11px] text-slate-500">
-                    Review the parsed fields below. Edit anything that needs changing. Empty fields will not overwrite existing values.
-                  </p>
-
-                  <div className="space-y-3">
-                    {/* About */}
-                    <div>
-                      <label className="block text-[11px] text-slate-400 mb-1">About</label>
-                      <textarea
-                        rows={4}
-                        value={ctParsedImport.about}
-                        onChange={(e) => setCtParsedImport((p) => p ? { ...p, about: e.target.value } : p)}
-                        className={`${inputCls} resize-none text-xs`}
-                      />
-                    </div>
-
-                    {/* Services */}
-                    <div>
-                      <label className="block text-[11px] text-slate-400 mb-1">Services (one per line)</label>
-                      <textarea
-                        rows={5}
-                        value={ctParsedImport.services}
-                        onChange={(e) => setCtParsedImport((p) => p ? { ...p, services: e.target.value } : p)}
-                        className={`${inputCls} resize-none text-xs font-mono`}
-                      />
-                    </div>
-
-                    {/* Location */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">City</label>
-                        <input
-                          value={ctParsedImport.city}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, city: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Postcode</label>
-                        <input
-                          value={ctParsedImport.postcode}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, postcode: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Contact */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Phone</label>
-                        <input
-                          value={ctParsedImport.phone}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, phone: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Email</label>
-                        <input
-                          value={ctParsedImport.email}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, email: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Accreditations */}
-                    {ctParsedImport.accreditations && (
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Accreditations</label>
-                        <input
-                          value={ctParsedImport.accreditations}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, accreditations: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                    )}
-
-                    {/* Opening hours */}
-                    {ctParsedImport.openingHours && (
-                      <div>
-                        <label className="block text-[11px] text-slate-400 mb-1">Opening Hours</label>
-                        <input
-                          value={ctParsedImport.openingHours}
-                          onChange={(e) => setCtParsedImport((p) => p ? { ...p, openingHours: e.target.value } : p)}
-                          className={`${inputCls} text-xs`}
-                        />
-                      </div>
-                    )}
-
-                    {/* Social */}
-                    {(ctParsedImport.socialFacebook || ctParsedImport.socialInstagram) && (
-                      <div className="grid grid-cols-2 gap-2">
-                        {ctParsedImport.socialFacebook && (
-                          <div>
-                            <label className="block text-[11px] text-slate-400 mb-1">Facebook</label>
-                            <input
-                              value={ctParsedImport.socialFacebook}
-                              onChange={(e) => setCtParsedImport((p) => p ? { ...p, socialFacebook: e.target.value } : p)}
-                              className={`${inputCls} text-xs`}
-                            />
-                          </div>
-                        )}
-                        {ctParsedImport.socialInstagram && (
-                          <div>
-                            <label className="block text-[11px] text-slate-400 mb-1">Instagram</label>
-                            <input
-                              value={ctParsedImport.socialInstagram}
-                              onChange={(e) => setCtParsedImport((p) => p ? { ...p, socialInstagram: e.target.value } : p)}
-                              className={`${inputCls} text-xs`}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Summary stats */}
-                    <div className="flex flex-wrap gap-3 text-[11px] pt-1 border-t border-riden-border">
-                      {ctParsedImport.newReviews.length > 0 && (
-                        <span className="text-emerald-400">{ctParsedImport.newReviews.length} reviews ready to import</span>
-                      )}
-                      {ctParsedImport.newPhotos.length > 0 && (
-                        <span className="text-blue-400">{ctParsedImport.newPhotos.length} photos ready to import</span>
-                      )}
-                      {ctParsedImport.newReviewSettings.reviewCount != null && (
-                        <span className="text-amber-400">
-                          {ctParsedImport.newReviewSettings.reviewCount} reviews · {ctParsedImport.newReviewSettings.averageRating}/10 on Checkatrade
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 justify-end pt-1">
-                    <Button variant="ghost" size="sm" onClick={() => setCtParsedImport(null)}>
-                      Dismiss
-                    </Button>
-                    <Button
-                      variant="gradient"
-                      size="sm"
-                      onClick={() => {
-                        if (!ctParsedImport) return;
-                        setBrief((b) => ({
-                          ...b,
-                          phone:           ctParsedImport.phone           || b.phone,
-                          email:           ctParsedImport.email           || b.email,
-                          city:            ctParsedImport.city            || b.city,
-                          postcode:        ctParsedImport.postcode        || b.postcode,
-                          services:        ctParsedImport.services        || b.services,
-                          about:           ctParsedImport.about           || b.about,
-                          accreditations:  ctParsedImport.accreditations  || b.accreditations,
-                          openingHours:    ctParsedImport.openingHours    || b.openingHours,
-                          socialFacebook:  ctParsedImport.socialFacebook  || b.socialFacebook,
-                          socialInstagram: ctParsedImport.socialInstagram || b.socialInstagram,
-                        }));
-                        if (ctParsedImport.newReviews.length > 0) {
-                          setReviews((prev) => [...prev, ...ctParsedImport.newReviews]);
-                        }
-                        if (ctParsedImport.newPhotos.length > 0) {
-                          setPhotos((prev) => {
-                            const existing = new Set(prev);
-                            return [...prev, ...ctParsedImport.newPhotos.filter((p) => !existing.has(p))];
-                          });
-                        }
-                        setReviewSettings((s) => ({
-                          ...ctParsedImport.newReviewSettings,
-                          reviewCount:     s.reviewCount     ?? ctParsedImport.newReviewSettings.reviewCount,
-                          averageRating:   s.averageRating   || ctParsedImport.newReviewSettings.averageRating,
-                          platformUrl:     s.platformUrl     || ctParsedImport.newReviewSettings.platformUrl,
-                          showReviewBadge: s.showReviewBadge,
-                          showRatingBadge: s.showRatingBadge,
-                        }));
-                        setCtParsedImport(null);
-                      }}
-                    >
-                      <CheckCircle size={13} /> Apply to Website Brief
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
 
               {/* Review Settings */}
               <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3">
