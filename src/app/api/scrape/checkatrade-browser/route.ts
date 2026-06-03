@@ -79,9 +79,17 @@ function isNoise(url: string): boolean {
   return SKIP.some(s => lower.includes(s));
 }
 
+// Checkatrade tab/nav headings that are never album names
+const UI_HEADINGS = new Set([
+  "overview", "skills", "reviews", "photos", "contact", "about",
+  "services", "accreditations", "opening hours", "location", "find us",
+  "get in touch", "request a quote", "call now", "memberships",
+  "awards", "qualifications", "insurance", "our work", "portfolio",
+]);
+
 // Parses the rendered HTML into named galleries.
 // Strategy: walk headings and img tags by position; each photo belongs to
-// the nearest preceding heading. Groups with < 2 photos are UI chrome.
+// the nearest preceding heading. UI/nav headings are ignored.
 function extractGalleries(html: string): PhotoGallery[] {
   type HeadingEvent = { kind: "heading"; text: string; pos: number };
   type PhotoEvent   = { kind: "photo";   url: string;  pos: number };
@@ -90,13 +98,15 @@ function extractGalleries(html: string): PhotoGallery[] {
   const events: Event[] = [];
   const globalSeen = new Set<string>();
 
-  // Headings h2–h5
+  // Headings h2–h5 — skip known UI labels
   const headingRe = /<h([2-5])[^>]*>([\s\S]*?)<\/h\1>/gi;
   let hm: RegExpExecArray | null;
   while ((hm = headingRe.exec(html)) !== null) {
     const text = hm[2].replace(/<[^>]+>/g, "").trim();
     if (text.length >= 2 && text.length <= 80 && /[a-zA-Z]/.test(text)) {
-      events.push({ kind: "heading", text, pos: hm.index });
+      if (!UI_HEADINGS.has(text.toLowerCase())) {
+        events.push({ kind: "heading", text, pos: hm.index });
+      }
     }
   }
 
@@ -117,7 +127,7 @@ function extractGalleries(html: string): PhotoGallery[] {
 
   // Assign each photo to its most recent heading
   const map = new Map<string, string[]>();
-  let heading = "Photos";
+  let heading = "Portfolio";
 
   for (const ev of events) {
     if (ev.kind === "heading") {
@@ -128,10 +138,14 @@ function extractGalleries(html: string): PhotoGallery[] {
     }
   }
 
-  // Filter out groups that look like navigation / UI chrome (< 2 photos)
-  return [...map.entries()]
+  const groups = [...map.entries()]
     .map(([name, photos]) => ({ name, photos }))
-    .filter(g => g.photos.length >= 2);
+    .filter(g => g.photos.length > 0);
+
+  // If we only got one group (no album structure detected), return it as-is.
+  // If we got multiple groups, filter out likely noise (< 2 photos) but keep named albums.
+  if (groups.length <= 1) return groups;
+  return groups.filter(g => g.photos.length >= 2 || g.name !== "Portfolio");
 }
 
 export async function POST(req: NextRequest) {
@@ -152,13 +166,26 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Navigate directly to the photos section and click the Photos tab.
+    // Checkatrade uses hash-based tab routing so appending #photos helps
+    // React render the right section, and the js_scenario click ensures
+    // the tab is activated even if the hash alone isn't enough.
+    const photosUrl = url.replace(/#.*$/, "") + "#photos";
+    const jsScenario = JSON.stringify({
+      instructions: [
+        { click: "a[href='#photos'], a[href*='photo'][role='tab'], [data-testid='photos-tab']" },
+        { wait: 3000 },
+      ],
+    });
+
     const params = new URLSearchParams({
       api_key:       apiKey,
-      url,
+      url:           photosUrl,
       render_js:     "true",
       stealth_proxy: "true",
       wait:          "5000",
       country_code:  "gb",
+      js_scenario:   jsScenario,
     });
 
     const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params}`);
