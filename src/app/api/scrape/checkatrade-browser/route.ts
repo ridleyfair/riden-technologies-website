@@ -166,24 +166,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Navigate directly to the photos section and click the Photos tab.
-    // Checkatrade uses hash-based tab routing so appending #photos helps
-    // React render the right section, and the js_scenario click ensures
-    // the tab is activated even if the hash alone isn't enough.
-    const photosUrl = url.replace(/#.*$/, "") + "#photos";
+    // Find and click the Photos tab by text content, then wait for the
+    // gallery to render. Using evaluate is more reliable than CSS selectors
+    // because Checkatrade tab elements don't have stable testids.
     const jsScenario = JSON.stringify({
       instructions: [
-        { click: "a[href='#photos'], a[href*='photo'][role='tab'], [data-testid='photos-tab']" },
         { wait: 3000 },
+        {
+          evaluate:
+            "Array.from(document.querySelectorAll('a, button, [role=\"tab\"]'))" +
+            ".find(el => el.textContent.trim().toLowerCase() === 'photos')?.click()",
+        },
+        { wait: 4000 },
       ],
     });
 
     const params = new URLSearchParams({
       api_key:       apiKey,
-      url:           photosUrl,
+      url:           url.replace(/#.*$/, ""), // clean URL, no hash
       render_js:     "true",
       stealth_proxy: "true",
-      wait:          "5000",
+      wait:          "3000",
       country_code:  "gb",
       js_scenario:   jsScenario,
     });
