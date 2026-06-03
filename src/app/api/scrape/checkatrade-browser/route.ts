@@ -16,46 +16,75 @@ const SKIP = [
   "logo", "icon", "avatar", "profile", "flag",
 ];
 
-function extractPhotos(html: string): string[] {
-  const photos = new Set<string>();
+// Returns a stable key for deduplication: strips size/quality params and unwraps
+// Next.js _next/image proxy URLs so the same photo at multiple widths maps to one entry.
+function canonicalKey(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.pathname === "/_next/image") {
+      const src = u.searchParams.get("url");
+      if (src) {
+        try {
+          const inner = new URL(decodeURIComponent(src));
+          ["w", "h", "q", "width", "height", "quality", "size", "fit"].forEach(p => inner.searchParams.delete(p));
+          return inner.toString();
+        } catch {}
+        return decodeURIComponent(src);
+      }
+    }
+    ["w", "h", "q", "width", "height", "quality", "size", "fit"].forEach(p => u.searchParams.delete(p));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
 
-  // Match all img src and srcset URLs
+// For proxy URLs, return the decoded original so we get the real CDN URL.
+function resolveUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.pathname === "/_next/image") {
+      const src = u.searchParams.get("url");
+      if (src) return decodeURIComponent(src);
+    }
+  } catch {}
+  return url;
+}
+
+function extractPhotos(html: string): string[] {
+  const seen = new Map<string, string>(); // canonical → resolved URL
+
+  function add(raw: string) {
+    if (!raw.startsWith("http")) return;
+    const lower = raw.toLowerCase();
+    if (SKIP.some(s => lower.includes(s))) return;
+    const key = canonicalKey(raw);
+    if (!seen.has(key)) seen.set(key, resolveUrl(raw));
+  }
+
+  // Parse img tags for src, data-src, and srcset
   const imgTagRe = /<img[^>]+>/gi;
-  const srcRe = /src="([^"]+)"/i;
-  const srcsetRe = /srcset="([^"]+)"/i;
-  const dataSrcRe = /data-src="([^"]+)"/i;
+  const srcRe = /\bsrc="([^"]+)"/i;
+  const srcsetRe = /\bsrcset="([^"]+)"/i;
+  const dataSrcRe = /\bdata-src="([^"]+)"/i;
 
   let imgMatch: RegExpExecArray | null;
   while ((imgMatch = imgTagRe.exec(html)) !== null) {
     const tag = imgMatch[0];
     for (const re of [srcRe, dataSrcRe]) {
       const m = tag.match(re);
-      if (m?.[1] && m[1].startsWith("http")) photos.add(m[1]);
+      if (m?.[1]) add(m[1]);
     }
     const ssm = tag.match(srcsetRe);
     if (ssm?.[1]) {
       ssm[1].split(",").forEach(part => {
         const u = part.trim().split(/\s+/)[0];
-        if (u?.startsWith("http")) photos.add(u);
+        if (u) add(u);
       });
     }
   }
 
-  // Also pull from Next.js _next/image proxy URLs embedded in the HTML
-  const nextImgRe = /https:\/\/www\.checkatrade\.com\/_next\/image\?url=([^"&\s]+)/g;
-  let nim: RegExpExecArray | null;
-  while ((nim = nextImgRe.exec(html)) !== null) {
-    try {
-      const decoded = decodeURIComponent(nim[1]);
-      if (decoded.startsWith("http")) photos.add(decoded);
-    } catch {}
-  }
-
-  // Filter noise
-  return [...photos].filter(url => {
-    const lower = url.toLowerCase();
-    return !SKIP.some(s => lower.includes(s));
-  });
+  return [...seen.values()];
 }
 
 export async function POST(req: NextRequest) {
