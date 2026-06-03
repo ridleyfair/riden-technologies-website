@@ -193,14 +193,13 @@ export async function POST(req: NextRequest) {
     }
 
     const html = await res.text();
-    let galleries = extractGalleries(html);
+    const rawGalleries = extractGalleries(html);
 
     // If we scraped a specific album URL and the parser returned everything as
     // "Portfolio", rename it to the album name from the page <h1>.
-    if (albumMatch && galleries.length === 1 && galleries[0].name === "Portfolio") {
-      const h1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-      if (h1?.[1]) galleries[0] = { ...galleries[0], name: h1[1].trim() };
-    }
+    const galleries = (albumMatch && rawGalleries.length === 1 && rawGalleries[0].name === "Portfolio")
+      ? (() => { const h1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/i); return [{ ...rawGalleries[0], name: h1?.[1]?.trim() ?? rawGalleries[0].name }]; })()
+      : rawGalleries;
 
     const photos = galleries.flatMap(g => g.photos);
 
