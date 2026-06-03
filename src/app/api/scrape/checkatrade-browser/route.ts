@@ -166,14 +166,21 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Checkatrade's Photos section is a separate Next.js route at /photos,
-    // not a dynamic tab on the profile page. Scrape it directly.
-    const baseUrl = url.replace(/#.*$/, "").replace(/\/+$/, "");
-    const photosUrl = baseUrl.endsWith("/photos") ? baseUrl : `${baseUrl}/photos`;
+    // Checkatrade albums live at /trades/{slug}/albums/{albumId}.
+    // The albums list page at /trades/{slug}/albums shows all albums grouped —
+    // scraping it gives us galleries in one request.
+    // Strip any trailing path segments after the profile slug so we always
+    // start from the canonical profile URL.
+    const profileUrl = url
+      .replace(/#.*$/, "")           // strip hash
+      .replace(/\/+$/, "")           // strip trailing slash
+      .replace(/\/(albums|photos|reviews|skills)(\/.*)?$/, ""); // strip any tab paths
+
+    const albumsUrl = `${profileUrl}/albums`;
 
     const params = new URLSearchParams({
       api_key:       apiKey,
-      url:           photosUrl,
+      url:           albumsUrl,
       render_js:     "true",
       stealth_proxy: "true",
       wait:          "5000",
