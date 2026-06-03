@@ -10,119 +10,61 @@ function getEnv(key: string): string {
   return process.env[key] ?? "";
 }
 
-// Runs inside a real Chromium browser on Apify's residential proxies.
-// After full JS execution + scroll, img.src contains the resolved
-// /_next/image?url=...&w=1920&q=75 proxy URLs which are publicly accessible.
-const PAGE_FUNCTION = `
-async function pageFunction(context) {
-  const { page } = context;
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const SKIP = [
+  "favicon", "star", "badge", "tick", "1x1", "seal", "arrow",
+  "sprite", "placeholder", "ct-logo", "trustmark", ".svg", "data:image",
+  "logo", "icon", "avatar", "profile", "flag",
+];
 
-  // Use 'load' not 'networkidle' — Checkatrade's React app never reaches networkidle
-  try { await page.waitForLoadState('load', { timeout: 30000 }); } catch(e) {}
-  await sleep(3000);
+function extractPhotos(html: string): string[] {
+  const photos = new Set<string>();
 
-  const SKIP = ['favicon','star','badge','tick','1x1','seal','arrow',
-                'sprite','placeholder','ct-logo','trustmark','.svg','data:image'];
+  // Match all img src and srcset URLs
+  const imgTagRe = /<img[^>]+>/gi;
+  const srcRe = /src="([^"]+)"/i;
+  const srcsetRe = /srcset="([^"]+)"/i;
+  const dataSrcRe = /data-src="([^"]+)"/i;
 
-  // Collect all currently-visible content images from the DOM
-  const collectVisible = () => page.evaluate((skip) => {
-    const found = [];
-    document.querySelectorAll('img').forEach(img => {
-      const srcs = [img.src];
-      if (img.srcset) img.srcset.split(',').forEach(p => { const u = p.trim().split(/\s+/)[0]; if (u) srcs.push(u); });
-      const ds = img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || '';
-      if (ds) srcs.push(ds);
-      srcs.forEach(src => {
-        if (src && src.startsWith('http') && !skip.some(s => src.toLowerCase().includes(s))) found.push(src);
-      });
-    });
-    return found;
-  }, SKIP);
-
-  const allPhotos = new Set();
-  (await collectVisible()).forEach(u => allPhotos.add(u));
-
-  // Click the Photos tab — Checkatrade profile has "Overview | Skills | Reviews | Photos" nav
-  try {
-    // Try anchor links first (e.g. href="#photos")
-    const photoAnchor = await page.$('a[href="#photos"], a[href*="#photo"], nav a:has-text("Photos"), [role="tab"]:has-text("Photos")');
-    if (photoAnchor) {
-      await photoAnchor.click();
-      await sleep(2500);
-    } else {
-      // Fall back: find any link/button with text "Photos"
-      const allLinks = await page.$$('a, button');
-      for (const el of allLinks) {
-        const txt = ((await el.textContent()) || '').trim();
-        if (txt === 'Photos' || txt.startsWith('Photos ')) {
-          await el.click();
-          await sleep(2500);
-          break;
-        }
-      }
+  let imgMatch: RegExpExecArray | null;
+  while ((imgMatch = imgTagRe.exec(html)) !== null) {
+    const tag = imgMatch[0];
+    for (const re of [srcRe, dataSrcRe]) {
+      const m = tag.match(re);
+      if (m?.[1] && m[1].startsWith("http")) photos.add(m[1]);
     }
-  } catch(e) {}
-
-  // Scroll and collect at every step — handles virtual scrolling (unmounts off-screen rows)
-  try {
-    const pageH = await page.evaluate(() => document.body.scrollHeight);
-    for (let y = 250; y <= pageH + 250; y += 250) {
-      await page.evaluate(yy => window.scrollTo(0, yy), y);
-      await sleep(300);
-      (await collectVisible()).forEach(u => allPhotos.add(u));
-    }
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await sleep(1000);
-  } catch(e) {}
-
-  const photos = [...allPhotos].slice(0, 150);
-
-  // Skills — try common class/data-testid patterns
-  const skills = await page.evaluate(() => {
-    const found = new Set();
-    ['[class*="skill"]','[class*="trade"]','[class*="categor"]',
-     '[data-testid*="skill"]','[data-testid*="trade"]'].forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        const t = (el.textContent || '').trim();
-        if (t.length > 2 && t.length < 60 && /^[A-Z]/.test(t)) found.add(t);
+    const ssm = tag.match(srcsetRe);
+    if (ssm?.[1]) {
+      ssm[1].split(",").forEach(part => {
+        const u = part.trim().split(/\s+/)[0];
+        if (u?.startsWith("http")) photos.add(u);
       });
-    });
-    return [...found].slice(0, 50);
-  });
-
-  const meta = await page.evaluate(() => ({
-    name:        document.querySelector('h1')?.innerText?.trim() || document.title || '',
-    ogImage:     document.querySelector('meta[property="og:image"]')?.getAttribute('content') || '',
-    description: document.querySelector('meta[name="description"]')?.getAttribute('content') || '',
-    phone:       document.querySelector('a[href^="tel:"]')?.textContent?.trim() ||
-                 document.querySelector('a[href^="tel:"]')?.getAttribute('href')?.replace('tel:','') || '',
-  }));
-
-  if (meta.ogImage && meta.ogImage.startsWith('http') && !photos.includes(meta.ogImage)) {
-    photos.unshift(meta.ogImage);
+    }
   }
 
-  // Debug: raw sample so we can see what the browser actually found
-  const debugRaw = await page.evaluate(() =>
-    Array.from(document.images).slice(0, 5).map(img => ({
-      src: img.src.slice(0, 120),
-      w: img.naturalWidth,
-      h: img.naturalHeight,
-    }))
-  );
+  // Also pull from Next.js _next/image proxy URLs embedded in the HTML
+  const nextImgRe = /https:\/\/www\.checkatrade\.com\/_next\/image\?url=([^"&\s]+)/g;
+  let nim: RegExpExecArray | null;
+  while ((nim = nextImgRe.exec(html)) !== null) {
+    try {
+      const decoded = decodeURIComponent(nim[1]);
+      if (decoded.startsWith("http")) photos.add(decoded);
+    } catch {}
+  }
 
-  return { photos, skills, meta, _debug: { finalUrl: page.url(), imgCount: (await page.$$('img')).length, rawSample: debugRaw, totalCollected: allPhotos.size } };
+  // Filter noise
+  return [...photos].filter(url => {
+    const lower = url.toLowerCase();
+    return !SKIP.some(s => lower.includes(s));
+  });
 }
-`;
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();
 
-  const token = getEnv("APIFY_API_TOKEN");
-  if (!token) {
-    return NextResponse.json({ error: "APIFY_API_TOKEN not configured" }, { status: 500 });
+  const apiKey = getEnv("SCRAPINGBEE_API_KEY");
+  if (!apiKey) {
+    return NextResponse.json({ error: "SCRAPINGBEE_API_KEY not configured" }, { status: 500 });
   }
 
   let url: string;
@@ -134,31 +76,37 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(
-      `https://api.apify.com/v2/acts/apify~playwright-scraper/runs?token=${token}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          startUrls:            [{ url }],
-          pageFunction:         PAGE_FUNCTION,
-          proxyConfiguration:   { useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"], apifyProxyCountry: "GB" },
-          maxRequestsPerCrawl:  1,
-          maxRequestRetries:    8,
-          stealth:              true,
-        }),
-      }
-    );
+    const params = new URLSearchParams({
+      api_key:       apiKey,
+      url,
+      render_js:     "true",
+      stealth_proxy: "true",
+      wait:          "4000",       // wait 4s after page load for React to render photos
+      country_code:  "gb",
+    });
+
+    const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params}`, {
+      method: "GET",
+      // ScrapingBee can take up to 60s — CF Worker default timeout is fine
+    });
 
     if (!res.ok) {
       const text = await res.text();
-      return NextResponse.json({ error: `Apify error: ${text}` }, { status: 500 });
+      return NextResponse.json({ error: `ScrapingBee error ${res.status}: ${text}` }, { status: 500 });
     }
 
-    const data = await res.json();
-    return NextResponse.json({ runId: data.data.id });
+    const html = await res.text();
+    const photos = extractPhotos(html);
+
+    return NextResponse.json({
+      photos,
+      _debug: {
+        htmlLength: html.length,
+        totalFound: photos.length,
+      },
+    });
   } catch (err) {
-    console.error("Checkatrade browser scrape error:", err);
-    return NextResponse.json({ error: "Failed to start browser scrape" }, { status: 500 });
+    console.error("Checkatrade ScrapingBee error:", err);
+    return NextResponse.json({ error: "Failed to scrape photos" }, { status: 500 });
   }
 }

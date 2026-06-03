@@ -684,12 +684,11 @@ function ProjectDetailModal({
     error:    "",
   });
 
-  // Browser-based photo scrape (Apify Playwright — runs after fast scrape)
+  // Browser-based photo scrape (ScrapingBee — synchronous, runs after fast scrape)
   const [ctBrowser, setCtBrowser] = useState<{
-    runId:   string;
     loading: boolean;
     error:   string;
-  }>({ runId: "", loading: false, error: "" });
+  }>({ loading: false, error: "" });
 
 
   // Google Maps scraper state
@@ -726,36 +725,6 @@ function ProjectDetailModal({
   const monthlyRate = inferMonthlyRate(project.notes);
   const cfg         = STATUS_CONFIG[project.status] ?? { label: project.status, color: "text-slate-400", bg: "bg-slate-400" };
 
-  // ── Checkatrade browser photo polling ────────────────────────────────────
-  useEffect(() => {
-    if (!ctBrowser.runId || !ctBrowser.loading) return;
-    const interval = setInterval(async () => {
-      try {
-        const res  = await fetch(`/api/scrape/status?runId=${ctBrowser.runId}`);
-        const data = await res.json();
-        if (data.status === "SUCCEEDED") {
-          clearInterval(interval);
-          const item = (data.items ?? [])[0] ?? {};
-          const newPhotos = Array.isArray(item.photos) ? (item.photos as string[]) : [];
-          const newSkills = Array.isArray(item.skills) ? (item.skills as string[]) : [];
-          if (newPhotos.length > 0) {
-            setPhotos(prev => [...new Set([...prev, ...newPhotos])]);
-          }
-          if (newSkills.length > 0) {
-            setBrief(b => ({ ...b, services: b.services || newSkills.join(", ") }));
-          }
-          setCtBrowser(s => ({ ...s, loading: false, runId: "" }));
-        } else if (data.status === "FAILED") {
-          clearInterval(interval);
-          setCtBrowser(s => ({ ...s, loading: false, error: "Browser photo fetch failed.", runId: "" }));
-        }
-      } catch {
-        clearInterval(interval);
-        setCtBrowser(s => ({ ...s, loading: false, error: "Failed to check photo status.", runId: "" }));
-      }
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [ctBrowser.runId, ctBrowser.loading]);
 
   // ── Google Maps polling ───────────────────────────────────────────────────
   useEffect(() => {
@@ -927,8 +896,8 @@ function ProjectDetailModal({
         noProfile:   found && !found.hasProfile,
       }));
 
-      // Always kick off the browser-based photo scrape in the background
-      setCtBrowser({ runId: "", loading: true, error: "" });
+      // Kick off ScrapingBee browser photo scrape (synchronous — waits for result)
+      setCtBrowser({ loading: true, error: "" });
       try {
         const bRes  = await fetch("/api/scrape/checkatrade-browser", {
           method:  "POST",
@@ -936,13 +905,15 @@ function ProjectDetailModal({
           body:    JSON.stringify({ url: checkatrade.url }),
         });
         const bData = await bRes.json();
-        if (bData.runId) {
-          setCtBrowser(s => ({ ...s, runId: bData.runId }));
+        const newPhotos = Array.isArray(bData.photos) ? (bData.photos as string[]) : [];
+        if (newPhotos.length > 0) {
+          setPhotos(prev => [...new Set([...prev, ...newPhotos])]);
+          setCtBrowser({ loading: false, error: "" });
         } else {
-          setCtBrowser({ runId: "", loading: false, error: bData.error ?? "Browser scrape failed to start." });
+          setCtBrowser({ loading: false, error: bData.error ?? "No photos found on Checkatrade." });
         }
       } catch {
-        setCtBrowser({ runId: "", loading: false, error: "Could not start browser photo fetch." });
+        setCtBrowser({ loading: false, error: "Could not fetch photos." });
       }
     } catch {
       setCheckatrade((s) => ({ ...s, loading: false, error: "Network error. Please try again." }));
@@ -1681,7 +1652,7 @@ function ProjectDetailModal({
                 {ctBrowser.loading && (
                   <p className="text-xs text-blue-400 flex items-center gap-1.5">
                     <RefreshCw size={11} className="animate-spin" />
-                    Fetching photos via browser… (up to 60 s)
+                    Fetching photos… (up to 30 s)
                   </p>
                 )}
                 {!ctBrowser.loading && ctBrowser.error && (
