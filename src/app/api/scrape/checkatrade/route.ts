@@ -382,9 +382,9 @@ export async function POST(req: NextRequest) {
       || str(bizLd?.description)
       || metaContent(html, "og:description");
 
-    // If structured data gave a short description, try to supplement from HTML
-    const descFromHtml = descFromData.length < 100 ? extractLongTextFromHtml(html) : "";
-    const description  = descFromData.length >= descFromHtml.length ? descFromData : descFromHtml;
+    // Only fall back to HTML extraction when we have nothing at all — the HTML
+    // dump includes navigation, service lists, reviews etc. and pollutes the About field.
+    const description = descFromData || extractLongTextFromHtml(html);
 
     // ── Contact ───────────────────────────────────────────────────────────────
     const phone =
@@ -416,19 +416,51 @@ export async function POST(req: NextRequest) {
       || extractPostcode(plainText.substring(0, 60000));
 
     // ── Skills / trades ───────────────────────────────────────────────────────
-    const rawSkills = (findFirst(profile, [
+    const SKILL_KEYS = [
       "skills","trades","categories","serviceTypes","workTypes","services",
       "tradeTypes","specialisms","tradeCategories","tradingCategories",
       "serviceOfferings","tradeInformation","primaryTrades","additionalTrades",
       "tradeSkills","expertise","offerings","tradesList","skillsList",
-    ]) ?? []) as unknown[];
-    // If profile-level search fails, try searching entire pageProps for trade arrays
-    const skills = strArr(rawSkills).length > 0
-      ? strArr(rawSkills)
-      : pageProps ? strArr((findFirst(pageProps, [
-          "skills","trades","tradeCategories","serviceTypes","tradeTypes",
-          "categories","specialisms","offerings",
-        ]) ?? []) as unknown[]) : [];
+    ];
+
+    const rawSkills = (findFirst(profile, SKILL_KEYS) ?? []) as unknown[];
+    let skills = strArr(rawSkills);
+
+    // If profile-level search fails, try top-level pageProps
+    if (skills.length === 0 && pageProps) {
+      skills = strArr((findFirst(pageProps, SKILL_KEYS) ?? []) as unknown[]);
+    }
+
+    // If still empty, search every React Query result individually — Checkatrade
+    // often loads trades via a separate query that doesn't appear in the profile object.
+    if (skills.length === 0 && pageProps) {
+      const dh = (pageProps as Record<string, unknown>).dehydratedState as Record<string, unknown> | undefined;
+      if (Array.isArray(dh?.queries)) {
+        outer: for (const q of dh!.queries as Record<string, unknown>[]) {
+          const qd = ((q?.state as Record<string, unknown>)?.data) as unknown;
+          if (!qd) continue;
+          for (const key of SKILL_KEYS) {
+            const v = deepFind(qd, key);
+            if (Array.isArray(v) && v.length > 0) {
+              const ex = strArr(v);
+              if (ex.length > 0) { skills = ex; break outer; }
+            }
+          }
+        }
+      }
+    }
+
+    // Last resort: extract from "Skills" section in the plain text
+    if (skills.length === 0) {
+      const m = plainText.match(/\bSkills\b\s+([\s\S]{10,600}?)(?=\s+(?:Reviews?|Photos?|Company\s+info|Overview|About|Accreditations?)\s)/i);
+      if (m) {
+        const candidates = m[1]
+          .split(/\s{2,}|,\s*/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 3 && s.length < 80 && /[A-Za-z]/.test(s));
+        if (candidates.length >= 2) skills = candidates.slice(0, 30);
+      }
+    }
 
     // ── Accreditations ────────────────────────────────────────────────────────
     const rawCerts = (findFirst(profile, ["accreditations","certifications","memberships","qualifications","badges","approvals","endorsements"]) ?? []) as unknown[];
