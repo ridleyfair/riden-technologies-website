@@ -75,6 +75,17 @@ interface GenerateBody {
     showRatingBadge: boolean;
   };
   photos?: string[];
+  projectAlbums?: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    category?: string;
+    sourceUrl?: string;
+    coverImageUrl?: string;
+    photos: Array<{ id: string; url: string; alt?: string; caption?: string; displayOrder: number }>;
+    enabled: boolean;
+    displayOrder: number;
+  }>;
   trustCards?: Array<{
     id:       string;
     title:    string;
@@ -335,7 +346,7 @@ function buildPagesJson(
   const phone = body.phone;
   const city = body.city + locationSuffix;
   const year = new Date().getFullYear();
-  const hasPhotos = (body.photos ?? []).length > 0;
+  const hasPhotos = (body.photos ?? []).length > 0 || (body.projectAlbums ?? []).some(a => a.enabled && a.photos.length > 0);
   // No reviewsNote variable needed — reviews are pre-serialised or left empty
 
   // Build nav links — anchor links for single-page, routes for multi-page
@@ -398,12 +409,19 @@ function buildPagesJson(
           break;
         }
 
-        case "gallery":
-          if (hasPhotos) {
+        case "gallery": {
+          const activeAlbums = (body.projectAlbums ?? []).filter(a => a.enabled);
+          if (activeAlbums.length > 0) {
+            const allItems = activeAlbums.flatMap(a =>
+              a.photos.map(p => ({ src: p.url, alt: p.alt || `${body.businessName} ${a.title}`, caption: p.caption || "", album: a.title }))
+            );
+            sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "Browse our recent projects", "albums": ${JSON.stringify(activeAlbums.map(a => ({ id: a.id, title: a.title, description: a.description ?? "", category: a.category ?? "", coverUrl: a.coverImageUrl ?? (a.photos[0]?.url ?? ""), photoCount: a.photos.length })))}, "items": ${JSON.stringify(allItems)} } }`);
+          } else if (hasPhotos) {
             sectionJsons.push(`{ "type": "gallery", "content": { "headline": "Our Work", "subHeadline": "A selection of recent projects", "items": ${JSON.stringify(body.photos!.map((src, i) => ({ src, alt: `Work photo ${i + 1}`, caption: "" })))} } }`);
           }
           // if no photos provided, omit gallery section entirely
           break;
+        }
 
         case "cta":
           sectionJsons.push(`{ "type": "cta", "content": { "headline": "<specific CTA for ${body.industry} in ${city}>", "subHeadline": "<specific sub-headline using services from About>", "cta": "Call Now", "ctaHref": "tel:${phone}" } }`);
@@ -878,34 +896,57 @@ export async function POST(req: NextRequest) {
         }
 
         // Inject real photos into whichever page the template designates for gallery
-        if (body.photos && body.photos.length > 0) {
+        const activeAlbums = (body.projectAlbums ?? []).filter(a => a.enabled);
+        const effectivePhotos = activeAlbums.length > 0
+          ? activeAlbums.flatMap(a => a.photos.map(p => p.url))
+          : (body.photos ?? []);
+
+        if (effectivePhotos.length > 0) {
           const galleryPageSlug = templateDef.pages.find((p) => p.sections.includes("gallery"))?.slug;
           const isDesignatedGalleryPage = (page.slug as string) === galleryPageSlug;
           const gallerySection = sections.find((s) => s.type === "gallery") as Record<string, unknown> | undefined;
 
           if (gallerySection) {
-            // Override items with real photos
-            (gallerySection.content as Record<string, unknown>).items = body.photos.map((src, i) => ({
+            const gContent = gallerySection.content as Record<string, unknown>;
+            // Inject flat items (backward compat)
+            gContent.items = effectivePhotos.map((src, i) => ({
               src: toAbsUrl(src),
               alt: `${body.businessName} work photo ${i + 1}`,
               caption: "",
             }));
+            // Also inject album structure for templates that support it
+            if (activeAlbums.length > 0) {
+              gContent.projectAlbums = activeAlbums.map(a => ({
+                ...a,
+                coverImageUrl: a.coverImageUrl ? toAbsUrl(a.coverImageUrl) : undefined,
+                photos: a.photos.map(p => ({
+                  ...p,
+                  url: toAbsUrl(p.url),
+                  alt: p.alt || `${body.businessName} ${a.title}`,
+                })),
+              }));
+            }
           } else if (isDesignatedGalleryPage) {
             // Inject gallery section if Claude omitted it on the designated gallery page
             const insertBefore = sections.findIndex((s) => s.type === "cta" || s.type === "footer");
             const idx = insertBefore >= 0 ? insertBefore : sections.length - 1;
-            sections.splice(idx, 0, {
-              type: "gallery",
-              content: {
-                headline: "Our Work",
-                subHeadline: "A selection of recent projects",
-                items: body.photos.map((src, i) => ({
-                  src: toAbsUrl(src),
-                  alt: `${body.businessName} work photo ${i + 1}`,
-                  caption: "",
-                })),
-              },
-            });
+            const injectedContent: Record<string, unknown> = {
+              headline: "Our Work",
+              subHeadline: "A selection of recent projects",
+              items: effectivePhotos.map((src, i) => ({
+                src: toAbsUrl(src),
+                alt: `${body.businessName} work photo ${i + 1}`,
+                caption: "",
+              })),
+            };
+            if (activeAlbums.length > 0) {
+              injectedContent.projectAlbums = activeAlbums.map(a => ({
+                ...a,
+                coverImageUrl: a.coverImageUrl ? toAbsUrl(a.coverImageUrl) : undefined,
+                photos: a.photos.map(p => ({ ...p, url: toAbsUrl(p.url), alt: p.alt || `${body.businessName} ${a.title}` })),
+              }));
+            }
+            sections.splice(idx, 0, { type: "gallery", content: injectedContent });
           }
         }
       }

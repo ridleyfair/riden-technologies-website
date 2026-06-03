@@ -101,6 +101,26 @@ const DEFAULT_REVIEW_SETTINGS: ReviewSettings = {
   showRatingBadge: true,
 };
 
+type PhotoInAlbum = {
+  id:           string;
+  url:          string;
+  alt?:         string;
+  caption?:     string;
+  displayOrder: number;
+};
+
+type ProjectAlbum = {
+  id:             string;
+  title:          string;
+  description?:   string;
+  category?:      string;
+  sourceUrl?:     string;
+  coverImageUrl?: string;
+  photos:         PhotoInAlbum[];
+  enabled:        boolean;
+  displayOrder:   number;
+};
+
 // ── Checkatrade import parser ─────────────────────────────────────────────────
 
 type ParsedCheckatradeImport = {
@@ -512,30 +532,32 @@ function ProjectDetailModal({
   // photosJson stores { logo, heroImages, hero(legacy), gallery, heroHotspots, colours } or legacy plain string[]
   const parsedPhotos = (() => {
     const emptyColours: BrandColours = { primary: "", secondary: "", tertiary: "" };
+    const empty: ProjectAlbum[] = [];
+    function legacyAlbum(urls: string[]): ProjectAlbum[] {
+      if (urls.length === 0) return [];
+      return [{ id: "default_album", title: "Our Work", description: "", category: "", sourceUrl: "", coverImageUrl: urls[0], photos: urls.map((url, i) => ({ id: `ph_${i}`, url, alt: "", caption: "", displayOrder: i })), enabled: true, displayOrder: 0 }];
+    }
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours };
+      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: legacyAlbum(raw as string[]) };
       const rc = raw.colours && typeof raw.colours === "object" ? raw.colours as Record<string, unknown> : {};
-      // heroImages[] is the canonical field; fall back to legacy hero string
-      const heroImages: string[] = Array.isArray(raw.heroImages)
-        ? raw.heroImages as string[]
-        : raw.hero ? [String(raw.hero)] : [];
+      const heroImages: string[] = Array.isArray(raw.heroImages) ? raw.heroImages as string[] : raw.hero ? [String(raw.hero)] : [];
+      const gallery: string[] = Array.isArray(raw.gallery) ? raw.gallery as string[] : [];
+      const rawAlbums: ProjectAlbum[] = Array.isArray(raw.projectAlbums) ? raw.projectAlbums as ProjectAlbum[] : [];
+      const projectAlbums = rawAlbums.length > 0 ? rawAlbums : legacyAlbum(gallery);
       return {
         logo:         String(raw.logo       ?? ""),
         heroImages,
         heroMobile:   String(raw.heroMobile ?? ""),
-        gallery:      Array.isArray(raw.gallery)       ? raw.gallery       as string[]      : [],
+        gallery,
         heroHotspots: Array.isArray(raw.heroHotspots)  ? raw.heroHotspots  as HeroHotspot[] : [],
-        colours: {
-          primary:   String(rc.primary   ?? ""),
-          secondary: String(rc.secondary ?? ""),
-          tertiary:  String(rc.tertiary  ?? ""),
-        } as BrandColours,
+        colours: { primary: String(rc.primary ?? ""), secondary: String(rc.secondary ?? ""), tertiary: String(rc.tertiary ?? "") } as BrandColours,
         trustCards:      Array.isArray(raw.trustCards)      ? raw.trustCards      as TrustCard[]      : DEFAULT_TRUST_CARDS,
         aboutProofCards: Array.isArray(raw.aboutProofCards) ? raw.aboutProofCards as AboutProofCard[] : DEFAULT_ABOUT_PROOF_CARDS,
         reviewSettings:  raw.reviewSettings && typeof raw.reviewSettings === "object" ? raw.reviewSettings as ReviewSettings : DEFAULT_REVIEW_SETTINGS,
+        projectAlbums,
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: empty }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -551,6 +573,12 @@ function ProjectDetailModal({
   const [trustCards,       setTrustCards]       = useState<TrustCard[]>(parsedPhotos.trustCards ?? DEFAULT_TRUST_CARDS);
   const [aboutProofCards, setAboutProofCards]   = useState<AboutProofCard[]>(parsedPhotos.aboutProofCards ?? DEFAULT_ABOUT_PROOF_CARDS);
   const [reviewSettings,  setReviewSettings]    = useState<ReviewSettings>(parsedPhotos.reviewSettings ?? DEFAULT_REVIEW_SETTINGS);
+  const [projectAlbums,   setProjectAlbums]     = useState<ProjectAlbum[]>(parsedPhotos.projectAlbums ?? []);
+  const [expandedAlbumId, setExpandedAlbumId]   = useState<string | null>(null);
+  const [albumUrlInputs,  setAlbumUrlInputs]    = useState<Record<string, string>>({});
+  const [albumImportingMap, setAlbumImportingMap] = useState<Record<string, boolean>>({});
+  const [albumMsgs,       setAlbumMsgs]         = useState<Record<string, string>>({});
+  const [albumPhotoInputs, setAlbumPhotoInputs] = useState<Record<string, string>>({});
   const [heroUploading, setHeroUploading]       = useState(false);
   const [heroMobileUploading, setHeroMobileUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -690,42 +718,93 @@ function ProjectDetailModal({
     error:   string;
   }>({ loading: false, error: "" });
 
-  // Gallery picker: populated after ScrapingBee returns grouped galleries
-  const [importedGalleries, setImportedGalleries] = useState<{
-    name: string;
-    photos: string[];
-  }[] | null>(null);
+  // ── Album helper functions ────────────────────────────────────────────────
+  function newId() { return `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`; }
 
-  // Album URL import (user pastes a specific Checkatrade album URL)
-  const [albumUrlInput, setAlbumUrlInput] = useState("");
-  const [albumImporting, setAlbumImporting] = useState(false);
-  const [albumImportError, setAlbumImportError] = useState("");
+  function addAlbum() {
+    const id = newId();
+    setProjectAlbums(prev => [...prev, { id, title: "New Album", description: "", category: "", sourceUrl: "", coverImageUrl: "", photos: [], enabled: true, displayOrder: prev.length }]);
+    setExpandedAlbumId(id);
+  }
 
-  async function importAlbumUrl() {
-    const albumUrl = albumUrlInput.trim();
-    if (!albumUrl.includes("checkatrade.com/trades") || !albumUrl.includes("/albums/")) return;
-    setAlbumImporting(true);
-    setAlbumImportError("");
+  function deleteAlbum(albumId: string) {
+    setProjectAlbums(prev => prev.filter(a => a.id !== albumId).map((a, i) => ({...a, displayOrder: i})));
+    if (expandedAlbumId === albumId) setExpandedAlbumId(null);
+  }
+
+  function updateAlbum(albumId: string, fields: Partial<ProjectAlbum>) {
+    setProjectAlbums(prev => prev.map(a => a.id === albumId ? {...a, ...fields} : a));
+  }
+
+  function moveAlbum(albumId: string, dir: -1 | 1) {
+    setProjectAlbums(prev => {
+      const idx = prev.findIndex(a => a.id === albumId);
+      if (idx < 0) return prev;
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr.map((a, i) => ({...a, displayOrder: i}));
+    });
+  }
+
+  function addPhotoToAlbum(albumId: string, photoUrl: string) {
+    const url = photoUrl.trim();
+    if (!url.startsWith("http")) return;
+    setProjectAlbums(prev => prev.map(a => {
+      if (a.id !== albumId || a.photos.some(p => p.url === url)) return a;
+      const ph: PhotoInAlbum = { id: newId(), url, alt: "", caption: "", displayOrder: a.photos.length };
+      return { ...a, photos: [...a.photos, ph], coverImageUrl: a.coverImageUrl || url };
+    }));
+    setAlbumPhotoInputs(p => ({...p, [albumId]: ""}));
+  }
+
+  function removePhotoFromAlbum(albumId: string, photoId: string) {
+    setProjectAlbums(prev => prev.map(a => {
+      if (a.id !== albumId) return a;
+      const removed = a.photos.find(p => p.id === photoId);
+      const newPhotos = a.photos.filter(p => p.id !== photoId).map((p, i) => ({...p, displayOrder: i}));
+      const newCover = a.coverImageUrl === removed?.url ? (newPhotos[0]?.url ?? "") : a.coverImageUrl;
+      return { ...a, photos: newPhotos, coverImageUrl: newCover };
+    }));
+  }
+
+  function setAlbumCover(albumId: string, url: string) {
+    setProjectAlbums(prev => prev.map(a => a.id === albumId ? {...a, coverImageUrl: url} : a));
+  }
+
+  async function importPhotosToAlbum(albumId: string) {
+    const url = (albumUrlInputs[albumId] ?? "").trim();
+    if (!url.includes("checkatrade.com")) return;
+    setAlbumImportingMap(p => ({...p, [albumId]: true}));
+    setAlbumMsgs(p => ({...p, [albumId]: ""}));
     try {
       const res = await fetch("/api/scrape/checkatrade-browser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: albumUrl }),
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({url}),
       });
       const data = await res.json();
-      const galleries = Array.isArray(data.galleries)
-        ? (data.galleries as { name: string; photos: string[] }[]).filter(g => g.photos.length > 0)
-        : [];
-      if (galleries.length > 0) {
-        setImportedGalleries(prev => [...(prev ?? []), ...galleries]);
-        setAlbumUrlInput("");
-      } else {
-        setAlbumImportError(data.error ?? "No photos found in that album.");
+      const allPhotos: string[] = Array.isArray(data.photos) ? data.photos : [];
+      const guessedName: string = Array.isArray(data.galleries) && data.galleries[0]?.name ? String(data.galleries[0].name) : "";
+      if (allPhotos.length === 0) {
+        setAlbumMsgs(p => ({...p, [albumId]: data.error ?? "No photos found in this album."}));
+        return;
       }
+      const current = projectAlbums.find(a => a.id === albumId);
+      const existingUrls = new Set(current?.photos.map(p => p.url) ?? []);
+      const toAdd = allPhotos.filter(u => !existingUrls.has(u));
+      const skipped = allPhotos.length - toAdd.length;
+      setProjectAlbums(prev => prev.map(a => {
+        if (a.id !== albumId) return a;
+        const newPhotos: PhotoInAlbum[] = toAdd.map((u, i) => ({ id: newId(), url: u, alt: "", caption: "", displayOrder: a.photos.length + i }));
+        return { ...a, title: a.title === "New Album" && guessedName ? guessedName : a.title, sourceUrl: url, coverImageUrl: a.coverImageUrl || toAdd[0] || "", photos: [...a.photos, ...newPhotos] };
+      }));
+      setAlbumUrlInputs(p => ({...p, [albumId]: ""}));
+      setAlbumMsgs(p => ({...p, [albumId]: `✓ Imported ${toAdd.length} photos${skipped > 0 ? `. Skipped ${skipped} duplicates.` : "."}`}));
     } catch {
-      setAlbumImportError("Could not fetch album.");
+      setAlbumMsgs(p => ({...p, [albumId]: "Could not import photos from this album URL."}));
     } finally {
-      setAlbumImporting(false);
+      setAlbumImportingMap(p => ({...p, [albumId]: false}));
     }
   }
 
@@ -802,7 +881,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -822,7 +901,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: photos, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }) }),
     });
   }
 
@@ -911,9 +990,20 @@ function ProjectDetailModal({
         setReviews((prev) => [...prev, ...parsed.newReviews]);
       }
       if (parsed.newPhotos.length > 0) {
-        setPhotos((prev) => {
-          const existing = new Set(prev);
-          return [...prev, ...parsed.newPhotos.filter((p) => !existing.has(p))];
+        // Add fast-scrape photos into a "Recent Work" album (ctBrowser may augment later)
+        setProjectAlbums(prev => {
+          const allExisting = new Set(prev.flatMap(a => a.photos.map(p => p.url)));
+          const toAdd = parsed.newPhotos.filter(u => !allExisting.has(u));
+          if (toAdd.length === 0) return prev;
+          const existingAlbum = prev.find(a => a.title === "Recent Work");
+          if (existingAlbum) {
+            return prev.map(a => a.id !== existingAlbum.id ? a : {
+              ...a,
+              photos: [...a.photos, ...toAdd.map((u, i) => ({ id: newId(), url: u, alt: "", caption: "", displayOrder: a.photos.length + i }))],
+              coverImageUrl: a.coverImageUrl || toAdd[0],
+            });
+          }
+          return [...prev, { id: newId(), title: "Recent Work", description: "", category: "", sourceUrl: checkatrade.url, coverImageUrl: toAdd[0] ?? "", photos: toAdd.map((u, i) => ({ id: newId(), url: u, alt: "", caption: "", displayOrder: i })), enabled: true, displayOrder: prev.length }];
         });
       }
       setReviewSettings((s) => ({
@@ -948,7 +1038,22 @@ function ProjectDetailModal({
           ? (bData.galleries as { name: string; photos: string[] }[]).filter(g => g.photos.length > 0)
           : [];
         if (galleries.length > 0) {
-          setImportedGalleries(galleries);
+          setProjectAlbums(prev => {
+            const existingNames = new Set(prev.map(a => a.title));
+            const newAlbums: ProjectAlbum[] = galleries
+              .filter(g => !existingNames.has(g.name))
+              .map((g, i) => ({
+                id: newId(),
+                title: g.name,
+                description: "", category: "",
+                sourceUrl: checkatrade.url,
+                coverImageUrl: g.photos[0] ?? "",
+                photos: g.photos.map((url, j) => ({ id: newId(), url, alt: "", caption: "", displayOrder: j })),
+                enabled: true,
+                displayOrder: prev.length + i,
+              }));
+            return [...prev, ...newAlbums];
+          });
           setCtBrowser({ loading: false, error: "" });
         } else {
           setCtBrowser({ loading: false, error: bData.error ?? "No photos found on Checkatrade." });
@@ -1038,8 +1143,9 @@ function ProjectDetailModal({
           heroImage:       heroImages[0]            || undefined,
           heroMobileImage: heroMobilePhoto           || undefined,
           heroHotspots:    heroHotspots.length > 0  ? heroHotspots : undefined,
-          templateId:   selectedTemplate || undefined,
-          photos,
+          templateId:      selectedTemplate || undefined,
+          photos:          projectAlbums.filter(a => a.enabled).flatMap(a => a.photos.map(p => p.url)),
+          projectAlbums:   projectAlbums.filter(a => a.enabled),
           brandColours: (() => {
             const isHex = (s: string) => /^#[0-9a-fA-F]{6}$/.test(s);
             const c = {
@@ -1681,11 +1787,11 @@ function ProjectDetailModal({
                         ? "Partial import — some fields pulled from page meta only. Check fields below."
                         : "Business info, skills, and reviews imported successfully."}
                     </span>
-                    {(checkatrade.rating || photos.length > 0) && (
+                    {(checkatrade.rating || projectAlbums.length > 0) && (
                       <span className="text-slate-400 pl-4">
                         {checkatrade.rating && <>{checkatrade.rating}/10 · {checkatrade.reviewCount ?? 0} reviews</>}
-                        {checkatrade.rating && photos.length > 0 && " · "}
-                        {photos.length > 0 && <>{photos.length} photos</>}
+                        {checkatrade.rating && projectAlbums.length > 0 && " · "}
+                        {projectAlbums.length > 0 && <>{projectAlbums.reduce((n, a) => n + a.photos.length, 0)} photos in {projectAlbums.length} album{projectAlbums.length !== 1 ? "s" : ""}</>}
                       </span>
                     )}
                   </div>
@@ -1703,31 +1809,6 @@ function ProjectDetailModal({
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
                 )}
 
-                {/* Album URL importer — paste a specific album URL from Checkatrade */}
-                {checkatrade.imported && (
-                  <div className="pt-1 space-y-1.5">
-                    <p className="text-[11px] text-slate-500">
-                      To import more photos, browse your Checkatrade profile → click an album → paste its URL here.
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        value={albumUrlInput}
-                        onChange={e => setAlbumUrlInput(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && importAlbumUrl()}
-                        placeholder="e.g. checkatrade.com/trades/slug/albums/abc123"
-                        className={`${inputCls} flex-1 text-xs`}
-                      />
-                      <button
-                        onClick={importAlbumUrl}
-                        disabled={albumImporting || !albumUrlInput.includes("/albums/")}
-                        className="px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-40 flex-shrink-0"
-                      >
-                        {albumImporting ? <RefreshCw size={11} className="animate-spin" /> : "Import"}
-                      </button>
-                    </div>
-                    {albumImportError && <p className="text-[10px] text-amber-400">{albumImportError}</p>}
-                  </div>
-                )}
               </div>
 
               {/* Review Settings */}
@@ -2156,140 +2237,167 @@ function ProjectDetailModal({
                 </div>
               )}
 
-              {/* Work Photos (Gallery) */}
+              {/* Project Albums */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Our Work Photos ({photos.length})</h3>
-                  {photos.length > 0 && (
-                    <button
-                      onClick={() => setPhotos([])}
-                      className="text-[10px] text-rose-400 hover:text-rose-300 transition-colors"
-                    >
-                      Clear all
-                    </button>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-500">Upload photos or paste URLs. These appear in the gallery section on the website.</p>
-
-                {/* Hidden multi-file input */}
-                <input
-                  ref={galleryFileRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  className="hidden"
-                  onChange={handleGalleryUpload}
-                />
-
-                {/* Upload + URL row */}
-                <div className="flex gap-2">
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Project Albums ({projectAlbums.length})
+                  </h3>
                   <button
-                    onClick={() => galleryFileRef.current?.click()}
-                    disabled={galleryUploading}
-                    className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0 disabled:opacity-50"
+                    onClick={addAlbum}
+                    className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
                   >
-                    {galleryUploading
-                      ? <><RefreshCw size={12} className="animate-spin" /> Uploading…</>
-                      : <><Upload size={12} /> Upload Photos</>
-                    }
+                    <Plus size={11} /> Add Album
                   </button>
-                  <input
-                    value={photoUrlInput}
-                    onChange={(e) => setPhotoUrlInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addPhotoByUrl()}
-                    placeholder="or paste a URL and press Enter..."
-                    className={`${inputCls} flex-1 text-xs`}
-                  />
-                  <Button variant="outline" size="sm" onClick={addPhotoByUrl} disabled={!photoUrlInput.trim()}>
-                    Add
-                  </Button>
                 </div>
+                <p className="text-[11px] text-slate-500">
+                  Each album groups related project photos. Albums appear on the website as a sortable gallery with cover images. Import from Checkatrade album URLs or add photos manually.
+                </p>
 
-                {galleryUploadError && <p className="text-[10px] text-rose-400">{galleryUploadError}</p>}
-
-                {/* Checkatrade gallery picker */}
-                {importedGalleries && importedGalleries.length > 0 && (
-                  <div className="border border-blue-500/20 bg-blue-500/5 rounded-xl p-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-blue-400">
-                        Checkatrade galleries — {importedGalleries.length} found
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            const allPhotos = importedGalleries.flatMap(g => g.photos);
-                            setPhotos(prev => {
-                              const existing = new Set(prev);
-                              return [...prev, ...allPhotos.filter(u => !existing.has(u))];
-                            });
-                            setImportedGalleries(null);
-                          }}
-                          className="text-[11px] px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-colors"
-                        >
-                          Add all
-                        </button>
-                        <button
-                          onClick={() => setImportedGalleries(null)}
-                          className="text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {importedGalleries.map((gallery, gi) => (
-                        <div key={gi} className="flex items-center gap-3 bg-riden-muted rounded-lg p-2">
-                          {/* Thumbnails — show up to 4 */}
-                          <div className="flex gap-1 flex-shrink-0">
-                            {gallery.photos.slice(0, 4).map((src, pi) => (
-                              /* eslint-disable-next-line @next/next/no-img-element */
-                              <img
-                                key={pi}
-                                src={src}
-                                alt=""
-                                className="w-10 h-10 rounded object-cover border border-riden-border"
-                              />
-                            ))}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-slate-200 truncate">{gallery.name}</p>
-                            <p className="text-[11px] text-slate-500">{gallery.photos.length} photos</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              setPhotos(prev => {
-                                const existing = new Set(prev);
-                                return [...prev, ...gallery.photos.filter(u => !existing.has(u))];
-                              });
-                              setImportedGalleries(prev =>
-                                prev ? prev.filter((_, i) => i !== gi) : null
-                              );
-                            }}
-                            className="text-[11px] px-2 py-1 rounded-lg bg-riden-muted border border-riden-border text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0"
-                          >
-                            Add
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                {projectAlbums.length === 0 && (
+                  <button
+                    onClick={addAlbum}
+                    className="w-full py-6 rounded-xl border border-dashed border-riden-border text-xs text-slate-500 hover:text-slate-300 hover:border-slate-500 transition-colors"
+                  >
+                    + Add your first project album
+                  </button>
                 )}
 
-                {photos.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {photos.map((src, i) => (
-                      <div key={i} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => setPhotos((prev) => prev.filter((_, idx) => idx !== i))}
-                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                        >
-                          <X size={10} />
-                        </button>
+                <div className="space-y-2">
+                  {[...projectAlbums].sort((a, b) => a.displayOrder - b.displayOrder).map((album, idx) => (
+                    <div key={album.id} className="border border-riden-border rounded-xl overflow-hidden bg-riden-surface">
+                      {/* Album header row */}
+                      <div className="flex items-center gap-2 p-2.5">
+                        {/* Cover thumbnail */}
+                        {album.coverImageUrl
+                          ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={album.coverImageUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-riden-border" />
+                          : <div className="w-10 h-10 rounded-lg bg-riden-muted flex items-center justify-center flex-shrink-0 border border-riden-border"><FolderOpen size={14} className="text-slate-500" /></div>
+                        }
+                        {/* Title + meta */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-slate-200 truncate">{album.title}</p>
+                          <p className="text-[11px] text-slate-500">{album.photos.length} photo{album.photos.length !== 1 ? "s" : ""}{album.category ? ` · ${album.category}` : ""}</p>
+                        </div>
+                        {/* Controls */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => updateAlbum(album.id, {enabled: !album.enabled})}
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${album.enabled ? "bg-emerald-500/20 text-emerald-400" : "bg-riden-muted text-slate-500"}`}
+                          >
+                            {album.enabled ? "On" : "Off"}
+                          </button>
+                          <button onClick={() => moveAlbum(album.id, -1)} disabled={idx === 0} className="p-1 text-slate-500 hover:text-white disabled:opacity-25 text-xs">↑</button>
+                          <button onClick={() => moveAlbum(album.id, 1)} disabled={idx === projectAlbums.length - 1} className="p-1 text-slate-500 hover:text-white disabled:opacity-25 text-xs">↓</button>
+                          <button
+                            onClick={() => setExpandedAlbumId(expandedAlbumId === album.id ? null : album.id)}
+                            className="p-1 text-slate-400 hover:text-white text-xs"
+                          >
+                            {expandedAlbumId === album.id ? "▲" : "▼"}
+                          </button>
+                          <button onClick={() => deleteAlbum(album.id)} className="p-1 text-slate-500 hover:text-rose-400 transition-colors">
+                            <X size={12} />
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+
+                      {/* Expanded editor */}
+                      {expandedAlbumId === album.id && (
+                        <div className="border-t border-riden-border p-3 space-y-3 bg-riden-muted/30">
+                          {/* Title + Category */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <label className="text-[11px] text-slate-400">Album Title</label>
+                              <input value={album.title} onChange={e => updateAlbum(album.id, {title: e.target.value})} className={inputCls} />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[11px] text-slate-400">Category / Service</label>
+                              <input value={album.category ?? ""} onChange={e => updateAlbum(album.id, {category: e.target.value})} placeholder="e.g. Bathroom, Loft..." className={inputCls} />
+                            </div>
+                          </div>
+                          {/* Description */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] text-slate-400">Short Description</label>
+                            <textarea value={album.description ?? ""} onChange={e => updateAlbum(album.id, {description: e.target.value})} rows={2} placeholder="Briefly describe this project..." className={`${inputCls} resize-none`} />
+                          </div>
+                          {/* Checkatrade album import */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] text-slate-400">Import from Checkatrade Album URL</label>
+                            <div className="flex gap-2">
+                              <input
+                                value={albumUrlInputs[album.id] ?? ""}
+                                onChange={e => setAlbumUrlInputs(p => ({...p, [album.id]: e.target.value}))}
+                                onKeyDown={e => e.key === "Enter" && importPhotosToAlbum(album.id)}
+                                placeholder="checkatrade.com/trades/…/albums/…"
+                                className={`${inputCls} flex-1 text-xs`}
+                              />
+                              <button
+                                onClick={() => importPhotosToAlbum(album.id)}
+                                disabled={albumImportingMap[album.id] || !(albumUrlInputs[album.id] ?? "").includes("checkatrade")}
+                                className="px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors disabled:opacity-40 flex-shrink-0 flex items-center gap-1.5"
+                              >
+                                {albumImportingMap[album.id] ? <><RefreshCw size={11} className="animate-spin" />Importing…</> : "Import"}
+                              </button>
+                            </div>
+                            {albumMsgs[album.id] && (
+                              <p className={`text-[10px] ${albumMsgs[album.id].startsWith("✓") ? "text-emerald-400" : "text-amber-400"}`}>
+                                {albumMsgs[album.id]}
+                              </p>
+                            )}
+                          </div>
+                          {/* Photo grid */}
+                          {album.photos.length > 0 && (
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] text-slate-400">Photos ({album.photos.length}) — hover to set cover or remove</label>
+                              <div className="grid grid-cols-5 gap-1.5">
+                                {album.photos.map(photo => (
+                                  <div key={photo.id} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={photo.url} alt={photo.alt || ""} className="w-full h-full object-cover" />
+                                    {album.coverImageUrl === photo.url && (
+                                      <div className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5">Cover</div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                      <button onClick={() => setAlbumCover(album.id, photo.url)} title="Set as cover" className="w-6 h-6 rounded-md bg-blue-600 text-white text-[10px] flex items-center justify-center">⭐</button>
+                                      <button onClick={() => removePhotoFromAlbum(album.id, photo.id)} className="w-6 h-6 rounded-md bg-rose-600 text-white flex items-center justify-center"><X size={10} /></button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {/* Manual URL paste */}
+                          <div className="space-y-1">
+                            <label className="text-[11px] text-slate-400">Add Photo by URL</label>
+                            <div className="flex gap-2">
+                              <input
+                                value={albumPhotoInputs[album.id] ?? ""}
+                                onChange={e => setAlbumPhotoInputs(p => ({...p, [album.id]: e.target.value}))}
+                                onKeyDown={e => e.key === "Enter" && addPhotoToAlbum(album.id, albumPhotoInputs[album.id] ?? "")}
+                                placeholder="https://…"
+                                className={`${inputCls} flex-1 text-xs`}
+                              />
+                              <button
+                                onClick={() => addPhotoToAlbum(album.id, albumPhotoInputs[album.id] ?? "")}
+                                disabled={!(albumPhotoInputs[album.id] ?? "").startsWith("http")}
+                                className="px-3 py-2 rounded-xl border border-riden-border bg-riden-muted text-xs text-slate-300 hover:text-white disabled:opacity-40 flex-shrink-0"
+                              >
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {projectAlbums.length > 0 && (
+                  <button
+                    onClick={addAlbum}
+                    className="w-full py-2 rounded-xl border border-dashed border-riden-border text-xs text-slate-500 hover:text-slate-300 hover:border-slate-500 transition-colors"
+                  >
+                    + Add Album
+                  </button>
                 )}
               </div>
 
