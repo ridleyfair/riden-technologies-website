@@ -166,29 +166,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Find and click the Photos tab by text content, then wait for the
-    // gallery to render. Using evaluate is more reliable than CSS selectors
-    // because Checkatrade tab elements don't have stable testids.
-    const jsScenario = JSON.stringify({
-      instructions: [
-        { wait: 3000 },
-        {
-          evaluate:
-            "Array.from(document.querySelectorAll('a, button, [role=\"tab\"]'))" +
-            ".find(el => el.textContent.trim().toLowerCase() === 'photos')?.click()",
-        },
-        { wait: 4000 },
-      ],
-    });
+    // Checkatrade's Photos section is a separate Next.js route at /photos,
+    // not a dynamic tab on the profile page. Scrape it directly.
+    const baseUrl = url.replace(/#.*$/, "").replace(/\/+$/, "");
+    const photosUrl = baseUrl.endsWith("/photos") ? baseUrl : `${baseUrl}/photos`;
 
     const params = new URLSearchParams({
       api_key:       apiKey,
-      url:           url.replace(/#.*$/, ""), // clean URL, no hash
+      url:           photosUrl,
       render_js:     "true",
       stealth_proxy: "true",
-      wait:          "3000",
+      wait:          "5000",
       country_code:  "gb",
-      js_scenario:   jsScenario,
     });
 
     const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params}`);
