@@ -153,30 +153,51 @@ function parseCheckatradeImport(
   let about = ((data.description as string) ?? "").trim();
   about = about.replace(CT_NOISE_RE, "").replace(/\s{2,}/g, " ").trim();
 
-  // Generate fallback if description is absent or too short
+  // Build a comprehensive fallback when no description was scraped
   if (about.length < 80) {
     const parts: string[] = [];
     const bName = (data.name as string) ?? "";
     const bCity = (data.city as string) ?? "";
-    if (bName) {
-      const top = cleanServices.slice(0, 3);
-      if (top.length > 0) {
-        parts.push(`${bName} provides ${top.join(", ").toLowerCase()} services${bCity ? ` across ${bCity}` : ""}.`);
-      } else if (bCity) {
-        parts.push(`${bName} is based in ${bCity}.`);
-      }
-    }
-    if (areasList.length > 0) {
-      parts.push(`Covering ${areasList.slice(0, 5).join(", ")}.`);
-    }
-    if (capsList.some((c) => /free estimates?/i.test(c))) {
-      parts.push("Free estimates available.");
-    }
+    const owner = (data.owner as string) ?? "";
+    const companyType = (data.companyType as string) ?? "";
+    const vatRegistered = (data.vatRegistered as string) ?? "";
+    const yearsOnCT = (data.yearsOnCheckatrade as string) ?? "";
+    const tradingYrs = (data.tradingYears as string) ?? "";
     const rc = data.reviewCount ? Number(data.reviewCount) : 0;
     const rg = data.rating ? String(data.rating) : "";
-    if (rc > 0) {
-      parts.push(`With ${rc} verified reviews${rg ? ` (${rg}/10)` : ""} on Checkatrade, they are a trusted local business.`);
+
+    // Opening sentence with name, location, top services
+    if (bName) {
+      const top = cleanServices.slice(0, 3).join(", ").toLowerCase();
+      const loc = bCity ? ` based in ${bCity}` : "";
+      const svc = top ? `, specialising in ${top}` : "";
+      parts.push(`${bName} is${loc}${svc}.`);
     }
+
+    // Company details
+    if (owner) parts.push(`Operated by ${owner}.`);
+    if (companyType) parts.push(`Registered as ${companyType}.`);
+    if (vatRegistered) parts.push(vatRegistered + ".");
+
+    // Experience signals
+    if (tradingYrs) parts.push(`Trading for ${tradingYrs} years.`);
+    if (yearsOnCT) parts.push(`${yearsOnCT} years on Checkatrade.`);
+
+    // Service areas
+    if (areasList.length > 0) {
+      parts.push(`Covering ${areasList.slice(0, 6).join(", ")} and surrounding areas.`);
+    }
+
+    // Capabilities
+    if (capsList.length > 0) {
+      parts.push(capsList.join(". ") + ".");
+    }
+
+    // Trust / reviews
+    if (rc > 0) {
+      parts.push(`With ${rc} verified reviews${rg ? ` rated ${rg}/10` : ""} on Checkatrade.`);
+    }
+
     if (parts.length > 0) about = parts.join(" ");
   }
 

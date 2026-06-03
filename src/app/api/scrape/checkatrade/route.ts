@@ -377,14 +377,57 @@ export async function POST(req: NextRequest) {
       })();
 
     // ── Description ───────────────────────────────────────────────────────────
-    const descFromData =
-      str(findFirst(profile, ["description","about","summary","bio","overview","companyDescription","businessDescription","profileDescription","memberDescription","intro","introduction"]))
-      || str(bizLd?.description)
-      || metaContent(html, "og:description");
+    const DESC_KEYS = ["description","about","summary","bio","overview","companyDescription","businessDescription","profileDescription","memberDescription","intro","introduction","aboutUs","profileText","overview"];
 
-    // Only fall back to HTML extraction when we have nothing at all — the HTML
-    // dump includes navigation, service lists, reviews etc. and pollutes the About field.
-    const description = descFromData || extractLongTextFromHtml(html);
+    let description =
+      str(findFirst(profile, DESC_KEYS))
+      || str(bizLd?.description);
+
+    // Deep search: look through all dehydrated query data for a long description string
+    if (!description && pageProps) {
+      const dh = (pageProps as Record<string, unknown>).dehydratedState as Record<string, unknown> | undefined;
+      if (Array.isArray(dh?.queries)) {
+        for (const q of dh!.queries as Record<string, unknown>[]) {
+          const qd = ((q?.state as Record<string, unknown>)?.data) as unknown;
+          if (!qd) continue;
+          const found = findFirst(qd as Record<string, unknown>, DESC_KEYS);
+          if (typeof found === "string" && found.length > 80) { description = found.trim(); break; }
+        }
+      }
+    }
+
+    // Walk every string field in pageProps looking for a long description
+    if (!description && pageProps) {
+      function scanForDesc(obj: unknown, depth = 0): string {
+        if (depth > 8 || !obj) return "";
+        if (typeof obj === "string") {
+          if (obj.length > 100 && obj.length < 2000 && !obj.startsWith("http") && obj.includes(" ")) return obj.trim();
+          return "";
+        }
+        if (Array.isArray(obj)) { for (const v of obj) { const r = scanForDesc(v, depth + 1); if (r) return r; } }
+        if (typeof obj === "object") {
+          const rec = obj as Record<string, unknown>;
+          for (const key of DESC_KEYS) {
+            if (typeof rec[key] === "string" && (rec[key] as string).length > 100) return (rec[key] as string).trim();
+          }
+          for (const v of Object.values(rec)) { const r = scanForDesc(v, depth + 1); if (r) return r; }
+        }
+        return "";
+      }
+      description = scanForDesc(pageProps);
+    }
+
+    // Last resort: try a targeted HTML extraction (NOT the full p-tag dump)
+    if (!description) {
+      const htmlPatterns = [
+        html.match(/data-testid="[^"]*(?:description|overview|about)[^"]*"[^>]*>([\s\S]{80,3000}?)<\/(?:div|p|section)/i),
+        html.match(/class="[^"]*(?:description|about|bio|overview|profile-text|company-info|member-description|trader-description)[^"]*"[^>]*>([\s\S]{80,3000}?)<\/(?:div|p|section)/i),
+        html.match(/id="[^"]*(?:description|about|overview)[^"]*"[^>]*>([\s\S]{80,3000}?)<\/(?:div|p|section)/i),
+      ];
+      for (const m of htmlPatterns) {
+        if (m) { const t = stripHtml(m[1]).trim(); if (t.length > 80) { description = t; break; } }
+      }
+    }
 
     // ── Contact ───────────────────────────────────────────────────────────────
     const phone =
@@ -450,15 +493,33 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Last resort: extract from "Skills" section in the plain text
+    // Also try JSON-LD serviceType / knowsAbout
     if (skills.length === 0) {
-      const m = plainText.match(/\bSkills\b\s+([\s\S]{10,600}?)(?=\s+(?:Reviews?|Photos?|Company\s+info|Overview|About|Accreditations?)\s)/i);
-      if (m) {
-        const candidates = m[1]
-          .split(/\s{2,}|,\s*/)
+      for (const ld of jsonLds) {
+        for (const key of ["serviceType","knowsAbout","makesOffer","hasOfferCatalog","serviceOutput"]) {
+          const v = ld[key];
+          if (v) {
+            const ex = strArr(Array.isArray(v) ? v : [v]);
+            if (ex.length > 0) { skills = ex; break; }
+          }
+        }
+        if (skills.length > 0) break;
+      }
+    }
+
+    // Last resort: extract from "Skills" section in the plain text.
+    // Services are capitalized phrases separated only by spaces (no commas), so split
+    // on lowercase→uppercase boundaries (e.g. "Building Basement" → split before "Basement").
+    if (skills.length === 0) {
+      const skillsRe = /\bSkills\b\s+([A-Z][A-Za-z\s\/\-]{10,500}?)(?=\s+(?:Reviews?|Photos?|Company\s+[Ii]nfo|Overview|About|Accreditations?)\b)/g;
+      let sm: RegExpExecArray | null;
+      while ((sm = skillsRe.exec(plainText)) !== null) {
+        const items = sm[1]
+          .trim()
+          .split(/(?<=[a-z])\s+(?=[A-Z])/)
           .map((s) => s.trim())
-          .filter((s) => s.length > 3 && s.length < 80 && /[A-Za-z]/.test(s));
-        if (candidates.length >= 2) skills = candidates.slice(0, 30);
+          .filter((s) => s.length >= 3 && s.length <= 80);
+        if (items.length >= 2) { skills = items.slice(0, 30); break; }
       }
     }
 
