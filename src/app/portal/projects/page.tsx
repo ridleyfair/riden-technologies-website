@@ -690,6 +690,12 @@ function ProjectDetailModal({
     error:   string;
   }>({ loading: false, error: "" });
 
+  // Gallery picker: populated after ScrapingBee returns grouped galleries
+  const [importedGalleries, setImportedGalleries] = useState<{
+    name: string;
+    photos: string[];
+  }[] | null>(null);
+
 
   // Google Maps scraper state
   const [googleMaps, setGoogleMaps] = useState<{
@@ -905,9 +911,11 @@ function ProjectDetailModal({
           body:    JSON.stringify({ url: checkatrade.url }),
         });
         const bData = await bRes.json();
-        const newPhotos = Array.isArray(bData.photos) ? (bData.photos as string[]) : [];
-        if (newPhotos.length > 0) {
-          setPhotos(prev => [...new Set([...prev, ...newPhotos])]);
+        const galleries = Array.isArray(bData.galleries)
+          ? (bData.galleries as { name: string; photos: string[] }[]).filter(g => g.photos.length > 0)
+          : [];
+        if (galleries.length > 0) {
+          setImportedGalleries(galleries);
           setCtBrowser({ loading: false, error: "" });
         } else {
           setCtBrowser({ loading: false, error: bData.error ?? "No photos found on Checkatrade." });
@@ -2139,6 +2147,74 @@ function ProjectDetailModal({
                 </div>
 
                 {galleryUploadError && <p className="text-[10px] text-rose-400">{galleryUploadError}</p>}
+
+                {/* Checkatrade gallery picker */}
+                {importedGalleries && importedGalleries.length > 0 && (
+                  <div className="border border-blue-500/20 bg-blue-500/5 rounded-xl p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-blue-400">
+                        Checkatrade galleries — {importedGalleries.length} found
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            const allPhotos = importedGalleries.flatMap(g => g.photos);
+                            setPhotos(prev => {
+                              const existing = new Set(prev);
+                              return [...prev, ...allPhotos.filter(u => !existing.has(u))];
+                            });
+                            setImportedGalleries(null);
+                          }}
+                          className="text-[11px] px-2 py-1 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-colors"
+                        >
+                          Add all
+                        </button>
+                        <button
+                          onClick={() => setImportedGalleries(null)}
+                          className="text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {importedGalleries.map((gallery, gi) => (
+                        <div key={gi} className="flex items-center gap-3 bg-riden-muted rounded-lg p-2">
+                          {/* Thumbnails — show up to 4 */}
+                          <div className="flex gap-1 flex-shrink-0">
+                            {gallery.photos.slice(0, 4).map((src, pi) => (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img
+                                key={pi}
+                                src={src}
+                                alt=""
+                                className="w-10 h-10 rounded object-cover border border-riden-border"
+                              />
+                            ))}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-slate-200 truncate">{gallery.name}</p>
+                            <p className="text-[11px] text-slate-500">{gallery.photos.length} photos</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setPhotos(prev => {
+                                const existing = new Set(prev);
+                                return [...prev, ...gallery.photos.filter(u => !existing.has(u))];
+                              });
+                              setImportedGalleries(prev =>
+                                prev ? prev.filter((_, i) => i !== gi) : null
+                              );
+                            }}
+                            className="text-[11px] px-2 py-1 rounded-lg bg-riden-muted border border-riden-border text-slate-300 hover:text-white hover:border-blue-500/50 transition-colors flex-shrink-0"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {photos.length > 0 && (
                   <div className="grid grid-cols-4 gap-2">

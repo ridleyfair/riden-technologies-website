@@ -10,36 +10,42 @@ function getEnv(key: string): string {
   return process.env[key] ?? "";
 }
 
+export type PhotoGallery = { name: string; photos: string[] };
+
 const SKIP = [
   "favicon", "star", "badge", "tick", "1x1", "seal", "arrow",
   "sprite", "placeholder", "ct-logo", "trustmark", ".svg", "data:image",
-  "logo", "icon", "avatar", "profile", "flag",
+  "logo", "icon", "avatar", "profile", "flag", "map", "banner",
 ];
 
-// Returns a stable key for deduplication: strips size/quality params and unwraps
-// Next.js _next/image proxy URLs so the same photo at multiple widths maps to one entry.
+// Strips Cloudinary-style transformation path segments (c_fill,h_400,w_600 etc.)
+// and unwraps Next.js _next/image proxy URLs.
 function canonicalKey(url: string): string {
   try {
     const u = new URL(url);
+
+    // Unwrap _next/image proxy → recurse on inner URL
     if (u.pathname === "/_next/image") {
       const src = u.searchParams.get("url");
-      if (src) {
-        try {
-          const inner = new URL(decodeURIComponent(src));
-          ["w", "h", "q", "width", "height", "quality", "size", "fit"].forEach(p => inner.searchParams.delete(p));
-          return inner.toString();
-        } catch {}
-        return decodeURIComponent(src);
-      }
+      if (src) return canonicalKey(decodeURIComponent(src));
     }
-    ["w", "h", "q", "width", "height", "quality", "size", "fit"].forEach(p => u.searchParams.delete(p));
-    return u.toString();
+
+    // Strip Cloudinary transformation segments from the path
+    // e.g. /image/upload/c_fill,h_400,w_600/v123/photo.jpg → /image/upload/v123/photo.jpg
+    const cleaned = u.pathname.replace(/\/(?:[a-z]+_[a-z0-9]+,?)+(?=\/)/g, "");
+
+    // Strip common size/quality query params
+    ["w", "h", "q", "width", "height", "quality", "size", "fit", "auto"].forEach(p =>
+      u.searchParams.delete(p)
+    );
+
+    return u.origin + cleaned + (u.search || "");
   } catch {
     return url;
   }
 }
 
-// For proxy URLs, return the decoded original so we get the real CDN URL.
+// Returns the best URL for actual use: decoded original for _next/image proxies.
 function resolveUrl(url: string): string {
   try {
     const u = new URL(url);
@@ -51,40 +57,81 @@ function resolveUrl(url: string): string {
   return url;
 }
 
-function extractPhotos(html: string): string[] {
-  const seen = new Map<string, string>(); // canonical → resolved URL
+function urlFromImgTag(tag: string): string | null {
+  // Prefer the largest srcset entry (best quality)
+  const ssm = tag.match(/\bsrcset="([^"]+)"/i);
+  if (ssm?.[1]) {
+    const best = ssm[1]
+      .split(",")
+      .map(p => { const [u, w] = p.trim().split(/\s+/); return { u, w: parseInt(w) || 0 }; })
+      .sort((a, b) => b.w - a.w)[0];
+    if (best?.u?.startsWith("http")) return resolveUrl(best.u);
+  }
+  const srcm = tag.match(/\bsrc="([^"]+)"/i);
+  if (srcm?.[1]?.startsWith("http")) return resolveUrl(srcm[1]);
+  const dsm = tag.match(/\bdata-src="([^"]+)"/i);
+  if (dsm?.[1]?.startsWith("http")) return resolveUrl(dsm[1]);
+  return null;
+}
 
-  function add(raw: string) {
-    if (!raw.startsWith("http")) return;
-    const lower = raw.toLowerCase();
-    if (SKIP.some(s => lower.includes(s))) return;
-    const key = canonicalKey(raw);
-    if (!seen.has(key)) seen.set(key, resolveUrl(raw));
+function isNoise(url: string): boolean {
+  const lower = url.toLowerCase();
+  return SKIP.some(s => lower.includes(s));
+}
+
+// Parses the rendered HTML into named galleries.
+// Strategy: walk headings and img tags by position; each photo belongs to
+// the nearest preceding heading. Groups with < 2 photos are UI chrome.
+function extractGalleries(html: string): PhotoGallery[] {
+  type HeadingEvent = { kind: "heading"; text: string; pos: number };
+  type PhotoEvent   = { kind: "photo";   url: string;  pos: number };
+  type Event = HeadingEvent | PhotoEvent;
+
+  const events: Event[] = [];
+  const globalSeen = new Set<string>();
+
+  // Headings h2–h5
+  const headingRe = /<h([2-5])[^>]*>([\s\S]*?)<\/h\1>/gi;
+  let hm: RegExpExecArray | null;
+  while ((hm = headingRe.exec(html)) !== null) {
+    const text = hm[2].replace(/<[^>]+>/g, "").trim();
+    if (text.length >= 2 && text.length <= 80 && /[a-zA-Z]/.test(text)) {
+      events.push({ kind: "heading", text, pos: hm.index });
+    }
   }
 
-  // Parse img tags for src, data-src, and srcset
-  const imgTagRe = /<img[^>]+>/gi;
-  const srcRe = /\bsrc="([^"]+)"/i;
-  const srcsetRe = /\bsrcset="([^"]+)"/i;
-  const dataSrcRe = /\bdata-src="([^"]+)"/i;
-
-  let imgMatch: RegExpExecArray | null;
-  while ((imgMatch = imgTagRe.exec(html)) !== null) {
-    const tag = imgMatch[0];
-    for (const re of [srcRe, dataSrcRe]) {
-      const m = tag.match(re);
-      if (m?.[1]) add(m[1]);
-    }
-    const ssm = tag.match(srcsetRe);
-    if (ssm?.[1]) {
-      ssm[1].split(",").forEach(part => {
-        const u = part.trim().split(/\s+/)[0];
-        if (u) add(u);
-      });
+  // Images
+  const imgRe = /<img[^>]+>/gi;
+  let im: RegExpExecArray | null;
+  while ((im = imgRe.exec(html)) !== null) {
+    const url = urlFromImgTag(im[0]);
+    if (!url || isNoise(url)) continue;
+    const key = canonicalKey(url);
+    if (!globalSeen.has(key)) {
+      globalSeen.add(key);
+      events.push({ kind: "photo", url, pos: im.index });
     }
   }
 
-  return [...seen.values()];
+  events.sort((a, b) => a.pos - b.pos);
+
+  // Assign each photo to its most recent heading
+  const map = new Map<string, string[]>();
+  let heading = "Photos";
+
+  for (const ev of events) {
+    if (ev.kind === "heading") {
+      heading = ev.text;
+    } else {
+      if (!map.has(heading)) map.set(heading, []);
+      map.get(heading)!.push(ev.url);
+    }
+  }
+
+  // Filter out groups that look like navigation / UI chrome (< 2 photos)
+  return [...map.entries()]
+    .map(([name, photos]) => ({ name, photos }))
+    .filter(g => g.photos.length >= 2);
 }
 
 export async function POST(req: NextRequest) {
@@ -110,14 +157,11 @@ export async function POST(req: NextRequest) {
       url,
       render_js:     "true",
       stealth_proxy: "true",
-      wait:          "4000",       // wait 4s after page load for React to render photos
+      wait:          "5000",
       country_code:  "gb",
     });
 
-    const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params}`, {
-      method: "GET",
-      // ScrapingBee can take up to 60s — CF Worker default timeout is fine
-    });
+    const res = await fetch(`https://app.scrapingbee.com/api/v1/?${params}`);
 
     if (!res.ok) {
       const text = await res.text();
@@ -125,14 +169,13 @@ export async function POST(req: NextRequest) {
     }
 
     const html = await res.text();
-    const photos = extractPhotos(html);
+    const galleries = extractGalleries(html);
+    const photos = galleries.flatMap(g => g.photos);
 
     return NextResponse.json({
+      galleries,
       photos,
-      _debug: {
-        htmlLength: html.length,
-        totalFound: photos.length,
-      },
+      _debug: { htmlLength: html.length, galleryCount: galleries.length, totalPhotos: photos.length },
     });
   } catch (err) {
     console.error("Checkatrade ScrapingBee error:", err);
