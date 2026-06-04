@@ -645,8 +645,14 @@ export default function PossibleClientsView() {
           showToast(`Checkatrade lookup failed for ${business.name}`, "error");
           return;
         }
-        const enrichment: CheckatradeEnrichment = await res.json();
+        const enrichment: CheckatradeEnrichment & { email?: string } = await res.json();
         setEnrichments((prev) => ({ ...prev, [business.id]: enrichment }));
+        // If the lookup found an email, update the business row immediately
+        if (enrichment.email && !business.email) {
+          setBusinesses((prev) =>
+            prev.map((b) => b.id === business.id ? { ...b, email: enrichment.email! } : b)
+          );
+        }
       } catch {
         showToast("Checkatrade lookup failed.", "error");
       } finally {

@@ -214,6 +214,7 @@ interface ProfileSnap {
   category: string;
   city: string;
   phone: string;
+  email: string;
 }
 
 async function fetchProfile(url: string): Promise<ProfileSnap | null> {
@@ -290,10 +291,93 @@ async function fetchProfile(url: string): Promise<ProfileSnap | null> {
       } catch { /* ignore */ }
     }
 
-    return { name: profileName, rating, reviewCount, category, city, phone };
+    // Email: scan __NEXT_DATA__ for contact email fields
+    let email = "";
+    if (ndMatch) {
+      try {
+        const nd = JSON.parse(ndMatch[1]) as Record<string, unknown>;
+        email = deepFindEmail(nd) ?? "";
+      } catch { /* ignore */ }
+    }
+    // Fallback: mailto: links in HTML
+    if (!email) {
+      const mailtoM = html.match(/mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/i);
+      if (mailtoM) email = mailtoM[1].toLowerCase();
+    }
+
+    return { name: profileName, rating, reviewCount, category, city, phone, email };
   } catch {
     return null;
   }
+}
+
+const EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+const EMAIL_BLACKLIST = new Set(["example.com", "sentry.io", "schema.org", "w3.org", "checkatrade.com"]);
+
+function deepFindEmail(obj: unknown, depth = 0): string | null {
+  if (depth > 8 || obj === null || obj === undefined) return null;
+  if (typeof obj === "string") {
+    if (EMAIL_RE.test(obj.trim())) {
+      const domain = obj.split("@")[1]?.toLowerCase();
+      if (domain && !EMAIL_BLACKLIST.has(domain)) return obj.trim().toLowerCase();
+    }
+    return null;
+  }
+  if (typeof obj === "object") {
+    const emailKeys = ["email", "contactEmail", "emailAddress", "contact_email"];
+    for (const key of emailKeys) {
+      const val = (obj as Record<string, unknown>)[key];
+      if (typeof val === "string" && EMAIL_RE.test(val.trim())) {
+        const domain = val.split("@")[1]?.toLowerCase();
+        if (domain && !EMAIL_BLACKLIST.has(domain)) return val.trim().toLowerCase();
+      }
+    }
+    for (const val of Object.values(obj as Record<string, unknown>)) {
+      const found = deepFindEmail(val, depth + 1);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+// ── Yell.com email fallback ───────────────────────────────────────────────────
+
+async function searchYell(name: string, city: string): Promise<string | null> {
+  try {
+    const q = encodeURIComponent(`${name} ${city}`);
+    const res = await fetch(`https://www.yell.com/s/${encodeURIComponent(name.replace(/\s+/g, "-"))}-in-${encodeURIComponent(city.replace(/\s+/g, "-"))}.html`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html",
+        "Accept-Language": "en-GB,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // Extract first business detail page link
+    const linkM = html.match(/href="(\/biz\/[^"]+)"/);
+    if (!linkM) return null;
+
+    const bizRes = await fetch(`https://www.yell.com${linkM[1]}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html",
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!bizRes.ok) return null;
+    const bizHtml = await bizRes.text();
+
+    // Look for mailto: link or email in the page
+    const mailtoM = bizHtml.match(/mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/i);
+    if (mailtoM) {
+      const domain = mailtoM[1].split("@")[1]?.toLowerCase();
+      if (domain && !EMAIL_BLACKLIST.has(domain)) return mailtoM[1].toLowerCase();
+    }
+  } catch { /* ignore */ }
+  return null;
 }
 
 // ── Confidence + opportunity ───────────────────────────────────────────────────
@@ -420,6 +504,29 @@ export async function POST(
     profile = await fetchProfile(checkatradeUrl);
     debug.profileFetched = !!profile;
     debug.profileName = profile?.name;
+    debug.profileEmail = profile?.email ?? null;
+  }
+
+  // If Checkatrade had no email, try Yell.com
+  let email = profile?.email ?? "";
+  if (!email) {
+    debug.yellAttempted = true;
+    const yellEmail = await searchYell(name, city ?? "");
+    if (yellEmail) {
+      email = yellEmail;
+      debug.yellEmail = yellEmail;
+    }
+  }
+
+  // Save email to the business record if found
+  if (email) {
+    try {
+      await fetch(`${SCRAPER_URL}/api/v1/businesses/${businessId}/email`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch { /* non-critical */ }
   }
 
   const confidence = calcConfidence(name, phone ?? null, profile);
@@ -490,6 +597,7 @@ export async function POST(
     checkatrade_category: profile?.category ?? null,
     checkatrade_location: profile?.city ?? city ?? null,
     checkatrade_phone: profile?.phone ?? null,
+    email: email || null,
     match_confidence: confidence,
     opportunity_score: opportunityScore,
     checked_at: new Date().toISOString(),
