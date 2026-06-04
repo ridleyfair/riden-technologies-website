@@ -462,7 +462,7 @@ export default function PossibleClientsView() {
   const [offline, setOffline] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [showAll, setShowAll] = useState(false);
   const PAGE_SIZE = 25;
 
   // Filters
@@ -500,16 +500,38 @@ export default function PossibleClientsView() {
 
   // ── Data fetching ────────────────────────────────────────────────────────────
 
+  const buildFilterParams = useCallback(() => {
+    const p = new URLSearchParams();
+    if (city) p.set("city", city);
+    if (category) p.set("category", category);
+    if (tier) p.set("lead_tier", tier);
+    if (noWebsiteOnly) p.set("has_website", "false");
+    return p;
+  }, [city, category, tier, noWebsiteOnly]);
+
+  const loadEnrichments = useCallback(async (items: Business[]) => {
+    if (items.length === 0) return;
+    const map: Record<string, CheckatradeEnrichment> = {};
+    const BATCH = 100;
+    for (let i = 0; i < items.length; i += BATCH) {
+      const ids = items.slice(i, i + BATCH).map((b) => b.id).join(",");
+      const eRes = await fetch(`/api/possible-clients/enrichments?ids=${ids}`);
+      if (eRes.ok) {
+        const rows: CheckatradeEnrichment[] = await eRes.json();
+        for (const row of rows) map[row.business_id] = row;
+      }
+    }
+    setEnrichments(map);
+  }, []);
+
   const fetchBusinesses = useCallback(
-    async (p = page, ps = pageSize) => {
+    async (p = page) => {
       setLoading(true);
       setOffline(false);
       try {
-        const params = new URLSearchParams({ page: String(p), page_size: String(ps) });
-        if (city) params.set("city", city);
-        if (category) params.set("category", category);
-        if (tier) params.set("lead_tier", tier);
-        if (noWebsiteOnly) params.set("has_website", "false");
+        const params = buildFilterParams();
+        params.set("page", String(p));
+        params.set("page_size", String(PAGE_SIZE));
 
         const res = await fetch(`/api/possible-clients?${params}`);
         if (res.status === 503) { setOffline(true); setBusinesses([]); return; }
@@ -518,29 +540,55 @@ export default function PossibleClientsView() {
         const items: Business[] = data.items ?? [];
         setBusinesses(items);
         setTotal(data.total ?? 0);
-
-        // Load stored enrichments — batch in groups of 100 to stay under URL limits
-        if (items.length > 0) {
-          const map: Record<string, CheckatradeEnrichment> = {};
-          const BATCH = 100;
-          for (let i = 0; i < items.length; i += BATCH) {
-            const ids = items.slice(i, i + BATCH).map((b) => b.id).join(",");
-            const eRes = await fetch(`/api/possible-clients/enrichments?ids=${ids}`);
-            if (eRes.ok) {
-              const rows: CheckatradeEnrichment[] = await eRes.json();
-              for (const row of rows) map[row.business_id] = row;
-            }
-          }
-          setEnrichments(map);
-        }
+        await loadEnrichments(items);
       } finally {
         setLoading(false);
       }
     },
-    [page, pageSize, city, category, tier, noWebsiteOnly]
+    [page, buildFilterParams, loadEnrichments]
   );
 
-  useEffect(() => { fetchBusinesses(page, pageSize); }, [page, pageSize, city, category, tier, noWebsiteOnly]);
+  const fetchAllBusinesses = useCallback(async () => {
+    setLoading(true);
+    setOffline(false);
+    const CHUNK = 200; // Railway's max page_size
+    try {
+      const firstParams = buildFilterParams();
+      firstParams.set("page", "1");
+      firstParams.set("page_size", String(CHUNK));
+
+      const firstRes = await fetch(`/api/possible-clients?${firstParams}`);
+      if (firstRes.status === 503) { setOffline(true); setBusinesses([]); return; }
+      if (!firstRes.ok) return;
+      const firstData = await firstRes.json();
+      const totalCount: number = firstData.total ?? 0;
+      let allItems: Business[] = firstData.items ?? [];
+      setTotal(totalCount);
+
+      // Fetch remaining pages in parallel if total exceeds one chunk
+      const totalPages = Math.ceil(totalCount / CHUNK);
+      if (totalPages > 1) {
+        const pagePromises = Array.from({ length: totalPages - 1 }, (_, i) => {
+          const params = buildFilterParams();
+          params.set("page", String(i + 2));
+          params.set("page_size", String(CHUNK));
+          return fetch(`/api/possible-clients?${params}`).then((r) => r.json());
+        });
+        const results = await Promise.all(pagePromises);
+        for (const r of results) allItems = allItems.concat(r.items ?? []);
+      }
+
+      setBusinesses(allItems);
+      await loadEnrichments(allItems);
+    } finally {
+      setLoading(false);
+    }
+  }, [buildFilterParams, loadEnrichments]);
+
+  useEffect(() => {
+    if (showAll) fetchAllBusinesses();
+    else fetchBusinesses(page);
+  }, [page, showAll, city, category, tier, noWebsiteOnly]);
 
   // Poll active scrape job
   useEffect(() => {
@@ -848,7 +896,7 @@ export default function PossibleClientsView() {
               type="text"
               placeholder="Filter by city..."
               value={city}
-              onChange={(e) => { setCity(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
+              onChange={(e) => { setCity(e.target.value); setPage(1); setShowAll(false); }}
               className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
             />
           </div>
@@ -858,13 +906,13 @@ export default function PossibleClientsView() {
               type="text"
               placeholder="Filter by category..."
               value={category}
-              onChange={(e) => { setCategory(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
+              onChange={(e) => { setCategory(e.target.value); setPage(1); setShowAll(false); }}
               className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
             />
           </div>
           <select
             value={tier}
-            onChange={(e) => { setTier(e.target.value); setPage(1); setPageSize(PAGE_SIZE); }}
+            onChange={(e) => { setTier(e.target.value); setPage(1); setShowAll(false); }}
             className="px-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white focus:outline-none focus:border-blue-500/50"
           >
             <option value="">All tiers</option>
@@ -1205,17 +1253,17 @@ export default function PossibleClientsView() {
         {total > PAGE_SIZE && (
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <p className="text-xs text-slate-500">
-              {pageSize >= total
+              {showAll
                 ? `Showing all ${total} businesses`
-                : `Showing ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total}`}
+                : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total}`}
               {(hasCheckatradeFilter || hotLeadsOnly) && ` (filtered: ${visibleBusinesses.length})`}
             </p>
 
             <div className="flex gap-2 items-center">
               {/* Show All / Collapse */}
-              {pageSize < total ? (
+              {!showAll ? (
                 <button
-                  onClick={() => { setPageSize(total); setPage(1); }}
+                  onClick={() => setShowAll(true)}
                   disabled={loading}
                   className="px-4 py-1.5 rounded-lg text-xs font-medium bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5"
                 >
@@ -1223,7 +1271,7 @@ export default function PossibleClientsView() {
                 </button>
               ) : (
                 <button
-                  onClick={() => { setPageSize(PAGE_SIZE); setPage(1); }}
+                  onClick={() => { setShowAll(false); setPage(1); }}
                   disabled={loading}
                   className="px-4 py-1.5 rounded-lg text-xs font-medium bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors disabled:opacity-40"
                 >
@@ -1232,7 +1280,7 @@ export default function PossibleClientsView() {
               )}
 
               {/* Previous / Next (only when paginating) */}
-              {pageSize < total && (
+              {!showAll && (
                 <>
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
