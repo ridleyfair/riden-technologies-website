@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await requireAuth(req);
   if (!user) return unauthorized();
 
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const sql = getDb();
   const rows = await sql`
-    SELECT "specJson" FROM "GeneratedSite" WHERE id = ${params.id} LIMIT 1
+    SELECT "specJson" FROM "GeneratedSite" WHERE id = ${id} LIMIT 1
   ` as Array<{ specJson: string }>;
 
   if (!rows.length) return NextResponse.json({ error: "Site not found" }, { status: 404 });
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   await sql`
     UPDATE "GeneratedSite"
     SET "specJson" = ${JSON.stringify(spec)}, "updatedAt" = NOW()
-    WHERE id = ${params.id}
+    WHERE id = ${id}
   `;
 
   return NextResponse.json({ ok: true });
