@@ -6,6 +6,17 @@ import { buildOutreachEmailHtml } from "@/lib/outreach-email";
 
 const RATE_LIMIT_PER_RUN = 20;
 
+function getScraperUrl() {
+  let env: Record<string, string | undefined> = process.env as Record<string, string | undefined>;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getCloudflareContext } = require("@opennextjs/cloudflare");
+    const cf = getCloudflareContext().env as Record<string, string | undefined>;
+    if (cf.SCRAPER_API_URL) env = { ...env, ...cf };
+  } catch { /* local dev */ }
+  return env.SCRAPER_API_URL ?? "http://localhost:8000";
+}
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -53,71 +64,120 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
 
-// Scan GeneratedSite for eligible records and add to queue
-async function handleQueue(_req: NextRequest) {
-  const sql  = getDb();
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "https://ridentechnologies.com";
+type RailwayBusiness = {
+  id: string; name: string; email: string | null; city: string | null;
+  category: string | null; lead_score: { lead_tier: string } | null;
+};
 
-  // Find GeneratedSites with email + previewUrl not already queued / opted-out
-  const sites = await sql`
-    SELECT
-      gs.id, gs."businessName", gs."outreachEmail", gs."previewUrl",
-      gs.industry, gs."clientName"
-    FROM "GeneratedSite" gs
-    WHERE gs."outreachEmail" IS NOT NULL
-      AND gs."outreachEmail" != ''
-      AND gs."previewUrl"    IS NOT NULL
-      AND gs."previewUrl"    != ''
-      AND NOT EXISTS (
-        SELECT 1 FROM "OutreachRecord" r
-        WHERE r.generated_site_id = gs.id
-      )
-    ORDER BY gs."createdAt" DESC
-    LIMIT 200
-  `;
+// Fetch all warm + hot leads with email from Railway, paginating through all results
+async function fetchWarmLeadsFromRailway(): Promise<RailwayBusiness[]> {
+  const scraperUrl = getScraperUrl();
+  const results: RailwayBusiness[] = [];
 
-  if (sites.length === 0) {
-    return NextResponse.json({ queued: 0, message: "No new eligible sites found." });
+  for (const tier of ["hot", "warm"]) {
+    let page = 1;
+    while (true) {
+      try {
+        const params = new URLSearchParams({ lead_tier: tier, page_size: "200", page: String(page) });
+        const res    = await fetch(`${scraperUrl}/api/v1/businesses?${params}`, {
+          headers: { Accept: "application/json" },
+          signal:  AbortSignal.timeout(15000),
+        });
+        if (!res.ok) break;
+        const data  = await res.json() as { items?: RailwayBusiness[]; pages?: number };
+        const items = data.items ?? [];
+        results.push(...items);
+        if (items.length < 200 || page >= (data.pages ?? 1)) break;
+        page++;
+      } catch { break; }
+    }
   }
 
-  // Also filter out businesses already in Lead table (by email)
-  const emails     = sites.map((s) => s.outreachEmail as string);
+  return results;
+}
+
+// Scan warm/hot Possible Clients (Railway) for eligible records and add to queue
+async function handleQueue(_req: NextRequest) {
+  const sql = getDb();
+
+  // 1. Pull all warm + hot leads from Railway
+  const allLeads = await fetchWarmLeadsFromRailway();
+
+  // 2. Filter to those with an email address
+  const withEmail = allLeads.filter((b) => b.email?.trim());
+
+  if (withEmail.length === 0) {
+    return NextResponse.json({ queued: 0, message: "No warm/hot leads with an email address found in Possible Clients." });
+  }
+
+  // 3. Filter out emails already in Lead table (already converted)
+  const emailList  = withEmail.map((b) => b.email!.toLowerCase());
   const existLeads = await sql`
     SELECT LOWER(email) AS email FROM "Lead"
-    WHERE LOWER(email) = ANY(${emails.map((e: string) => e.toLowerCase())})
+    WHERE LOWER(email) = ANY(${emailList})
   `;
   const leadEmails = new Set(existLeads.map((r) => String(r.email)));
 
-  const eligible = (sites as Record<string, unknown>[]).filter(
-    (s) => !leadEmails.has(String(s.outreachEmail).toLowerCase())
-  );
+  // 4. Filter out emails already in OutreachRecord (already queued / sent / etc.)
+  const existingRecords = await sql`
+    SELECT LOWER(business_email) AS email FROM "OutreachRecord" WHERE opt_out = FALSE
+  `;
+  const outreachedEmails = new Set(existingRecords.map((r) => String(r.email)));
+
+  const eligible = withEmail.filter((b) => {
+    const e = b.email!.toLowerCase();
+    return !leadEmails.has(e) && !outreachedEmails.has(e);
+  });
 
   if (eligible.length === 0) {
-    return NextResponse.json({ queued: 0, message: "All eligible businesses already have Leads." });
+    return NextResponse.json({ queued: 0, message: "All warm/hot leads with email already have outreach records or Leads." });
   }
 
-  // Insert OutreachRecord rows (ignore duplicates via unique index)
+  // 5. Look up any matching GeneratedSites for preview URLs (match by business name)
+  const names = eligible.map((b) => b.name.toLowerCase());
+  const sites  = await sql`
+    SELECT "businessName", "previewUrl", id
+    FROM "GeneratedSite"
+    WHERE "previewUrl" IS NOT NULL AND "previewUrl" != ''
+      AND LOWER("businessName") = ANY(${names})
+  `;
+  const siteByName = new Map(
+    (sites as Record<string, string>[]).map((s) => [s.businessName.toLowerCase(), s])
+  );
+
+  // 6. Insert OutreachRecord rows
   let queued = 0;
-  for (const site of eligible) {
+  for (const biz of eligible) {
     try {
+      const site = siteByName.get(biz.name.toLowerCase());
       await sql`
-        INSERT INTO "OutreachRecord"
-          (generated_site_id, business_name, business_email, preview_url, industry, location)
-        VALUES (
-          ${site.id as string},
-          ${(site.businessName ?? site.clientName ?? "") as string},
-          ${site.outreachEmail as string},
-          ${site.previewUrl as string},
-          ${(site.industry ?? "") as string},
-          ${""}
+        INSERT INTO "OutreachRecord" (
+          possible_client_id, generated_site_id,
+          business_name, business_email,
+          preview_url, industry, location
+        ) VALUES (
+          ${biz.id},
+          ${site?.id ?? null},
+          ${biz.name},
+          ${biz.email!},
+          ${site?.previewUrl ?? null},
+          ${biz.category ?? ""},
+          ${biz.city ?? ""}
         )
         ON CONFLICT DO NOTHING
       `;
       queued++;
-    } catch { /* skip duplicates */ }
+    } catch { /* skip on duplicate email */ }
   }
 
-  return NextResponse.json({ queued, total_eligible: eligible.length });
+  return NextResponse.json({
+    queued,
+    total_warm_hot: withEmail.length,
+    skipped_existing: withEmail.length - eligible.length,
+    message: queued === 0
+      ? "All eligible leads already have records."
+      : `Queued ${queued} new leads (${eligible.length - queued} skipped as duplicates).`,
+  });
 }
 
 // Send approved (or all queued in auto mode) emails
@@ -156,9 +216,9 @@ async function handleSend(limit: number, mode: string) {
       const unsubscribeUrl = `${origin}/unsubscribe/${record.form_token}`;
       const { subject, html } = buildOutreachEmailHtml({
         businessName:   String(record.business_name ?? ""),
-        trade:          String(record.industry ?? ""),
-        location:       String(record.location  ?? ""),
-        previewUrl:     String(record.preview_url ?? ""),
+        trade:          String(record.industry  ?? ""),
+        location:       String(record.location   ?? ""),
+        previewUrl:     record.preview_url ? String(record.preview_url) : undefined,
         formUrl,
         unsubscribeUrl,
       });

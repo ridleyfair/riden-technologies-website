@@ -3,7 +3,7 @@ export interface OutreachEmailInput {
   ownerName?:   string;
   trade?:       string;
   location?:    string;
-  previewUrl:   string;
+  previewUrl?:  string;  // optional — email adapts when no preview site exists
   formUrl:      string;
   unsubscribeUrl: string;
 }
@@ -16,7 +16,10 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
   const tradeNear  = p.trade   ? `"${p.trade} near me"` : `"${bizRef} near me"`;
   const tradeLoc   = p.trade && p.location ? `"${p.trade} in ${p.location}"` : "";
 
-  const subject = `I put a website together for ${bizRef} — take a look (no obligation)`;
+  const hasPreview = !!(p.previewUrl?.trim());
+  const subject    = hasPreview
+    ? `I put a website together for ${bizRef} — take a look (no obligation)`
+    : `Quick question about ${bizRef}'s website`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -47,24 +50,25 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
 
           <p style="margin:0 0 16px;">I came across <strong>${bizRef}</strong>${locRef} recently and had a look at your online presence. You clearly do great work, but I genuinely felt your website wasn't doing you justice — and for a ${tradeRef}business${locRef}, that can easily mean missing out on a steady flow of local enquiries every month.</p>
 
+          ${hasPreview ? `
           <p style="margin:0 0 20px;">So rather than just sending over a generic pitch, I went ahead and put together a website concept specifically for ${bizRef}. It's live right now and you can view it here:</p>
 
           <!-- Preview CTA -->
           <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
             <tr>
               <td style="background:#1a56db;border-radius:6px;">
-                <a href="${p.previewUrl}" style="display:inline-block;padding:14px 28px;color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.2px;">View the website preview →</a>
+                <a href="${p.previewUrl}" style="display:inline-block;padding:14px 28px;color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.2px;">View the website preview &rarr;</a>
               </td>
             </tr>
           </table>
-
           <p style="margin:0 0 16px;color:#555;font-size:13px;">(Or copy this link: <a href="${p.previewUrl}" style="color:#1a56db;">${p.previewUrl}</a>)</p>
-
           <p style="margin:0 0 16px;"><strong>Absolutely no obligation</strong> — if it's not for you, no hard feelings at all.</p>
+          <p style="margin:0 0 16px;">If you do like it, getting it live on your own domain is quick and straightforward.` : `
+          <p style="margin:0 0 16px;">We specialise in building websites for ${tradeRef}businesses like yours, and I'd love to put something together for ${bizRef} — completely free to view, no obligation whatsoever.</p>
+          <p style="margin:0 0 16px;">If you're open to it,`}
+          We handle everything from there — hosting, updates, content changes, new photos, technical maintenance, and ongoing support. You won't need to touch a thing.</p>
 
-          <p style="margin:0 0 16px;">If you do like it, getting it live on your own domain is quick and straightforward. We handle everything from there — hosting, updates, content changes, new photos, technical maintenance, and ongoing support. You won't need to touch a thing.</p>
-
-          <p style="margin:0 0 16px;">The site is also built with local SEO in mind, so it's set up to appear when people search for things like <em>${tradeNear}</em>${tradeLoc ? `, <em>${tradeLoc}</em>,` : ""} and similar local searches. Fully mobile-friendly and professionally developed throughout.</p>
+          <p style="margin:0 0 16px;">The site would also be built with local SEO in mind, so it's set up to appear when people search for things like <em>${tradeNear}</em>${tradeLoc ? `, <em>${tradeLoc}</em>,` : ""} and similar local searches. Fully mobile-friendly and professionally developed throughout.</p>
 
           <!-- Pricing -->
           <table cellpadding="0" cellspacing="0" width="100%" style="margin:24px 0;background:#f8f9fc;border-radius:8px;border:1px solid #e8eaf0;">
