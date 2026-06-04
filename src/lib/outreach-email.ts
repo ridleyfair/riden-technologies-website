@@ -126,20 +126,21 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
     // ── Wrapper ──
     `<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${WHITE};border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.12);">` +
 
-      // HEADER — dark navy, text-based logo (PNG has white bg, text renders everywhere)
-      `<tr><td style="background:${NAVY};padding:20px 40px;">` +
+      // HEADER — white background so the dark-text logo reads cleanly
+      `<tr><td style="background:#ffffff;padding:20px 40px;border-bottom:1px solid #e8edf2;">` +
         `<table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>` +
           `<td style="vertical-align:middle;">` +
-            // "R" mark — cyan square with bold R
-            `<span style="display:inline-block;background:${CYAN};border-radius:6px;width:32px;height:32px;text-align:center;line-height:32px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:900;color:${NAVY};vertical-align:middle;margin-right:10px;">R</span>` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:${WHITE};vertical-align:middle;letter-spacing:-0.3px;">Riden</span>` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:400;color:${TEXT_LIGHT};vertical-align:middle;letter-spacing:1.5px;text-transform:uppercase;margin-left:6px;">Technologies</span>` +
+            `<img src="https://ridentechnologies.com/images/RidenLogo-email.png"` +
+              ` alt="Riden Technologies" width="180"` +
+              ` style="display:block;border:0;max-width:180px;height:auto;" />` +
           `</td>` +
-          `<td align="right" style="vertical-align:middle;"><span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:${TEXT_LIGHT};letter-spacing:1.4px;text-transform:uppercase;">Web Development</span></td>` +
+          `<td align="right" style="vertical-align:middle;">` +
+            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:${TEXT_MUTED};letter-spacing:1.4px;text-transform:uppercase;">Web Development</span>` +
+          `</td>` +
         `</tr></table>` +
       `</td></tr>` +
 
-      // Cyan accent bar
+      // Cyan-to-blue accent bar
       `<tr><td style="background:linear-gradient(90deg,${CYAN} 0%,${BLUE} 100%);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>` +
 
       // HERO BAND — dark navy gradient
