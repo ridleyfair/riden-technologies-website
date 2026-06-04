@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, Plus, Activity, MoreHorizontal, X, Trash2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import OutreachAutomationPanel from "./outreach-automation-panel";
 
 type Automation = {
   id: string; name: string; trigger: string; actions: number;
@@ -130,6 +131,8 @@ export default function AutomationView() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <OutreachAutomationPanel />
+
       <div className="flex items-start sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-white">Automation System</h2>

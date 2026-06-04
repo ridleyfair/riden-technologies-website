@@ -300,6 +300,38 @@ export async function getCalendarEvent(eventId: string): Promise<OutlookEvent | 
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
+// ── Send mail ─────────────────────────────────────────────────────────────────
+
+export async function sendMail(params: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<void> {
+  const { sharedMailbox } = getMsConfig();
+  if (!sharedMailbox) throw new Error("MICROSOFT_SHARED_MAILBOX is not configured.");
+
+  const resp = await graphRequest(
+    "POST",
+    `/users/${sharedMailbox}/sendMail`,
+    {
+      message: {
+        subject: params.subject,
+        body: { contentType: "html", content: params.html },
+        toRecipients: [{ emailAddress: { address: params.to } }],
+      },
+      saveToSentItems: true,
+    }
+  );
+
+  // Graph returns 202 Accepted for successful sendMail
+  if (!resp.ok && resp.status !== 202) {
+    const err = await resp.text();
+    throw new Error(`Graph sendMail failed (${resp.status}): ${err}`);
+  }
+}
+
+// ── Date helpers ──────────────────────────────────────────────────────────────
+
 /** Build local ISO start/end strings from date ("YYYY-MM-DD"), time ("HH:mm"), and duration in minutes */
 export function buildStartEnd(
   date: string,
