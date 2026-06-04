@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { CheckCircle, Loader2 } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { CheckCircle, ImagePlus, Loader2, X } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,6 +26,8 @@ type FormState = {
   checkatradeUrl:      string;
   accreditations:      string[];
   customAccreditations: string;
+  logoUrl:             string;
+  portfolioUrls:       string[];
   extras:              string;
 };
 
@@ -163,6 +165,14 @@ export default function BriefFormClient({ token }: { token: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Upload state
+  const [logoUploading,      setLogoUploading]      = useState(false);
+  const [logoUploadError,    setLogoUploadError]     = useState("");
+  const [portfolioUploading, setPortfolioUploading]  = useState(false);
+  const [portfolioUploadErr, setPortfolioUploadErr]  = useState("");
+  const logoInputRef      = useRef<HTMLInputElement>(null);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
+
   const [form, setForm] = useState<FormState>({
     businessName:        "",
     industry:            "",
@@ -182,6 +192,8 @@ export default function BriefFormClient({ token }: { token: string }) {
     checkatradeUrl:      "",
     accreditations:      [],
     customAccreditations: "",
+    logoUrl:             "",
+    portfolioUrls:       [],
     extras:              "",
   });
 
@@ -214,9 +226,59 @@ export default function BriefFormClient({ token }: { token: string }) {
     });
   }
 
+  async function uploadFile(file: File): Promise<string> {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`/api/brief-forms/${token}/upload`, { method: "POST", body: fd });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as { error?: string }).error ?? "Upload failed");
+    }
+    const data = await res.json() as { url: string };
+    return data.url;
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setLogoUploading(true);
+    setLogoUploadError("");
+    try {
+      const url = await uploadFile(file);
+      setForm((f) => ({ ...f, logoUrl: url }));
+    } catch (err) {
+      setLogoUploadError((err as Error).message);
+    } finally {
+      setLogoUploading(false);
+    }
+  }
+
+  async function handlePortfolioChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    e.target.value = "";
+    setPortfolioUploading(true);
+    setPortfolioUploadErr("");
+    try {
+      const urls = await Promise.all(files.map(uploadFile));
+      setForm((f) => ({ ...f, portfolioUrls: [...f.portfolioUrls, ...urls] }));
+    } catch (err) {
+      setPortfolioUploadErr((err as Error).message);
+    } finally {
+      setPortfolioUploading(false);
+    }
+  }
+
+  function removePortfolioPhoto(url: string) {
+    setForm((f) => ({ ...f, portfolioUrls: f.portfolioUrls.filter((u) => u !== url) }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.industry) { setError("Please select your business type."); return; }
+    if (!form.logoUrl)  { setError("Please upload your logo before submitting."); return; }
+    if (form.portfolioUrls.length === 0) { setError("Please upload at least one portfolio photo before submitting."); return; }
     setError("");
     setSubmitting(true);
     try {
@@ -638,9 +700,120 @@ export default function BriefFormClient({ token }: { token: string }) {
             </div>
           </div>
 
-          {/* ── Section 6: Anything else ── */}
+          {/* ── Section 6: Photos ── */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-            <SectionHeader number={6} title="Anything else?" subtitle="Is there anything specific you'd like on your website or want us to know?" />
+            <SectionHeader
+              number={6}
+              title="Photos"
+              subtitle="These go straight onto your website — upload the best ones you have."
+            />
+
+            <div className="space-y-6">
+
+              {/* Logo */}
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-1">
+                  Your logo <span className="text-red-500">*</span>
+                </p>
+                <p className="text-xs text-slate-400 mb-3">Used in your website header and footer. PNG or SVG with transparent background works best.</p>
+
+                <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+
+                {form.logoUrl ? (
+                  <div className="relative inline-block">
+                    <div className="w-40 h-24 rounded-xl border-2 border-blue-300 bg-slate-50 flex items-center justify-center overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.logoUrl} alt="Logo preview" className="max-w-full max-h-full object-contain p-2" />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, logoUrl: "" }))}
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow hover:bg-red-600 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="mt-2 text-xs text-blue-600 hover:underline block"
+                    >
+                      Change logo
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={logoUploading}
+                    className="w-full sm:w-64 h-28 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {logoUploading ? (
+                      <><Loader2 size={22} className="text-blue-500 animate-spin" /><span className="text-xs text-slate-500">Uploading...</span></>
+                    ) : (
+                      <><ImagePlus size={22} className="text-slate-400" /><span className="text-xs text-slate-500 font-medium">Upload logo</span><span className="text-[11px] text-slate-400">JPG, PNG or WEBP</span></>
+                    )}
+                  </button>
+                )}
+                {logoUploadError && <p className="mt-2 text-xs text-red-600">{logoUploadError}</p>}
+              </div>
+
+              {/* Portfolio photos */}
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-1">
+                  Portfolio photos <span className="text-red-500">*</span>
+                </p>
+                <p className="text-xs text-slate-400 mb-3">
+                  Photos of your work, team, or premises — these go in your website gallery. At least 1 required, up to 20.
+                </p>
+
+                <input
+                  ref={portfolioInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handlePortfolioChange}
+                />
+
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {form.portfolioUrls.map((url) => (
+                    <div key={url} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="Portfolio photo" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removePortfolioPhoto(url)}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                      >
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {form.portfolioUrls.length < 20 && (
+                    <button
+                      type="button"
+                      onClick={() => portfolioInputRef.current?.click()}
+                      disabled={portfolioUploading}
+                      className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 cursor-pointer"
+                    >
+                      {portfolioUploading ? (
+                        <Loader2 size={18} className="text-blue-500 animate-spin" />
+                      ) : (
+                        <><ImagePlus size={18} className="text-slate-400" /><span className="text-[10px] text-slate-400">Add</span></>
+                      )}
+                    </button>
+                  )}
+                </div>
+                {portfolioUploadErr && <p className="mt-2 text-xs text-red-600">{portfolioUploadErr}</p>}
+              </div>
+
+            </div>
+          </div>
+
+          {/* ── Section 7: Anything else ── */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <SectionHeader number={7} title="Anything else?" subtitle="Is there anything specific you'd like on your website or want us to know?" />
 
             <textarea
               rows={4}

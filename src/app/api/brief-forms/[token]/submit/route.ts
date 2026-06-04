@@ -18,6 +18,8 @@ type FormAnswers = {
   openingHoursDays?:    DayHours[];
   socialFacebook?:      string;
   socialInstagram?:     string;
+  logoUrl?:             string;
+  portfolioUrls?:       string[];
   hasCheckatrade?:      boolean;
   checkatradeUrl?:      string;
   accreditations?:      string[];
@@ -91,7 +93,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
   const answers: FormAnswers = await req.json();
   const brief = mapAnswers(answers);
 
-  // Patch project with mapped brief fields
+  // Patch project with mapped brief fields + photos
   const [project] = await sql`SELECT * FROM "Project" WHERE id = ${form.project_id as string} LIMIT 1`;
   if (project) {
     const ex = project as Record<string, unknown>;
@@ -99,6 +101,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     for (const [k, v] of Object.entries(brief)) {
       merged[k] = v !== undefined ? v : ex[k];
     }
+
+    // Merge photos into photosJson — preserve any existing complex fields (trust cards, colours, etc.)
+    let existingPhotos: Record<string, unknown> = {};
+    try { existingPhotos = JSON.parse((ex.photosJson as string) ?? "{}"); } catch { /* ignore */ }
+    if (Array.isArray(existingPhotos)) existingPhotos = {};
+
+    const logoUrl       = (answers.logoUrl      ?? "").trim();
+    const portfolioUrls = (answers.portfolioUrls ?? []).filter(Boolean);
+    const newPhotosJson = {
+      ...existingPhotos,
+      ...(logoUrl      ? { logo: logoUrl } : {}),
+      ...(portfolioUrls.length ? {
+        heroImages: portfolioUrls,
+        hero:       portfolioUrls[0],
+        gallery:    portfolioUrls,
+      } : {}),
+    };
+
     const now = new Date();
     await sql`
       UPDATE "Project" SET
@@ -113,6 +133,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
         "socialFacebook"  = ${merged.socialFacebook as string ?? ex.socialFacebook as string},
         "socialInstagram" = ${merged.socialInstagram as string ?? ex.socialInstagram as string},
         accreditations    = ${merged.accreditations as string ?? ex.accreditations as string},
+        "photosJson"      = ${JSON.stringify(newPhotosJson)},
         "updatedAt"       = ${now}
       WHERE id = ${form.project_id as string}
     `;
