@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Mail, Send, RefreshCw, CheckCircle, Clock, XCircle,
-  AlertTriangle, Users, ChevronDown, ChevronUp, Eye,
+  AlertTriangle, Users, ChevronDown, ChevronUp, Eye, Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -236,12 +236,23 @@ export default function OutreachAutomationPanel() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5 justify-end">
+                        {/* Preview the email that will be sent */}
+                        <a href={`/api/automations/outreach/preview/${r.id}`} target="_blank" rel="noopener noreferrer"
+                          className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-blue-400 transition-colors" title="Preview email">
+                          <Mail size={12} />
+                        </a>
+                        {/* View website preview if one exists */}
                         {r.preview_url && (
                           <a href={r.preview_url} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-white transition-colors" title="View preview">
-                            <Eye size={12} />
+                            className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-white transition-colors" title="View website preview">
+                            <Globe size={12} />
                           </a>
                         )}
+                        {/* Eye icon → open the interest form as the client would see it */}
+                        <a href={`/website-interest/${r.form_token}`} target="_blank" rel="noopener noreferrer"
+                          className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-violet-400 transition-colors" title="Preview interest form">
+                          <Eye size={12} />
+                        </a>
                         {r.outreach_status === "failed" && (
                           <button onClick={() => patchRecord(r.id, "retry")}
                             className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-amber-400 transition-colors" title="Retry">
