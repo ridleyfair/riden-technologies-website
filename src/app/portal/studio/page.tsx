@@ -15,6 +15,9 @@ import {
   Images,
   Mail,
   AlertTriangle,
+  Search,
+  CheckCircle,
+  ChevronDown,
 } from "lucide-react";
 import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +39,8 @@ type GeneratedSite = {
   outreachEmail?: string;
   lastOutreachAt?: string;
   outreachStatus?: string;
+  deploymentStatus?: string;
+  liveDomain?: string;
   createdAt: string;
 };
 
@@ -336,6 +341,115 @@ function GalleryUpload({
         </p>
       )}
       {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+    </div>
+  );
+}
+
+// ── Google Search Console Panel ────────────────────────────────────────────────
+
+function GscPanel({ site }: { site: GeneratedSite }) {
+  const [open, setOpen]       = useState(false);
+  const [code, setCode]       = useState("");
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
+  const [error, setError]     = useState("");
+
+  const siteUrl   = site.liveDomain
+    ? `https://${site.liveDomain}`
+    : site.previewUrl ?? "";
+  const sitemapUrl = siteUrl ? `${siteUrl}/sitemap.xml` : "";
+
+  async function save() {
+    // Accept full meta tag or just the content value
+    const match = code.match(/content="([^"]+)"/);
+    const verificationCode = match ? match[1] : code.trim();
+    if (!verificationCode) { setError("Paste the meta tag or verification code from Google."); return; }
+
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/sites/${site.id}/verification`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ googleSiteVerification: verificationCode }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) { setError(data.error ?? "Failed to save."); return; }
+      setSaved(true);
+      setCode("");
+      setTimeout(() => setOpen(false), 1500);
+    } catch {
+      setError("Network error.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="border-t border-riden-border pt-3">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex w-full items-center justify-between text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          <Search size={11} />
+          Google Search Console
+        </span>
+        <ChevronDown size={11} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-3">
+          {/* Sitemap URL */}
+          {sitemapUrl && (
+            <div>
+              <p className="text-[10px] text-slate-500 mb-1">Sitemap URL — submit in Search Console</p>
+              <div className="flex items-center gap-2 bg-riden-muted rounded-lg px-3 py-2 border border-riden-border">
+                <span className="text-[11px] text-slate-400 font-mono truncate flex-1">{sitemapUrl}</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText(sitemapUrl)}
+                  className="text-slate-500 hover:text-white transition-colors flex-shrink-0"
+                  title="Copy"
+                >
+                  <Copy size={11} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Verification code */}
+          {saved ? (
+            <div className="flex items-center gap-2 text-[11px] text-emerald-400">
+              <CheckCircle size={13} />
+              Verification code saved — go back to Google and click Verify
+            </div>
+          ) : (
+            <div>
+              <p className="text-[10px] text-slate-500 mb-1">
+                Paste the HTML tag from Google Search Console
+              </p>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 bg-riden-muted border border-riden-border rounded-lg px-2.5 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors font-mono"
+                  placeholder='<meta name="google-site-verification" content="..." />'
+                  value={code}
+                  onChange={e => { setCode(e.target.value); setError(""); }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={save}
+                  disabled={saving || !code.trim()}
+                  className="text-xs shrink-0"
+                >
+                  {saving ? <RefreshCw size={11} className="animate-spin" /> : "Save"}
+                </Button>
+              </div>
+              {error && <p className="text-[10px] text-rose-400 mt-1">{error}</p>}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -830,6 +944,9 @@ export default function StudioPage() {
                     )}
                   </div>
                 )}
+
+                {/* Google Search Console */}
+                <GscPanel site={site} />
 
                 {/* Outreach status + date */}
                 <div className="flex items-center justify-between border-t border-riden-border pt-3">
