@@ -123,12 +123,10 @@ function TierBadge({ tier, score }: { tier: string; score: number }) {
 }
 
 function CheckatradeCell({
-  business,
   enrichment,
   isChecking,
   onCheck,
 }: {
-  business: Business;
   enrichment: CheckatradeEnrichment | undefined;
   isChecking: boolean;
   onCheck: () => void;
@@ -588,6 +586,9 @@ export default function PossibleClientsView() {
   useEffect(() => {
     if (showAll) fetchAllBusinesses();
     else fetchBusinesses(page);
+  // fetchAllBusinesses and fetchBusinesses are stable useCallback refs; omitting them
+  // avoids an infinite re-render loop while keeping all real filter/page deps.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, showAll, city, category, tier, noWebsiteOnly]);
 
   // Poll active scrape job
@@ -611,6 +612,7 @@ export default function PossibleClientsView() {
       } catch { /* ignore */ }
     }, 4000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeJob?.id, activeJob?.status]);
 
   // ── Scrape handlers ──────────────────────────────────────────────────────────
@@ -1136,7 +1138,6 @@ export default function PossibleClientsView() {
                         {/* Checkatrade column */}
                         <td className="px-4 py-3 min-w-[140px]">
                           <CheckatradeCell
-                            business={b}
                             enrichment={enrichment}
                             isChecking={isChecking}
                             onCheck={() => handleCheckCheckatrade(b)}

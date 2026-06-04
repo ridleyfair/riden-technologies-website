@@ -21,14 +21,14 @@ export default function UnsubscribePage({ params }: { params: Promise<{ token: s
         {status === "done" && (
           <>
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-slate-900 mb-2">You've been unsubscribed</h1>
-            <p className="text-slate-500 text-sm">We've removed you from our outreach list. You won't hear from us again regarding this.</p>
+            <h1 className="text-xl font-semibold text-slate-900 mb-2">You&apos;ve been unsubscribed</h1>
+            <p className="text-slate-500 text-sm">We&apos;ve removed you from our outreach list. You won&apos;t hear from us again regarding this.</p>
           </>
         )}
         {status === "error" && (
           <>
             <h1 className="text-xl font-semibold text-slate-900 mb-2">Something went wrong</h1>
-            <p className="text-slate-500 text-sm">Please reply directly to our email to request removal and we'll sort it immediately.</p>
+            <p className="text-slate-500 text-sm">Please reply directly to our email to request removal and we&apos;ll sort it immediately.</p>
           </>
         )}
         <p className="mt-6 text-xs text-slate-400">Riden Technologies · ridentechnologies.com</p>

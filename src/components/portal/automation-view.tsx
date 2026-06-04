@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Plus, Activity, MoreHorizontal, X, Trash2, RefreshCw } from "lucide-react";
+import { Play, Pause, Plus, Activity, X, Trash2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import OutreachAutomationPanel from "./outreach-automation-panel";

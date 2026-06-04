@@ -143,8 +143,8 @@ export default function InterestFormClient({ token }: { token: string }) {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <CheckCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-          <h1 className="text-xl font-semibold text-slate-900 mb-2">You've unsubscribed</h1>
-          <p className="text-slate-500 text-sm">You've already opted out of our outreach. We won't contact you again.</p>
+          <h1 className="text-xl font-semibold text-slate-900 mb-2">You&apos;ve unsubscribed</h1>
+          <p className="text-slate-500 text-sm">You&apos;ve already opted out of our outreach. We won&apos;t contact you again.</p>
         </div>
       </div>
     );
@@ -156,7 +156,7 @@ export default function InterestFormClient({ token }: { token: string }) {
         <div className="text-center max-w-sm">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
           <h1 className="text-xl font-semibold text-slate-900 mb-2">Already received</h1>
-          <p className="text-slate-500 text-sm">We've already got your details — our team will be in touch very soon.</p>
+          <p className="text-slate-500 text-sm">We&apos;ve already got your details — our team will be in touch very soon.</p>
         </div>
       </div>
     );
@@ -171,7 +171,7 @@ export default function InterestFormClient({ token }: { token: string }) {
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-3">Brilliant — we'll be in touch!</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-3">Brilliant — we&apos;ll be in touch!</h1>
             <p className="text-slate-500 text-sm leading-relaxed">
               Thanks for getting back to us. Ridley will be in contact within 1 business day to discuss your website and answer any questions.
             </p>
@@ -244,7 +244,7 @@ export default function InterestFormClient({ token }: { token: string }) {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Preferred domain name <span className="text-slate-400 font-normal">(optional)</span></label>
               <input value={form.preferredDomain} onChange={(e) => setForm((f) => ({ ...f, preferredDomain: e.target.value }))} placeholder="e.g. davesplumbing.co.uk" className={inputCls} />
-              <p className="mt-1.5 text-xs text-slate-400">Don't worry if you're not sure — we can sort this together.</p>
+              <p className="mt-1.5 text-xs text-slate-400">Don&apos;t worry if you&apos;re not sure — we can sort this together.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Services you&apos;d like listed <span className="text-slate-400 font-normal">(optional)</span></label>
@@ -252,7 +252,7 @@ export default function InterestFormClient({ token }: { token: string }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Any design preferences or changes? <span className="text-slate-400 font-normal">(optional)</span></label>
-              <textarea rows={3} value={form.designChanges} onChange={(e) => setForm((f) => ({ ...f, designChanges: e.target.value }))} placeholder="e.g. I'd prefer a darker colour scheme, can we change the logo font..." className={`${inputCls} resize-none`} />
+              <textarea rows={3} value={form.designChanges} onChange={(e) => setForm((f) => ({ ...f, designChanges: e.target.value }))} placeholder="e.g. I&apos;d prefer a darker colour scheme, can we change the logo font..." className={`${inputCls} resize-none`} />
             </div>
           </div>
 
@@ -301,7 +301,7 @@ export default function InterestFormClient({ token }: { token: string }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Anything else? <span className="text-slate-400 font-normal">(optional)</span></label>
-              <textarea rows={3} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="Any questions, special requests, or anything else you'd like us to know..." className={`${inputCls} resize-none`} />
+              <textarea rows={3} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} placeholder="Any questions, special requests, or anything else you&apos;d like us to know..." className={`${inputCls} resize-none`} />
             </div>
           </div>
 
@@ -311,7 +311,7 @@ export default function InterestFormClient({ token }: { token: string }) {
 
           <button type="submit" disabled={submitting}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white font-semibold text-sm shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-violet-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
-            {submitting ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Yes, I'm interested — let's go →"}
+            {submitting ? <><Loader2 size={16} className="animate-spin" /> Sending...</> : "Yes, I&apos;m interested — let&apos;s go →"}
           </button>
 
           <p className="text-center text-xs text-slate-400 pb-8">

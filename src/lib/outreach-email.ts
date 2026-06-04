@@ -18,47 +18,6 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
 
   const subject = `I put a website together for ${bizRef} — take a look (no obligation)`;
 
-  const textBody = `
-${greeting}
-
-Hope you don't mind me reaching out — my name's Ridley, I run a small web development company called Riden Technologies based in the UK.
-
-I came across ${bizRef}${locRef} recently and had a good look at your online presence. You clearly do great work, but I genuinely felt your website wasn't doing you justice — and for a ${tradeRef}business${locRef}, that could easily mean missing out on a steady flow of local enquiries every month.
-
-So rather than just firing over a generic pitch, I went ahead and put together a website concept specifically for ${bizRef}. It's live right now and you can view it here:
-
-${p.previewUrl}
-
-Absolutely no obligation whatsoever — if it's not for you, no hard feelings at all.
-
-If you do like what you see and want to take it further, getting it live on your own domain is quick and straightforward. From that point we handle everything — hosting, updates, content changes, new photos, technical maintenance, and ongoing support. You won't need to touch a thing.
-
-The site is also built with local SEO in mind, so it's designed to show up when people search for ${tradeNear}${tradeLoc ? `, ${tradeLoc},` : ""} and similar local searches. Fully mobile-friendly and professionally developed throughout.
-
-Our pricing is clear and simple:
-- £299 one-off setup fee to get everything live on your own domain
-- £50/month which covers hosting, support, updates, and everything ongoing
-
-We also back it with a 14-day money-back guarantee. If within the first two weeks you're not completely happy, we'll refund the setup fee in full — no questions asked.
-
-If you'd like to go ahead, or even just have a quick 15-minute call to talk through design changes, features, or any questions you have, you can let us know through this short form:
-
-${p.formUrl}
-
-It only takes a couple of minutes to fill in and you can tell us exactly what you'd want changed or added.
-
-Either way, I genuinely hope the preview gives you a sense of what's possible. Feel free to reply to this email directly if you'd rather just chat.
-
-Thanks so much for your time — hope to hear from you.
-
-Ridley
-Riden Technologies
-ridentechnologies.com
-
----
-You're receiving this because we came across your business and felt we could help. If you'd prefer not to hear from us again, you can opt out here: ${p.unsubscribeUrl}
-`.trim();
-
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
