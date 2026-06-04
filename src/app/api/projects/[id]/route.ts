@@ -13,6 +13,16 @@ function inferTierAndRate(notes: string | null): { tier: string; monthlyRate: nu
   return { tier: "starter", monthlyRate: 25 };
 }
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(req);
+  if (!user) return unauthorized();
+  const { id } = await params;
+  const sql = getDb();
+  const [project] = await sql`SELECT * FROM "Project" WHERE id = ${id} LIMIT 1`;
+  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ project });
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();

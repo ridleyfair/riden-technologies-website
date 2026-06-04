@@ -589,6 +589,66 @@ function ProjectDetailModal({
   const [galleryUploadError, setGalleryUploadError] = useState("");
   const [heroUrlInput, setHeroUrlInput]         = useState("");
 
+  // Brief form (send-to-client)
+  const [briefFormToken,    setBriefFormToken]    = useState<string | null>(null);
+  const [briefFormStatus,   setBriefFormStatus]   = useState<string | null>(null);
+  const [briefFormCreating, setBriefFormCreating] = useState(false);
+  const [briefFormCopied,   setBriefFormCopied]   = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/brief-forms?projectId=${initialProject.id}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.form) { setBriefFormToken(d.form.token); setBriefFormStatus(d.form.status); } })
+      .catch(() => null);
+  }, [initialProject.id]);
+
+  async function createBriefForm() {
+    setBriefFormCreating(true);
+    try {
+      const res = await fetch("/api/brief-forms", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ projectId: initialProject.id }),
+      });
+      const data = await res.json();
+      setBriefFormToken(data.token);
+      setBriefFormStatus("pending");
+    } finally {
+      setBriefFormCreating(false);
+    }
+  }
+
+  function copyBriefFormLink() {
+    if (!briefFormToken) return;
+    navigator.clipboard.writeText(`${window.location.origin}/brief/${briefFormToken}`);
+    setBriefFormCopied(true);
+    setTimeout(() => setBriefFormCopied(false), 2500);
+  }
+
+  function reloadBriefAfterSubmit() {
+    // Re-fetch the project to pull in any submitted brief values
+    fetch(`/api/projects/${initialProject.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        const p = d.project ?? d;
+        setBrief({
+          phone:           p.phone           ?? "",
+          email:           p.email           ?? "",
+          city:            p.city            ?? "",
+          postcode:        p.postcode        ?? "",
+          industry:        p.industry        ?? "trades",
+          services:        p.services        ?? "",
+          about:           p.about           ?? "",
+          accreditations:  p.accreditations  ?? "",
+          socialFacebook:  p.socialFacebook  ?? "",
+          socialInstagram: p.socialInstagram ?? "",
+          openingHours:    p.openingHours    ?? "",
+        });
+        setBriefFormStatus("submitted");
+      })
+      .catch(() => null);
+  }
+
   function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1408,6 +1468,70 @@ function ProjectDetailModal({
         {activeTab === "brief" && (
           <>
             <div className="overflow-y-auto flex-1 p-5 space-y-6">
+
+              {/* Brief Form Panel */}
+              <div className={`rounded-xl border p-4 space-y-3 ${briefFormStatus === "submitted" ? "bg-emerald-500/5 border-emerald-500/20" : "bg-blue-500/5 border-blue-500/20"}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-white">Client Brief Form</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                      {briefFormStatus === "submitted"
+                        ? "The client has submitted their brief — answers are applied below."
+                        : briefFormStatus === "pending"
+                        ? "Form sent — waiting for the client to fill it in."
+                        : "Generate a form link to send to the client. They fill it in and it populates the brief automatically."}
+                    </p>
+                  </div>
+                  {briefFormStatus === "submitted" && (
+                    <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      Received ✓
+                    </span>
+                  )}
+                  {briefFormStatus === "pending" && (
+                    <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      Pending
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {!briefFormToken ? (
+                    <button
+                      onClick={createBriefForm}
+                      disabled={briefFormCreating}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                    >
+                      {briefFormCreating ? <RefreshCw size={11} className="animate-spin" /> : <Plus size={11} />}
+                      {briefFormCreating ? "Creating..." : "Generate form link"}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={copyBriefFormLink}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 transition-colors flex items-center gap-1.5"
+                      >
+                        <Copy size={11} />
+                        {briefFormCopied ? "Copied!" : "Copy link"}
+                      </button>
+                      <a
+                        href={`/brief/${briefFormToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors flex items-center gap-1.5"
+                      >
+                        <Eye size={11} /> Preview form
+                      </a>
+                      {briefFormStatus === "submitted" && (
+                        <button
+                          onClick={reloadBriefAfterSubmit}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5"
+                        >
+                          <RefreshCw size={11} /> Refresh brief
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
 
               {/* Business Info */}
               <div>
