@@ -35,10 +35,10 @@ const navItems = [
   {
     section: "CRM",
     items: [
-      { label: "Leads", href: "/portal/leads", icon: UserPlus },
       { label: "Possible Clients", href: "/portal/possible-clients", icon: Flame },
-      { label: "Bookings", href: "/portal/bookings", icon: Calendar },
+      { label: "Leads", href: "/portal/leads", icon: UserPlus },
       { label: "Clients", href: "/portal/clients", icon: Users },
+      { label: "Bookings", href: "/portal/bookings", icon: Calendar },
     ],
   },
   {
@@ -50,8 +50,8 @@ const navItems = [
   {
     section: "Tools",
     items: [
-      { label: "Websites", href: "/portal/websites", icon: Globe },
       { label: "Studio", href: "/portal/studio", icon: Sparkles },
+      { label: "Websites", href: "/portal/websites", icon: Globe },
       { label: "Automation", href: "/portal/automation", icon: Zap },
       { label: "Analytics", href: "/portal/analytics", icon: BarChart3 },
     ],
