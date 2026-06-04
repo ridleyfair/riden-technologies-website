@@ -21,6 +21,7 @@ type Business = {
   city: string | null;
   address: string | null;
   phone: string | null;
+  email: string | null;
   website: string | null;
   rating: number | null;
   reviews_count: number | null;
@@ -696,8 +697,7 @@ export default function PossibleClientsView() {
     (business: Business) => {
       const email = buildWebsitePreviewEmail({
         businessName: business.name,
-        // Google Maps scraping rarely returns email — user fills it in manually
-        contactEmail: undefined,
+        contactEmail: business.email ?? undefined,
         previewUrl: undefined,
         location: business.city ?? undefined,
       });
@@ -953,7 +953,7 @@ export default function PossibleClientsView() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-riden-border">
-                    {["Business", "Source", "City", "Category", "Rating", "Phone", "Website", "Checkatrade", "Tier", ""].map(
+                    {["Business", "Source", "City", "Category", "Rating", "Phone", "Email", "Website", "Checkatrade", "Tier", ""].map(
                       (h) => (
                         <th
                           key={h}
@@ -1035,6 +1035,30 @@ export default function PossibleClientsView() {
                             </a>
                           ) : (
                             <span className="text-slate-600">—</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {b.email ? (
+                            <div className="flex items-center gap-1.5 max-w-[180px]">
+                              <a
+                                href={`mailto:${b.email}`}
+                                className="flex items-center gap-1.5 text-violet-400 hover:text-violet-300 transition-colors truncate min-w-0"
+                                title={b.email}
+                              >
+                                <Mail size={11} className="flex-shrink-0" />
+                                <span className="truncate text-xs">{b.email}</span>
+                              </a>
+                              <button
+                                onClick={() => navigator.clipboard.writeText(b.email!)}
+                                className="flex-shrink-0 text-slate-600 hover:text-slate-300 transition-colors"
+                                title="Copy email"
+                              >
+                                <ClipboardCopy size={10} />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-600 text-xs">—</span>
                           )}
                         </td>
 
