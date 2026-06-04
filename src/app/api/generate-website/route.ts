@@ -102,6 +102,9 @@ interface GenerateBody {
     icon:     string;
     enabled:  boolean;
   }>;
+  serviceAreas?:         string[];   // explicit list from Checkatrade areas field
+  checkatradeProfileUrl?: string;    // for sameAs schema
+  googleBusinessUrl?:    string;     // for sameAs schema
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
@@ -298,6 +301,253 @@ function parseReviewStatsFromAbout(about: string): { rating?: string; reviewCoun
   if (countMatch) reviewCount = parseInt(countMatch[1], 10)
 
   return { rating, reviewCount }
+}
+
+// ── SEO helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Extract distinct service-area place names from About text.
+ * Looks for "Covering X, Y, Z..." / "areas covered: X" / "based in X" patterns.
+ */
+function extractServiceAreas(about: string, city: string): string[] {
+  const areas: string[] = []
+
+  const coveringRe = /(?:covering|areas?\s+covered|service\s+areas?|we\s+cover|covering\s+the|based\s+in|serving(?:\s+the)?)\s*:?\s*([^.\n]{5,120})/gi
+  let m: RegExpExecArray | null
+  while ((m = coveringRe.exec(about)) !== null) {
+    const chunk = m[1]
+      .replace(/\s+and\s+surrounding\s+areas?(?:\s+of\s+[^,.]+)?/gi, '')
+      .replace(/\s+and\s+beyond\.?/gi, '')
+    const places = chunk
+      .split(/[,\s]+(?:and\s+)?/)
+      .map(s => s.replace(/[^A-Za-z\s-]/g, '').trim())
+      .filter(s => s.length > 2 && /^[A-Z]/.test(s) && !/^(The|And|Of|In|Around|Surrounding|Including|Plus|Also)$/.test(s))
+    areas.push(...places)
+  }
+
+  // Always include primary city first
+  const unique = [...new Set([city, ...areas].filter(Boolean))].slice(0, 8)
+  return unique
+}
+
+/**
+ * Generate a per-page SEO object for each page slug.
+ * Returns a map of slug → { title, description }.
+ */
+function generatePageSeo(
+  pages: Array<{ slug: string; title: string }>,
+  businessName: string,
+  primaryService: string,
+  city: string,
+  siteDescription: string,
+  serviceList: string[],
+): Record<string, { title: string; description: string }> {
+  const result: Record<string, { title: string; description: string }> = {}
+  const loc = city || 'UK'
+  const svc = primaryService || 'Professional Services'
+
+  for (const page of pages) {
+    switch (page.slug) {
+      case '/':
+        result['/'] = {
+          title:       `${businessName} | ${svc} in ${loc}`,
+          description: siteDescription,
+        }
+        break
+      case '/services':
+        result['/services'] = {
+          title:       `${svc} Services | ${businessName} in ${loc}`,
+          description: `Full range of ${svc.toLowerCase()} services from ${businessName}, serving ${loc}. ${serviceList.slice(0, 3).join(', ')} and more. Free quotes available.`,
+        }
+        break
+      case '/about':
+        result['/about'] = {
+          title:       `About ${businessName} | ${svc} in ${loc}`,
+          description: `Learn about ${businessName}, trusted ${svc.toLowerCase()} specialists based in ${loc}. Our experience, accreditations, and commitment to quality.`,
+        }
+        break
+      case '/contact':
+        result['/contact'] = {
+          title:       `Contact ${businessName} | ${svc} in ${loc}`,
+          description: `Get in touch with ${businessName} for ${svc.toLowerCase()} in ${loc} and surrounding areas. Call or email for a free, no-obligation quote.`,
+        }
+        break
+      case '/our-work':
+      case '/gallery':
+        result[page.slug] = {
+          title:       `Our Work | ${businessName} — ${svc} in ${loc}`,
+          description: `Browse completed ${svc.toLowerCase()} projects by ${businessName} across ${loc}. Photo gallery of our recent work.`,
+        }
+        break
+      case '/practice-areas':
+        result['/practice-areas'] = {
+          title:       `${svc} | ${businessName} in ${loc}`,
+          description: `Specialist ${svc.toLowerCase()} from ${businessName} in ${loc}. Experienced professionals delivering trusted results.`,
+        }
+        break
+      default:
+        result[page.slug] = {
+          title:       `${page.title} | ${businessName}`,
+          description: `${page.title} — ${businessName}, professional ${svc.toLowerCase()} in ${loc}.`,
+        }
+    }
+  }
+
+  return result
+}
+
+/**
+ * Auto-generate FAQ items relevant to the business industry and services.
+ * These are used for the FAQ section and FAQ schema markup.
+ */
+function generateFaqItems(
+  industry: string,
+  services: string,
+  city: string,
+  businessName: string,
+): Array<{ question: string; answer: string }> {
+  const serviceList = services
+    .split(/[\n,;•]+/)
+    .map(s => s.replace(/^[-–—*·\s]+/, '').trim())
+    .filter(Boolean)
+  const topService = serviceList[0] || industry || 'our services'
+  const ind = (industry ?? '').toLowerCase()
+  const loc = city || 'the local area'
+
+  const faqs: Array<{ question: string; answer: string }> = []
+
+  // Cost FAQ (always first)
+  faqs.push({
+    question: `How much does ${topService.toLowerCase()} cost?`,
+    answer: `Costs vary depending on the scope of work, materials, and access requirements. We always provide a free, detailed quote before any work begins so you know exactly what to expect with no hidden costs. Contact us for a no-obligation estimate.`,
+  })
+
+  // Industry-specific FAQs
+  if (/carpent|joiner|joinery|woodwork|bespoke|furniture/i.test(ind)) {
+    faqs.push(
+      {
+        question: `How long does a bespoke carpentry project take?`,
+        answer: `Timescales depend on project complexity. Bespoke fitted wardrobes typically take 2–4 weeks, while custom staircases or full-room joinery may take 4–8 weeks. We confirm a clear timeline during your free quote.`,
+      },
+      {
+        question: `Can you match existing woodwork in my home?`,
+        answer: `Yes. We specialise in matching timber species, stains, and profiles to blend seamlessly with your existing woodwork. Bring photos or samples and we'll advise on the best approach.`,
+      },
+      {
+        question: `Do you supply all materials?`,
+        answer: `We can source and supply all materials, including specific timber species and bespoke hardware. We're also happy to work with client-supplied materials where appropriate.`,
+      },
+    )
+  } else if (/plumb|heat|boiler|gas|central heating/i.test(ind)) {
+    faqs.push(
+      {
+        question: `Do you offer emergency plumbing call-outs?`,
+        answer: `Yes. We offer emergency call-outs and will aim to reach you as quickly as possible to resolve urgent plumbing issues, from burst pipes to boiler breakdowns.`,
+      },
+      {
+        question: `Are your engineers Gas Safe registered?`,
+        answer: `Yes, all our engineers are fully Gas Safe registered. We can provide our registration number before any gas work begins for your peace of mind.`,
+      },
+      {
+        question: `How often should I service my boiler?`,
+        answer: `We recommend an annual boiler service to maintain efficiency, safety, and any manufacturer warranty. Regular servicing also helps catch potential issues before they become costly repairs.`,
+      },
+    )
+  } else if (/electr/i.test(ind)) {
+    faqs.push(
+      {
+        question: `Are your electricians NICEIC or NAPIT registered?`,
+        answer: `Yes, we are registered with the relevant electrical certification body. All work is tested and certified to current BS 7671 wiring regulations, and you receive a full certificate on completion.`,
+      },
+      {
+        question: `Do you carry out electrical safety inspections (EICR)?`,
+        answer: `Yes, we carry out Electrical Installation Condition Reports for residential and commercial properties, including landlord certificates. We provide a written report with any recommended remedial actions.`,
+      },
+      {
+        question: `Can you install EV home charging points?`,
+        answer: `Yes, we install electric vehicle home charging points and are qualified to carry out this work to the required standard. Ask us about any available government grants.`,
+      },
+    )
+  } else if (/roof|tile|guttering|flat roof/i.test(ind)) {
+    faqs.push(
+      {
+        question: `How do I know if my roof needs repairing or replacing?`,
+        answer: `Common signs include missing or cracked tiles, leaks or damp patches, sagging sections, or a roof over 20 years old. We offer a free inspection to assess the condition and recommend the most cost-effective solution.`,
+      },
+      {
+        question: `How long does a roof replacement take?`,
+        answer: `A standard terraced or semi-detached roof replacement typically takes 3–5 days. Larger or more complex roofs may take longer. We provide a realistic schedule during your quote.`,
+      },
+      {
+        question: `Do you clean and replace gutters?`,
+        answer: `Yes, we offer gutter cleaning, repair, and full replacement alongside all roofing work, ensuring your drainage system is working correctly after any roof job.`,
+      },
+    )
+  } else if (/build|construct|extension|renovation|loft/i.test(ind)) {
+    faqs.push(
+      {
+        question: `Do you handle planning permission and building regulations?`,
+        answer: `We advise on what permissions and building regulations approvals are required and can work alongside architects and local authority planners. All structural work complies with current regulations.`,
+      },
+      {
+        question: `How long does a home extension take?`,
+        answer: `A single-storey rear extension typically takes 8–12 weeks from start to completion, depending on size and specification. We provide a detailed programme before work begins.`,
+      },
+      {
+        question: `Do you manage the full project?`,
+        answer: `Yes, we manage all aspects of your project including subcontractors, materials procurement, and scheduling, giving you a single point of contact throughout from planning to handover.`,
+      },
+    )
+  } else if (/landscap|garden|paving|driveway|patio/i.test(ind)) {
+    faqs.push(
+      {
+        question: `What driveway materials do you install?`,
+        answer: `We install block paving, resin-bound, Indian sandstone, porcelain, and concrete driveways and patios. We'll help you choose the best option for your property, aesthetic preference, and budget.`,
+      },
+      {
+        question: `Can you design a garden from scratch?`,
+        answer: `Yes, we offer a full design and build service. We work with you to create an outdoor space that suits your lifestyle, budget, and the character of your property.`,
+      },
+      {
+        question: `Do you offer ongoing maintenance contracts?`,
+        answer: `Yes, we offer flexible garden maintenance contracts to keep your outdoor space looking its best year-round, from seasonal planting to lawn care and tidying.`,
+      },
+    )
+  } else {
+    // Generic service business
+    faqs.push(
+      {
+        question: `How quickly can you start?`,
+        answer: `This depends on our current schedule and project scope. Contact us and we'll give you an honest start date. We always try to accommodate urgent requirements where possible.`,
+      },
+      {
+        question: `Do you provide written quotes?`,
+        answer: `Yes. All quotes are provided in writing and clearly itemised so there are no surprises. We confirm everything in writing before any work commences.`,
+      },
+      {
+        question: `What payment methods do you accept?`,
+        answer: `We accept bank transfer and card payments. We do not require large upfront deposits, and payment terms are agreed clearly before work begins.`,
+      },
+    )
+  }
+
+  // Universal FAQs
+  faqs.push(
+    {
+      question: `Do you offer free quotes?`,
+      answer: `Yes. We provide free, no-obligation quotes for all work. Contact us and we'll get back to you promptly to discuss your requirements and provide a competitive estimate.`,
+    },
+    {
+      question: `What areas do you cover?`,
+      answer: `We are based in ${loc} and cover the surrounding areas. Get in touch to confirm we serve your location.`,
+    },
+    {
+      question: `Are you fully insured?`,
+      answer: `Yes. We hold full public liability insurance for all work carried out. Certificates are available on request before any work begins.`,
+    },
+  )
+
+  return faqs.slice(0, 7)
 }
 
 // ── Copy cleanup — strip em/en dashes before saving ──────────────────────────
@@ -600,11 +850,14 @@ The JSON must exactly match this structure (fill in all <placeholders> with real
   },
   ${pagesSchema.slice(1, -1).trim()},
   "seo": {
-    "title": "<SEO title — specific services + ${city}>",
-    "description": "<meta description using real services from About and ${city}>",
-    "keywords": [ <5-8 keywords using specific services from About and location> ],
-    "ogTitle": "<og title>",
-    "ogDescription": "<og description>"
+    "title": "<SEO title — Business Name | Primary Service in City, e.g. BEGU Carpentry Ltd | Bespoke Carpentry in London>",
+    "description": "<160-char meta description — primary service + city + key differentiator. No generic filler. Real facts from About.>",
+    "keywords": [ <8-12 keywords: company name, primary service, service+city combos, near-me variants, specific service types from the list> ],
+    "ogTitle": "<og:title — same as title or slightly more natural phrasing>",
+    "ogDescription": "<og:description — conversational 1-sentence summary. Services + location.>",
+    "serviceName": "<primary service category, e.g. 'Bespoke Carpentry', 'Emergency Plumber', 'Electrical Services'>",
+    "primaryLocation": "${body.city}",
+    "serviceAreas": [ <up to 8 location names extracted from About — towns, cities, counties the business covers — use ONLY names from the About text or business details> ]
   }
 }
 
@@ -973,6 +1226,125 @@ export async function POST(req: NextRequest) {
     // Inject user-defined about proof cards — Claude never generates these
     if (body.aboutProofCards && body.aboutProofCards.length > 0) {
       spec.aboutProofCards = body.aboutProofCards.filter(c => c.enabled && c.title.trim() !== '');
+    }
+
+    // ── SEO post-processing ────────────────────────────────────────────────────
+
+    const seo = spec.seo as Record<string, unknown>
+
+    // Service name: use Claude's output or derive from services
+    const serviceList = (body.services ?? '')
+      .split(/[\n,;•]+/)
+      .map((s: string) => s.replace(/^[-–—*·\s]+/, '').trim())
+      .filter(Boolean)
+    const primaryService = (seo.serviceName as string) || serviceList[0] || body.industry || ''
+
+    // Service areas: prefer Claude's extracted list, fallback to About text, then body.serviceAreas
+    let effectiveServiceAreas: string[] = []
+    if (Array.isArray(seo.serviceAreas) && (seo.serviceAreas as string[]).length > 0) {
+      effectiveServiceAreas = (seo.serviceAreas as string[]).filter(Boolean).slice(0, 8)
+    } else if (body.serviceAreas && body.serviceAreas.length > 0) {
+      effectiveServiceAreas = body.serviceAreas.slice(0, 8)
+    } else {
+      effectiveServiceAreas = extractServiceAreas(body.about ?? '', body.city)
+    }
+    if (effectiveServiceAreas.length > 0) seo.serviceAreas = effectiveServiceAreas
+
+    // Primary location always set
+    if (!seo.primaryLocation) seo.primaryLocation = body.city
+
+    // sameAs: add Checkatrade profile URL + social links
+    const sameAsLinks: string[] = []
+    if (body.checkatradeProfileUrl) sameAsLinks.push(body.checkatradeProfileUrl)
+    else if (body.reviewSettings?.platformUrl && body.reviewSettings.platformUrl.includes('checkatrade')) {
+      sameAsLinks.push(body.reviewSettings.platformUrl)
+    }
+    if (body.googleBusinessUrl) sameAsLinks.push(body.googleBusinessUrl)
+    if (body.socialFacebook)    sameAsLinks.push(body.socialFacebook)
+    if (body.socialInstagram)   sameAsLinks.push(body.socialInstagram)
+    if (sameAsLinks.length > 0) seo.sameAs = sameAsLinks
+
+    // Generate FAQ items (post-generation, no Claude tokens used)
+    const faqItems = generateFaqItems(body.industry, body.services ?? '', body.city, body.businessName)
+    seo.faqItems = faqItems
+
+    // Inject FAQ section into home page (before CTA/footer)
+    if (Array.isArray(pages)) {
+      const homePage = pages.find(p => (p.slug as string) === '/')
+      if (homePage && Array.isArray(homePage.sections)) {
+        const homesSections = homePage.sections as Record<string, unknown>[]
+        const alreadyHasFaq = homesSections.some(s => (s.type as string) === 'faq')
+        if (!alreadyHasFaq) {
+          const faqSection = {
+            type: 'faq',
+            content: {
+              headline:    'Frequently Asked Questions',
+              subHeadline: `Common questions about our ${primaryService.toLowerCase()} services`,
+              items: faqItems,
+            },
+          }
+          // Insert before CTA (or before footer, or at end-1)
+          const insertBefore = homesSections.findIndex(
+            s => (s.type as string) === 'cta' || (s.type as string) === 'footer',
+          )
+          if (insertBefore >= 0) {
+            homesSections.splice(insertBefore, 0, faqSection)
+          } else {
+            homesSections.splice(Math.max(0, homesSections.length - 1), 0, faqSection)
+          }
+          homePage.sections = homesSections
+        }
+      }
+    }
+
+    // Generate per-page SEO metadata
+    if (Array.isArray(pages)) {
+      const pageList = pages.map(p => ({ slug: p.slug as string, title: p.title as string }))
+      const pageSeoMap = generatePageSeo(
+        pageList,
+        body.businessName,
+        primaryService,
+        body.city,
+        (seo.description as string) || '',
+        serviceList,
+      )
+      for (const page of pages) {
+        const pSeo = pageSeoMap[page.slug as string]
+        if (pSeo) page.seo = pSeo
+      }
+    }
+
+    // Improved image alt text for gallery items — include business name + location
+    if (Array.isArray(pages)) {
+      for (const page of pages) {
+        if (!Array.isArray(page.sections)) continue
+        for (const section of page.sections as Record<string, unknown>[]) {
+          if ((section.type as string) !== 'gallery') continue
+          const gc = section.content as Record<string, unknown>
+          if (Array.isArray(gc.items)) {
+            gc.items = (gc.items as Record<string, unknown>[]).map((item, i) => ({
+              ...item,
+              alt: item.alt && !(item.alt as string).includes('photo')
+                ? item.alt
+                : `${primaryService} by ${body.businessName} in ${body.city}${i > 0 ? ` — project ${i + 1}` : ''}`,
+            }))
+          }
+          // Album photos
+          if (Array.isArray(gc.projectAlbums)) {
+            gc.projectAlbums = (gc.projectAlbums as Record<string, unknown>[]).map(album => ({
+              ...album,
+              photos: Array.isArray(album.photos)
+                ? (album.photos as Record<string, unknown>[]).map((photo, i) => ({
+                    ...photo,
+                    alt: photo.alt && !(photo.alt as string).includes(body.businessName)
+                      ? photo.alt
+                      : `${album.title as string} by ${body.businessName} in ${body.city}${i > 0 ? ` — photo ${i + 1}` : ''}`,
+                  }))
+                : album.photos,
+            }))
+          }
+        }
+      }
     }
 
     // Strip any em/en dashes Claude snuck into the copy

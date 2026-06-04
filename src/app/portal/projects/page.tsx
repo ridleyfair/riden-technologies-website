@@ -137,6 +137,7 @@ type ParsedCheckatradeImport = {
   newReviews: Review[];
   newPhotos: string[];
   newReviewSettings: ReviewSettings;
+  serviceAreas: string[];
 };
 
 const CT_NAV_WORDS = new Set([
@@ -262,6 +263,7 @@ function parseCheckatradeImport(
     newReviews,
     newPhotos,
     newReviewSettings,
+    serviceAreas: areasList,
   };
 }
 
@@ -705,6 +707,7 @@ function ProjectDetailModal({
     rating?:      string;
     reviewCount?: number;
     noProfile?:   boolean;
+    serviceAreas?: string[];
   }>({
     url:      "",
     loading:  false,
@@ -1018,11 +1021,12 @@ function ProjectDetailModal({
       const found = data._found as { hasNextData?: boolean; hasProfile?: boolean } | undefined;
       setCheckatrade((s) => ({
         ...s,
-        loading:     false,
-        imported:    true,
-        rating:      data.rating      ? String(data.rating)      : s.rating,
-        reviewCount: data.reviewCount ? Number(data.reviewCount) : s.reviewCount,
-        noProfile:   found && !found.hasProfile,
+        loading:      false,
+        imported:     true,
+        rating:       data.rating      ? String(data.rating)      : s.rating,
+        reviewCount:  data.reviewCount ? Number(data.reviewCount) : s.reviewCount,
+        noProfile:    found && !found.hasProfile,
+        serviceAreas: parsed.serviceAreas.length > 0 ? parsed.serviceAreas : s.serviceAreas,
       }));
 
       // Kick off ScrapingBee browser photo scrape (synchronous — waits for result)
@@ -1157,6 +1161,8 @@ function ProjectDetailModal({
           })(),
           trustCards:      trustCards.filter(c => c.enabled && c.title.trim() !== ''),
           aboutProofCards: aboutProofCards.filter(c => c.enabled && c.title.trim() !== ''),
+          serviceAreas:    checkatrade.serviceAreas && checkatrade.serviceAreas.length > 0 ? checkatrade.serviceAreas : undefined,
+          checkatradeProfileUrl: checkatrade.url && checkatrade.url.includes('checkatrade.com') ? checkatrade.url : undefined,
         }),
       });
 
