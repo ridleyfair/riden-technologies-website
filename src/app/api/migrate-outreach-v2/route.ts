@@ -26,6 +26,18 @@ export async function GET() {
     sql`DROP INDEX IF EXISTS "outreach_record_site_idx"`
   );
 
+  // Remove duplicate rows — keep the most recently created record per email
+  await step("deduplicate by email", () =>
+    sql`
+      DELETE FROM "OutreachRecord"
+      WHERE id NOT IN (
+        SELECT DISTINCT ON (LOWER(business_email)) id
+        FROM "OutreachRecord"
+        ORDER BY LOWER(business_email), created_at DESC
+      )
+    `
+  );
+
   // Add unique index on business_email — prevents duplicate sends regardless of source
   await step("unique index on business_email", () =>
     sql`CREATE UNIQUE INDEX IF NOT EXISTS "outreach_record_email_idx" ON "OutreachRecord" (LOWER(business_email)) WHERE opt_out = FALSE`
