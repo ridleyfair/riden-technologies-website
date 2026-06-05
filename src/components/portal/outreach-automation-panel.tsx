@@ -76,12 +76,22 @@ export default function OutreachAutomationPanel() {
   }
 
   async function patchRecord(id: string, patchAction: string) {
-    await fetch("/api/automations/outreach/records", {
-      method:  "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ id, action: patchAction }),
-    });
-    load();
+    setActing(true); setResult(null);
+    try {
+      const res  = await fetch("/api/automations/outreach/records", {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ id, action: patchAction }),
+      });
+      const data = await res.json() as ActionResult;
+      if (!res.ok) setResult({ error: data.error ?? `Request failed (${res.status})` });
+      else         setResult({ message: patchAction === "approve_all" ? "All records approved — ready to send." : "Done." });
+      await load();
+    } catch (e) {
+      setResult({ error: String(e) });
+    } finally {
+      setActing(false);
+    }
   }
 
   const convRate = stats && stats.sent > 0
