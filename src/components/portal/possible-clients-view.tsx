@@ -486,6 +486,10 @@ export default function PossibleClientsView() {
   const [checkingIds, setCheckingIds] = useState<Set<string>>(new Set());
   const [checkingAll, setCheckingAll] = useState(false);
 
+  // Email scanning
+  const [emailScanning, setEmailScanning] = useState(false);
+  const [emailScanMsg, setEmailScanMsg] = useState<string | null>(null);
+
   // Toast
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -738,6 +742,27 @@ export default function PossibleClientsView() {
     showToast(`Checked ${unchecked.length} businesses for Checkatrade`, "success");
   }, [businesses, enrichments, checkingIds, handleCheckCheckatrade, showToast]);
 
+  const handleScanEmails = useCallback(async () => {
+    setEmailScanning(true);
+    setEmailScanMsg(null);
+    try {
+      const res  = await fetch("/api/possible-clients/scan-emails", { method: "POST" });
+      const data = await res.json() as { found?: number; processed?: number; remaining?: number; message?: string; error?: string };
+      if (data.error) {
+        showToast(data.error, "error");
+      } else {
+        setEmailScanMsg(data.message ?? null);
+        showToast(`Found ${data.found ?? 0} emails from ${data.processed ?? 0} websites`, "success");
+        // Reload businesses so new emails appear
+        await fetchBusinesses();
+      }
+    } catch {
+      showToast("Email scan failed", "error");
+    } finally {
+      setEmailScanning(false);
+    }
+  }, [showToast, fetchBusinesses]);
+
   const handleCopyOutreach = useCallback(
     (business: Business, enrichment: CheckatradeEnrichment) => {
       const msg = buildOutreachMessage(business, enrichment);
@@ -794,6 +819,15 @@ export default function PossibleClientsView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleScanEmails}
+            disabled={emailScanning}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-700/80 hover:bg-cyan-600 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Scan business websites to find missing email addresses"
+          >
+            {emailScanning ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+            {emailScanning ? "Scanning…" : "Scan for Emails"}
+          </button>
           {uncheckedCount > 0 && (
             <button
               onClick={handleCheckAll}
@@ -829,6 +863,19 @@ export default function PossibleClientsView() {
               Start the FastAPI server, then set{" "}
               <code className="text-xs bg-rose-500/20 px-1 rounded">SCRAPER_API_URL</code> in your env.
             </div>
+          </div>
+        )}
+
+        {/* Email scan result banner */}
+        {emailScanMsg && (
+          <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm">
+            <div className="flex items-center gap-2">
+              <Mail size={14} />
+              {emailScanMsg}
+            </div>
+            <button onClick={() => setEmailScanMsg(null)} className="text-cyan-600 hover:text-cyan-400">
+              <X size={13} />
+            </button>
           </div>
         )}
 
