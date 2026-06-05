@@ -197,16 +197,18 @@ async function handleSend(limit: number, mode: string) {
     );
   }
 
-  const whereApproved = mode === "auto"
-    ? sql`outreach_status = 'queued' AND opt_out = FALSE`
-    : sql`outreach_status = 'queued' AND opt_out = FALSE AND approved = TRUE`;
-
-  const records = await sql`
-    SELECT * FROM "OutreachRecord"
-    WHERE ${whereApproved}
-    ORDER BY created_at ASC
-    LIMIT ${limit}
-  `;
+  // Avoid nested sql fragments (not supported by Neon driver) — use two explicit queries
+  const records = mode === "auto"
+    ? await sql`
+        SELECT * FROM "OutreachRecord"
+        WHERE outreach_status = 'queued' AND opt_out = FALSE
+        ORDER BY created_at ASC LIMIT ${limit}
+      `
+    : await sql`
+        SELECT * FROM "OutreachRecord"
+        WHERE outreach_status = 'queued' AND opt_out = FALSE AND approved = TRUE
+        ORDER BY created_at ASC LIMIT ${limit}
+      `;
 
   if (records.length === 0) {
     return NextResponse.json({ sent: 0, message: mode === "auto" ? "No queued records." : "No approved records. Approve emails first." });
