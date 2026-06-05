@@ -64,15 +64,25 @@ export default function OutreachAutomationPanel() {
   async function doAction(action: string, extra?: Record<string, unknown>) {
     setActing(true); setResult(null);
     try {
-      const res  = await fetch("/api/automations/outreach", {
+      const res = await fetch("/api/automations/outreach", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ action, ...extra }),
       });
-      const data = await res.json() as ActionResult;
+      let data: ActionResult;
+      try {
+        data = await res.json() as ActionResult;
+      } catch {
+        data = { error: `Server returned non-JSON response (status ${res.status}). Check Cloudflare logs.` };
+      }
+      if (!res.ok && !data.error) data = { error: `Request failed with status ${res.status}` };
       setResult(data);
       await load();
-    } finally { setActing(false); }
+    } catch (e) {
+      setResult({ error: `Network error: ${String(e)}` });
+    } finally {
+      setActing(false);
+    }
   }
 
   async function patchRecord(id: string, patchAction: string) {
