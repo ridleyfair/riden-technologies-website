@@ -104,30 +104,35 @@ async function fetchWarmLeadsFromRailway(): Promise<RailwayBusiness[]> {
 async function handleQueue(_req: NextRequest) {
   const sql = getDb();
 
-  // 1. Pull all warm + hot leads from Railway
+  // 1. Pull all hot, warm and cold leads from Railway
   const allLeads = await fetchWarmLeadsFromRailway();
 
-  // 2. Filter to those with a plausible business email address
-  const withEmail = allLeads.filter((b) => {
+  // 2. Merge in locally-scanned emails (from BusinessEmailScan) for businesses
+  //    that have no email in Railway but one was found by the website scanner
+  let localEmails: Map<string, string> = new Map();
+  try {
+    const rows = await sql`SELECT business_id, email FROM "BusinessEmailScan" WHERE email IS NOT NULL`;
+    localEmails = new Map(rows.map((r) => [String(r.business_id), String(r.email)]));
+  } catch { /* table may not exist yet — ignore */ }
+
+  const leadsWithEmail = allLeads.map((b) => ({
+    ...b,
+    email: b.email?.trim() ? b.email : (localEmails.get(b.id) ?? null),
+  }));
+
+  // 3. Filter to those with a plausible business email address
+  const JUNK = ["wixpress.com","sentry-next","sentry.io","noreply","no-reply","donotreply","mailer-daemon","postmaster"];
+  const withEmail = leadsWithEmail.filter((b) => {
     const e = (b.email ?? "").trim().toLowerCase();
     if (!e) return false;
-    // Skip auto-generated / form-processor addresses
-    if (e.includes("wixpress.com"))    return false;
-    if (e.includes("sentry-next"))     return false;
-    if (e.includes("sentry.io"))       return false;
-    if (e.includes("noreply"))         return false;
-    if (e.includes("no-reply"))        return false;
-    if (e.includes("donotreply"))      return false;
-    if (e.includes("mailer-daemon"))   return false;
-    if (e.includes("postmaster"))      return false;
-    // Must have a dot in the domain (basic sanity check)
+    if (JUNK.some((j) => e.includes(j))) return false;
     const domain = e.split("@")[1] ?? "";
-    if (!domain.includes("."))         return false;
+    if (!domain.includes(".")) return false;
     return true;
   });
 
   if (withEmail.length === 0) {
-    return NextResponse.json({ queued: 0, message: "No warm/hot leads with an email address found in Possible Clients." });
+    return NextResponse.json({ queued: 0, message: "No leads with an email address found. Run 'Scan for Emails' in Possible Clients first." });
   }
 
   // 3. Filter out emails already in Lead table (already converted)
