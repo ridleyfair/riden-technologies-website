@@ -754,12 +754,16 @@ export default function PossibleClientsView() {
     try {
       while (true) {
         const res  = await fetch("/api/possible-clients/scan-emails", { method: "POST" });
-        const data = await res.json() as {
-          found?: number; processed?: number; remaining?: number;
-          message?: string; error?: string;
-        };
+        let data: { found?: number; processed?: number; remaining?: number; message?: string; error?: string };
+        try {
+          data = await res.json() as typeof data;
+        } catch {
+          const text = await res.text().catch(() => "(no response body)");
+          showToast(`Scan error (${res.status}): ${text.slice(0, 120)}`, "error");
+          break;
+        }
 
-        if (data.error) { showToast(data.error, "error"); break; }
+        if (!res.ok || data.error) { showToast(data.error ?? `Server error ${res.status}`, "error"); break; }
 
         totalFound += data.found    ?? 0;
         totalDone  += data.processed ?? 0;

@@ -97,6 +97,15 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. Load already-scanned business IDs from local DB (so we skip them)
+  //    Auto-create the table if it doesn't exist yet
+  await sql`
+    CREATE TABLE IF NOT EXISTS "BusinessEmailScan" (
+      business_id  TEXT        PRIMARY KEY,
+      email        TEXT,
+      source       TEXT        NOT NULL DEFAULT 'website_scan',
+      scanned_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
   const scannedRows = await sql`SELECT business_id FROM "BusinessEmailScan"`;
   const scanned     = new Set(scannedRows.map((r) => String(r.business_id)));
 
