@@ -73,12 +73,12 @@ type RailwayBusiness = {
   city: string | null; category: string | null; lead_score: { lead_tier: string } | null;
 };
 
-// Fetch all warm + hot leads with email from Railway, paginating through all results
+// Fetch all hot, warm and cold leads from Railway, paginating through all results
 async function fetchWarmLeadsFromRailway(): Promise<RailwayBusiness[]> {
   const scraperUrl = getScraperUrl();
   const results: RailwayBusiness[] = [];
 
-  for (const tier of ["hot", "warm"]) {
+  for (const tier of ["hot", "warm", "cold"]) {
     let page = 1;
     while (true) {
       try {
