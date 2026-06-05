@@ -487,8 +487,9 @@ export default function PossibleClientsView() {
   const [checkingAll, setCheckingAll] = useState(false);
 
   // Email scanning
-  const [emailScanning, setEmailScanning] = useState(false);
-  const [emailScanMsg, setEmailScanMsg] = useState<string | null>(null);
+  const [emailScanning,  setEmailScanning]  = useState(false);
+  const [emailScanMsg,   setEmailScanMsg]   = useState<string | null>(null);
+  const [emailScanProgress, setEmailScanProgress] = useState<{ done: number; total: number } | null>(null);
 
   // Toast
   const [toast, setToast] = useState<Toast | null>(null);
@@ -745,21 +746,39 @@ export default function PossibleClientsView() {
   const handleScanEmails = useCallback(async () => {
     setEmailScanning(true);
     setEmailScanMsg(null);
+    setEmailScanProgress(null);
+
+    let totalFound  = 0;
+    let totalDone   = 0;
+
     try {
-      const res  = await fetch("/api/possible-clients/scan-emails", { method: "POST" });
-      const data = await res.json() as { found?: number; processed?: number; remaining?: number; message?: string; error?: string };
-      if (data.error) {
-        showToast(data.error, "error");
-      } else {
-        setEmailScanMsg(data.message ?? null);
-        showToast(`Found ${data.found ?? 0} emails from ${data.processed ?? 0} websites`, "success");
-        // Reload businesses so new emails appear
-        await fetchBusinesses();
+      while (true) {
+        const res  = await fetch("/api/possible-clients/scan-emails", { method: "POST" });
+        const data = await res.json() as {
+          found?: number; processed?: number; remaining?: number;
+          message?: string; error?: string;
+        };
+
+        if (data.error) { showToast(data.error, "error"); break; }
+
+        totalFound += data.found    ?? 0;
+        totalDone  += data.processed ?? 0;
+        const remaining = data.remaining ?? 0;
+
+        setEmailScanProgress({ done: totalDone, total: totalDone + remaining });
+
+        if (remaining === 0) {
+          setEmailScanMsg(`Scan complete — checked ${totalDone} sites, found ${totalFound} email${totalFound !== 1 ? "s" : ""}.`);
+          showToast(`Found ${totalFound} emails across ${totalDone} sites`, "success");
+          await fetchBusinesses();
+          break;
+        }
       }
     } catch {
-      showToast("Email scan failed", "error");
+      showToast("Email scan failed — check your connection", "error");
     } finally {
       setEmailScanning(false);
+      setEmailScanProgress(null);
     }
   }, [showToast, fetchBusinesses]);
 
@@ -826,7 +845,11 @@ export default function PossibleClientsView() {
             title="Scan business websites to find missing email addresses"
           >
             {emailScanning ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
-            {emailScanning ? "Scanning…" : "Scan for Emails"}
+            {emailScanning && emailScanProgress
+              ? `Scanning… ${emailScanProgress.done}/${emailScanProgress.total}`
+              : emailScanning
+              ? "Starting…"
+              : "Scan for Emails"}
           </button>
           {uncheckedCount > 0 && (
             <button
