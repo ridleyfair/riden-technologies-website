@@ -42,7 +42,7 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
   const tradeNear = p.trade    ? `"${p.trade} near me"` : `"trades near me"`;
   const tradeLoc  = p.trade && p.location ? `"${p.trade} in ${p.location}"` : "";
 
-  const subject = `Free website concept for ${bizRef} — 2 minutes to claim it`;
+  const subject = `Free website demo for ${bizRef} — see exactly what it would look like`;
 
   const seoBullet = `Local SEO so you appear for <em>${tradeNear}</em>` +
     (tradeLoc ? ` and <em>${tradeLoc}</em>` : "");
@@ -92,7 +92,7 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
       `<tr><td style="background:linear-gradient(135deg,${NAVY_MID} 0%,#1a3a5c 100%);padding:32px 40px 28px;">` +
         `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${CYAN};">A personalised invitation from Riden</p>` +
         `<h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:${WHITE};line-height:1.35;">` +
-          `We&rsquo;d love to build a free website for <em style="font-style:normal;color:${CYAN};">${bizRef}</em>` +
+          `We&rsquo;d love to show <em style="font-style:normal;color:${CYAN};">${bizRef}</em> exactly what a new website could look like` +
         `</h1>` +
       `</td></tr>` +
 
@@ -105,17 +105,18 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `</p>` +
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `I came across <strong style="color:${TEXT_DARK};">${bizRef}</strong>${locRef} recently and I&rsquo;d love to create a completely free, custom website concept specifically for your business. ` +
-          `We specialise in building websites for ${tradeRef}businesses like yours, and I genuinely think a well-built site could help ${bizRef} win a lot more local enquiries.` +
+          `I came across <strong style="color:${TEXT_DARK};">${bizRef}</strong>${locRef} recently and I&rsquo;d love to put together a free custom demo of what a brand-new website could look like for your business. ` +
+          `We specialise in websites for ${tradeRef}businesses, and I genuinely think a well-built site could help ${bizRef} win a lot more local enquiries.` +
         `</p>` +
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `<strong style="color:${TEXT_DARK};">It&rsquo;s completely free &mdash; no obligation whatsoever.</strong> ` +
-          `We&rsquo;ll build a personalised website preview for ${bizRef} and send it over for you to look at. You decide if you want to take it further.` +
+          `<strong style="color:${TEXT_DARK};">The demo is completely free to see &mdash; no obligation whatsoever.</strong> ` +
+          `If you like it and want to go live, it&rsquo;s &pound;299 to build and launch on your own domain, then &pound;50&nbsp;a&nbsp;month for hosting, updates and support. ` +
+          `But there&rsquo;s zero pressure &mdash; you just get to see exactly what it would look like first.` +
         `</p>` +
 
         `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `To make sure we build something that really fits <strong style="color:${TEXT_DARK};">${bizRef}</strong>, we&rsquo;ve put together a short 2-minute brief form. ` +
+          `To make the demo specific to <strong style="color:${TEXT_DARK};">${bizRef}</strong>, we&rsquo;ve put together a short 2-minute brief form. ` +
           `It helps us understand your services, branding, photos and requirements &mdash; then we get straight to work:` +
         `</p>` +
 

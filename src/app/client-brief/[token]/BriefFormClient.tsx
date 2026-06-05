@@ -204,8 +204,8 @@ export default function BriefFormClient({ token }: { token: string }) {
           </h1>
           <p className="text-slate-600 leading-relaxed mb-4">
             {submitted
-              ? `Thank you! We've received the brief for ${record?.business_name ?? "your business"} and we'll get started on your personalised website concept right away.`
-              : "We've already received your brief — we'll be in touch soon!"}
+              ? `Thank you! We've received the brief for ${record?.business_name ?? "your business"} and we'll get straight to work on your free demo. We'll be in touch within 1–2 working days to show you exactly what it could look like.`
+              : "We've already received your brief — we'll be in touch with your demo soon!"}
           </p>
           <p className="text-sm text-slate-500">
             Questions? Reply to the email we sent you, or contact us at{" "}
@@ -630,8 +630,9 @@ function SectionPreferences({ form, set }: { form: FormState; set: (k: keyof For
       <div className="mt-2 p-4 bg-cyan-50 border border-cyan-100 rounded-xl">
         <p className="text-sm font-semibold text-cyan-800 mb-1">What happens next?</p>
         <p className="text-sm text-cyan-700 leading-relaxed">
-          Once you click Submit, we&rsquo;ll get straight to work on your personalised website concept.
-          We&rsquo;ll be in touch within 1–2 working days with your preview — completely free, no obligation.
+          Once you click Submit, we&rsquo;ll get straight to work on a demo of exactly what your new website could look like.
+          We&rsquo;ll be in touch within 1–2 working days — completely free to see, no obligation.
+          If you love it and want to go live, it&rsquo;s &pound;299 setup then &pound;50/month. Simple as that.
         </p>
       </div>
     </>
