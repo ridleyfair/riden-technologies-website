@@ -32,7 +32,8 @@ export async function PATCH(req: NextRequest) {
   if (!user) return unauthorized();
 
   const { id, action } = await req.json() as { id: string; action: string };
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  // approve_all acts on all rows — doesn't need a specific id
+  if (!id && action !== "approve_all") return NextResponse.json({ error: "id required" }, { status: 400 });
 
   const sql = getDb();
 
