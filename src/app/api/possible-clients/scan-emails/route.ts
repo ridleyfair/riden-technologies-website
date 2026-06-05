@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   const scraperUrl = getScraperUrl();
 
   // 1. Fetch businesses with a website from Railway (paginate all)
-  let allWithWebsite: RailwayBusiness[] = [];
+  const allWithWebsite: RailwayBusiness[] = [];
   try {
     let page = 1;
     while (true) {
