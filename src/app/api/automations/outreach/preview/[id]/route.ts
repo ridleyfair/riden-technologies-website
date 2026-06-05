@@ -15,15 +15,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   `;
   if (!record) return new NextResponse("Record not found", { status: 404 });
 
-  const origin       = new URL(req.url).origin;
-  const formUrl      = `${origin}/website-interest/${record.form_token}`;
+  const origin         = new URL(req.url).origin;
+  const formUrl        = `${origin}/client-brief/${record.form_token}`;
   const unsubscribeUrl = `${origin}/unsubscribe/${record.form_token}`;
 
   const { subject, html } = buildOutreachEmailHtml({
-    businessName:   String(record.business_name ?? ""),
-    trade:          String(record.industry  ?? ""),
-    location:       String(record.location   ?? ""),
-    previewUrl:     record.preview_url ? String(record.preview_url) : undefined,
+    businessName: String(record.business_name ?? ""),
+    trade:        String(record.industry      ?? ""),
+    location:     String(record.location      ?? ""),
     formUrl,
     unsubscribeUrl,
   });
@@ -53,7 +52,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     <span class="tag">PREVIEW</span>
     <span>To: <strong>${record.business_email}</strong></span>
     <span>Subject: <strong>${subject}</strong></span>
-    ${record.preview_url ? `<span class="tag">Has preview URL</span>` : `<span class="tag" style="color:#f59e0b;border-color:#92400e;">No preview URL</span>`}
+    <span class="tag">Brief form: ${formUrl}</span>
   </div>
   ${html}
 </body>

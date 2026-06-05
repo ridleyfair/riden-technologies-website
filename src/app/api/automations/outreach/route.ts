@@ -27,25 +27,29 @@ export async function GET(req: NextRequest) {
 
   const rows = await sql`
     SELECT
-      COUNT(*) FILTER (WHERE outreach_status = 'queued'   AND opt_out = FALSE AND approved = FALSE) AS queued,
-      COUNT(*) FILTER (WHERE outreach_status = 'queued'   AND opt_out = FALSE AND approved = TRUE)  AS approved,
-      COUNT(*) FILTER (WHERE outreach_status = 'sent')    AS sent,
+      COUNT(*) FILTER (WHERE outreach_status = 'queued'     AND opt_out = FALSE AND approved = FALSE) AS queued,
+      COUNT(*) FILTER (WHERE outreach_status = 'queued'     AND opt_out = FALSE AND approved = TRUE)  AS approved,
+      COUNT(*) FILTER (WHERE outreach_status = 'sent')      AS sent,
       COUNT(*) FILTER (WHERE outreach_status = 'responded') AS responded,
-      COUNT(*) FILTER (WHERE outreach_status = 'failed')  AS failed,
-      COUNT(*) FILTER (WHERE opt_out = TRUE)              AS opted_out,
-      COUNT(*) FILTER (WHERE converted_lead_id IS NOT NULL) AS leads_created
+      COUNT(*) FILTER (WHERE outreach_status = 'failed')    AS failed,
+      COUNT(*) FILTER (WHERE opt_out = TRUE)                AS opted_out,
+      COUNT(*) FILTER (WHERE converted_lead_id    IS NOT NULL) AS leads_created,
+      COUNT(*) FILTER (WHERE converted_project_id IS NOT NULL) AS projects_created,
+      COUNT(*) FILTER (WHERE form_started_at      IS NOT NULL) AS forms_started
     FROM "OutreachRecord"
   `;
 
   const stats = rows[0] ?? {};
   return NextResponse.json({
-    queued:       Number(stats.queued      ?? 0),
-    approved:     Number(stats.approved    ?? 0),
-    sent:         Number(stats.sent        ?? 0),
-    responded:    Number(stats.responded   ?? 0),
-    failed:       Number(stats.failed      ?? 0),
-    opted_out:    Number(stats.opted_out   ?? 0),
-    leads_created: Number(stats.leads_created ?? 0),
+    queued:           Number(stats.queued           ?? 0),
+    approved:         Number(stats.approved         ?? 0),
+    sent:             Number(stats.sent             ?? 0),
+    responded:        Number(stats.responded        ?? 0),
+    failed:           Number(stats.failed           ?? 0),
+    opted_out:        Number(stats.opted_out        ?? 0),
+    leads_created:    Number(stats.leads_created    ?? 0),
+    projects_created: Number(stats.projects_created ?? 0),
+    forms_started:    Number(stats.forms_started    ?? 0),
     ms_configured: isMsConfigured(),
   });
 }
@@ -65,8 +69,8 @@ export async function POST(req: NextRequest) {
 }
 
 type RailwayBusiness = {
-  id: string; name: string; email: string | null; city: string | null;
-  category: string | null; lead_score: { lead_tier: string } | null;
+  id: string; name: string; email: string | null; phone: string | null;
+  city: string | null; category: string | null; lead_score: { lead_tier: string } | null;
 };
 
 // Fetch all warm + hot leads with email from Railway, paginating through all results
@@ -153,13 +157,14 @@ async function handleQueue(_req: NextRequest) {
       await sql`
         INSERT INTO "OutreachRecord" (
           possible_client_id, generated_site_id,
-          business_name, business_email,
+          business_name, business_email, business_phone,
           preview_url, industry, location
         ) VALUES (
           ${biz.id},
           ${site?.id ?? null},
           ${biz.name},
           ${biz.email!},
+          ${biz.phone ?? null},
           ${site?.previewUrl ?? null},
           ${biz.category ?? ""},
           ${biz.city ?? ""}
@@ -212,13 +217,12 @@ async function handleSend(limit: number, mode: string) {
 
   for (const record of records as Record<string, unknown>[]) {
     try {
-      const formUrl      = `${origin}/website-interest/${record.form_token}`;
+      const formUrl      = `${origin}/client-brief/${record.form_token}`;
       const unsubscribeUrl = `${origin}/unsubscribe/${record.form_token}`;
       const { subject, html } = buildOutreachEmailHtml({
         businessName:   String(record.business_name ?? ""),
         trade:          String(record.industry  ?? ""),
         location:       String(record.location   ?? ""),
-        previewUrl:     record.preview_url ? String(record.preview_url) : undefined,
         formUrl,
         unsubscribeUrl,
       });

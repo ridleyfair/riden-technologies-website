@@ -3,12 +3,11 @@ export interface OutreachEmailInput {
   ownerName?:     string;
   trade?:         string;
   location?:      string;
-  previewUrl?:    string;
   formUrl:        string;
   unsubscribeUrl: string;
 }
 
-// Brand palette from RidenLogo.png
+// Brand palette
 const NAVY       = "#0d1b2a";
 const NAVY_MID   = "#122236";
 const CYAN       = "#22d3ee";
@@ -21,7 +20,6 @@ const TEXT_BODY  = "#334155";
 const TEXT_MUTED = "#64748b";
 const TEXT_LIGHT = "#94a3b8";
 const BORDER     = "#e2e8f0";
-
 
 function checkRow(text: string): string {
   return (
@@ -37,66 +35,15 @@ function checkRow(text: string): string {
 }
 
 export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string; html: string } {
-  const greeting   = p.ownerName ? `Hi ${p.ownerName},` : "Hi there,";
-  const bizRef     = p.businessName;
-  const tradeRef   = p.trade    ? `${p.trade} ` : "";
-  const locRef     = p.location ? ` in ${p.location}` : "";
-  const tradeNear  = p.trade    ? `"${p.trade} near me"` : `"trades near me"`;
-  const tradeLoc   = p.trade && p.location ? `"${p.trade} in ${p.location}"` : "";
-  const hasPreview = !!(p.previewUrl?.trim());
+  const greeting  = p.ownerName ? `Hi ${p.ownerName},` : "Hi there,";
+  const bizRef    = p.businessName;
+  const tradeRef  = p.trade    ? `${p.trade} ` : "";
+  const locRef    = p.location ? ` in ${p.location}` : "";
+  const tradeNear = p.trade    ? `"${p.trade} near me"` : `"trades near me"`;
+  const tradeLoc  = p.trade && p.location ? `"${p.trade} in ${p.location}"` : "";
 
-  const subject = hasPreview
-    ? `I built a website for ${bizRef} — take a look (no obligation)`
-    : `Could we help ${bizRef} get more local customers?`;
+  const subject = `Free website concept for ${bizRef} — 2 minutes to claim it`;
 
-  const heroTagline = hasPreview
-    ? "Your website is ready to view"
-    : "A message from Riden Technologies";
-
-  const heroTitle = hasPreview
-    ? `We built a website for <em style="font-style:normal;color:${CYAN};">${bizRef}</em>`
-    : `Could we help <em style="font-style:normal;color:${CYAN};">${bizRef}</em> get more customers?`;
-
-  // ── Build the "intro + CTA" block depending on whether we have a preview ──
-  let leadIn = "";
-  if (hasPreview) {
-    leadIn =
-      `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-        `So rather than just firing over a generic pitch, I went ahead and put together a website concept specifically for ${bizRef}. It&rsquo;s live right now &mdash; you can view it here:` +
-      `</p>` +
-
-      // Preview button
-      `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">` +
-        `<tr><td style="background:linear-gradient(135deg,${CYAN} 0%,${BLUE} 100%);border-radius:8px;box-shadow:0 4px 14px rgba(34,211,238,0.3);">` +
-          `<a href="${p.previewUrl}" style="display:inline-block;padding:16px 36px;color:${WHITE};font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.3px;white-space:nowrap;">` +
-            `View your website preview &rarr;` +
-          `</a>` +
-        `</td></tr>` +
-      `</table>` +
-
-      `<p style="margin:0 0 16px;font-size:12px;color:${TEXT_MUTED};font-family:Arial,Helvetica,sans-serif;">` +
-        `Or paste into your browser: <a href="${p.previewUrl}" style="color:${CYAN_DARK};word-break:break-all;">${p.previewUrl}</a>` +
-      `</p>` +
-
-      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-        `<strong style="color:${TEXT_DARK};">Absolutely no obligation</strong> &mdash; if it&rsquo;s not for you, no hard feelings at all.` +
-      `</p>` +
-
-      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-        `If you do like it, getting it live on your own domain is straightforward and we can have it up quickly. We handle absolutely everything from there:` +
-      `</p>`;
-  } else {
-    leadIn =
-      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-        `We specialise in building websites for ${tradeRef}businesses, and I&rsquo;d love to put something together specifically for ${bizRef} &mdash; completely free to view, no obligation whatsoever.` +
-      `</p>` +
-
-      `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-        `If you&rsquo;re open to it, we handle absolutely everything from day one:` +
-      `</p>`;
-  }
-
-  // ── Included items checklist ──
   const seoBullet = `Local SEO so you appear for <em>${tradeNear}</em>` +
     (tradeLoc ? ` and <em>${tradeLoc}</em>` : "");
 
@@ -110,7 +57,6 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
     "Fully mobile-friendly &amp; professionally developed",
   ].map(checkRow).join("");
 
-  // ── Full HTML ──
   const html =
     `<!DOCTYPE html>` +
     `<html lang="en" xmlns="http://www.w3.org/1999/xhtml">` +
@@ -123,10 +69,9 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${BODY_BG};padding:32px 16px;">` +
     `<tr><td align="center">` +
 
-    // ── Wrapper ──
     `<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${WHITE};border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.12);">` +
 
-      // HEADER — white background so the dark-text logo reads cleanly
+      // HEADER
       `<tr><td style="background:#ffffff;padding:20px 40px;border-bottom:1px solid #e8edf2;">` +
         `<table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>` +
           `<td style="vertical-align:middle;">` +
@@ -140,25 +85,56 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `</tr></table>` +
       `</td></tr>` +
 
-      // Cyan-to-blue accent bar
+      // Accent bar
       `<tr><td style="background:linear-gradient(90deg,${CYAN} 0%,${BLUE} 100%);height:3px;font-size:0;line-height:0;">&nbsp;</td></tr>` +
 
-      // HERO BAND — dark navy gradient
+      // HERO
       `<tr><td style="background:linear-gradient(135deg,${NAVY_MID} 0%,#1a3a5c 100%);padding:32px 40px 28px;">` +
-        `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${CYAN};">${heroTagline}</p>` +
-        `<h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:${WHITE};line-height:1.35;">${heroTitle}</h1>` +
+        `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${CYAN};">A personalised invitation from Riden</p>` +
+        `<h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:${WHITE};line-height:1.35;">` +
+          `We&rsquo;d love to build a free website for <em style="font-style:normal;color:${CYAN};">${bizRef}</em>` +
+        `</h1>` +
       `</td></tr>` +
 
       // BODY
       `<tr><td style="padding:36px 40px 24px;">` +
         `<p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.75;color:${TEXT_BODY};">${greeting}</p>` +
+
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
           `Hope you don&rsquo;t mind me reaching out &mdash; my name&rsquo;s Ridley, I run a small web development company called Riden Technologies based in the UK.` +
         `</p>` +
-        `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `I came across <strong style="color:${TEXT_DARK};">${bizRef}</strong>${locRef} recently and had a look at your online presence. You clearly do great work, but I genuinely felt your website wasn&rsquo;t doing you justice &mdash; and for a ${tradeRef}business${locRef}, that can easily mean missing out on a steady flow of local enquiries every month.` +
+
+        `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
+          `I came across <strong style="color:${TEXT_DARK};">${bizRef}</strong>${locRef} recently and I&rsquo;d love to create a completely free, custom website concept specifically for your business. ` +
+          `We specialise in building websites for ${tradeRef}businesses like yours, and I genuinely think a well-built site could help ${bizRef} win a lot more local enquiries.` +
         `</p>` +
-        leadIn +
+
+        `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
+          `<strong style="color:${TEXT_DARK};">It&rsquo;s completely free &mdash; no obligation whatsoever.</strong> ` +
+          `We&rsquo;ll build a personalised website preview for ${bizRef} and send it over for you to look at. You decide if you want to take it further.` +
+        `</p>` +
+
+        `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
+          `To make sure we build something that really fits <strong style="color:${TEXT_DARK};">${bizRef}</strong>, we&rsquo;ve put together a short 2-minute brief form. ` +
+          `It helps us understand your services, branding, photos and requirements &mdash; then we get straight to work:` +
+        `</p>` +
+
+        // Primary CTA
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">` +
+          `<tr><td style="background:linear-gradient(135deg,${CYAN} 0%,${BLUE} 100%);border-radius:8px;box-shadow:0 4px 14px rgba(34,211,238,0.3);">` +
+            `<a href="${p.formUrl}" style="display:inline-block;padding:18px 40px;color:${WHITE};font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;text-decoration:none;letter-spacing:0.3px;white-space:nowrap;">` +
+              `Complete Your Free Website Brief &rarr;` +
+            `</a>` +
+          `</td></tr>` +
+        `</table>` +
+
+        `<p style="margin:0 0 16px;font-size:12px;color:${TEXT_MUTED};font-family:Arial,Helvetica,sans-serif;">` +
+          `Or paste into your browser: <a href="${p.formUrl}" style="color:${CYAN_DARK};word-break:break-all;">${p.formUrl}</a>` +
+        `</p>` +
+
+        `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
+          `Once you submit the brief, we&rsquo;ll handle everything from there:` +
+        `</p>` +
       `</td></tr>` +
 
       // CHECKLIST
@@ -173,23 +149,18 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
       // PRICING
       `<tr><td style="padding:0 40px 28px;">` +
         `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:${NAVY};border-radius:10px;overflow:hidden;">` +
-          // pricing header bar
           `<tr><td style="background:linear-gradient(90deg,${CYAN} 0%,${BLUE} 100%);padding:11px 24px;">` +
             `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${WHITE};">Simple, transparent pricing</p>` +
           `</td></tr>` +
-          // setup fee
           `<tr><td style="padding:22px 24px 12px;">` +
             `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${WHITE};line-height:1;">&#163;299</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">one-off setup fee &mdash; site built &amp; live on your own domain</span>` +
           `</td></tr>` +
-          // divider
           `<tr><td style="padding:0 24px;"><div style="height:1px;background:rgba(255,255,255,0.08);font-size:0;">&nbsp;</div></td></tr>` +
-          // monthly
           `<tr><td style="padding:12px 24px 20px;">` +
             `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${CYAN};line-height:1;">&#163;50</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">per month &mdash; hosting, support, updates &amp; everything ongoing</span>` +
           `</td></tr>` +
-          // guarantee
           `<tr><td style="background:rgba(34,211,238,0.08);padding:14px 24px;border-top:1px solid rgba(34,211,238,0.15);">` +
             `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${CYAN};line-height:1.5;">` +
               `&#10003;&nbsp; <strong>14-day money-back guarantee</strong> &mdash; not happy within the first two weeks? Full refund of the setup fee. No questions asked.` +
@@ -198,16 +169,14 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `</table>` +
       `</td></tr>` +
 
-      // INTEREST CTA
+      // PHONE CALL OFFER
       `<tr><td style="padding:0 40px 32px;">` +
-        `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `If you&rsquo;d like to go ahead, or just want a quick 15-minute call to talk through design changes, features, or any questions &mdash; fill in this short form. Takes under two minutes:` +
-        `</p>` +
-        `<table role="presentation" cellpadding="0" cellspacing="0">` +
-          `<tr><td style="background:${NAVY};border:2px solid ${CYAN};border-radius:8px;">` +
-            `<a href="${p.formUrl}" style="display:inline-block;padding:16px 36px;color:${WHITE};font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;text-decoration:none;white-space:nowrap;">` +
-              `Yes, I&rsquo;m interested &mdash; let&rsquo;s talk &rarr;` +
-            `</a>` +
+        `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f8fafc;border:1px solid ${BORDER};border-radius:8px;">` +
+          `<tr><td style="padding:18px 22px;">` +
+            `<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:${TEXT_DARK};">Prefer a quick call instead?</p>` +
+            `<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.65;color:${TEXT_BODY};">` +
+              `No problem at all &mdash; just reply directly to this email and we&rsquo;ll arrange a convenient 10-minute chat. Happy to answer any questions.` +
+            `</p>` +
           `</td></tr>` +
         `</table>` +
       `</td></tr>` +
@@ -215,12 +184,8 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
       // SIGN-OFF
       `<tr><td style="padding:24px 40px 32px;border-top:1px solid ${BORDER};">` +
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `Feel free to reply directly to this email if you&rsquo;d rather just chat &mdash; I&rsquo;m always happy to answer any questions.` +
+          `Thanks so much for your time &mdash; I hope to hear from you.` +
         `</p>` +
-        `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `Thanks so much for your time &mdash; hope to hear from you.` +
-        `</p>` +
-        // Signature
         `<table role="presentation" cellpadding="0" cellspacing="0">` +
           `<tr><td style="border-left:3px solid ${CYAN};padding-left:14px;">` +
             `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:${TEXT_DARK};">Ridley</p>` +
@@ -239,8 +204,8 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `</p>` +
       `</td></tr>` +
 
-    `</table>` + // /wrapper
-    `</td></tr></table>` + // /outer
+    `</table>` +
+    `</td></tr></table>` +
     `</body></html>`;
 
   return { subject, html };

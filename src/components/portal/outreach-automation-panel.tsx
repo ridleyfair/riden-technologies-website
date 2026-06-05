@@ -4,14 +4,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Mail, Send, RefreshCw, CheckCircle, Clock, XCircle,
-  AlertTriangle, Users, ChevronDown, ChevronUp, Eye, Globe,
+  AlertTriangle, Users, ChevronDown, ChevronUp, Globe, FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Stats = {
   queued: number; approved: number; sent: number;
   responded: number; failed: number; opted_out: number;
-  leads_created: number; ms_configured: boolean;
+  leads_created: number; projects_created: number;
+  forms_started: number; ms_configured: boolean;
 };
 
 type OutreachRecord = {
@@ -83,14 +84,25 @@ export default function OutreachAutomationPanel() {
     load();
   }
 
+  const convRate = stats && stats.sent > 0
+    ? Math.round((stats.responded / stats.sent) * 100)
+    : null;
+
   const statCards = stats ? [
-    { label: "Queued",        value: stats.queued,        color: "text-slate-400",   bg: "bg-slate-500/10",   icon: Clock },
-    { label: "Awaiting Send", value: stats.approved,      color: "text-violet-400",  bg: "bg-violet-500/10",  icon: CheckCircle },
-    { label: "Emails Sent",   value: stats.sent,          color: "text-blue-400",    bg: "bg-blue-500/10",    icon: Send },
-    { label: "Responded",     value: stats.responded,     color: "text-emerald-400", bg: "bg-emerald-500/10", icon: Mail },
-    { label: "Leads Created", value: stats.leads_created, color: "text-cyan-400",    bg: "bg-cyan-500/10",    icon: Users },
-    { label: "Failed",        value: stats.failed,        color: "text-red-400",     bg: "bg-red-500/10",     icon: XCircle },
-    { label: "Opted Out",     value: stats.opted_out,     color: "text-amber-400",   bg: "bg-amber-500/10",   icon: AlertTriangle },
+    { label: "Queued",           value: stats.queued,           color: "text-slate-400",   icon: Clock },
+    { label: "Awaiting Send",    value: stats.approved,         color: "text-violet-400",  icon: CheckCircle },
+    { label: "Emails Sent",      value: stats.sent,             color: "text-blue-400",    icon: Send },
+    { label: "Brief Forms",      value: stats.responded,        color: "text-emerald-400", icon: Mail },
+    { label: "Leads Created",    value: stats.leads_created,    color: "text-cyan-400",    icon: Users },
+    { label: "Projects Created", value: stats.projects_created, color: "text-purple-400",  icon: Globe },
+    { label: "Failed",           value: stats.failed,           color: "text-red-400",     icon: XCircle },
+    { label: "Opted Out",        value: stats.opted_out,        color: "text-amber-400",   icon: AlertTriangle },
+    {
+      label: "Conversion",
+      value: convRate !== null ? `${convRate}%` : "—",
+      color: convRate !== null && convRate >= 10 ? "text-emerald-400" : "text-slate-400",
+      icon: Users,
+    },
   ] : [];
 
   return (
@@ -106,8 +118,8 @@ export default function OutreachAutomationPanel() {
             <Mail size={16} className="text-blue-400" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">Website Preview Outreach</p>
-            <p className="text-xs text-slate-500 mt-0.5">Automated email campaign for possible clients</p>
+            <p className="text-sm font-semibold text-white">Website Brief Outreach</p>
+            <p className="text-xs text-slate-500 mt-0.5">Invite possible clients to complete a free website brief</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -121,11 +133,11 @@ export default function OutreachAutomationPanel() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-px bg-riden-border">
+      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-px bg-riden-border">
         {statCards.map((s) => (
-          <div key={s.label} className="bg-riden-darker px-4 py-3">
+          <div key={s.label} className="bg-riden-darker px-3 py-3">
             <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
-            <div className="text-[10px] text-slate-600 mt-0.5">{s.label}</div>
+            <div className="text-[10px] text-slate-600 mt-0.5 leading-tight">{s.label}</div>
           </div>
         ))}
       </div>
@@ -248,10 +260,10 @@ export default function OutreachAutomationPanel() {
                             <Globe size={12} />
                           </a>
                         )}
-                        {/* Eye icon → open the interest form as the client would see it */}
-                        <a href={`/website-interest/${r.form_token}`} target="_blank" rel="noopener noreferrer"
-                          className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-violet-400 transition-colors" title="Preview interest form">
-                          <Eye size={12} />
+                        {/* FileText icon → open the client brief form as the client would see it */}
+                        <a href={`/client-brief/${r.form_token}`} target="_blank" rel="noopener noreferrer"
+                          className="p-1.5 rounded hover:bg-riden-muted text-slate-500 hover:text-violet-400 transition-colors" title="Preview client brief form">
+                          <FileText size={12} />
                         </a>
                         {r.outreach_status === "failed" && (
                           <button onClick={() => patchRecord(r.id, "retry")}
