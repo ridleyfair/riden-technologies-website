@@ -150,11 +150,16 @@ async function handleQueue(_req: NextRequest) {
   });
 
   if (eligible.length === 0) {
-    return NextResponse.json({ queued: 0, message: "All warm/hot leads with email already have outreach records or Leads." });
+    return NextResponse.json({ queued: 0, message: "All leads with email already have outreach records or Leads." });
   }
 
-  // 5. Look up any matching GeneratedSites for preview URLs (match by business name)
-  const names = eligible.map((b) => b.name.toLowerCase());
+  // 5. Cap to 50 per run to avoid Cloudflare CPU limits — click Scan again for the next batch
+  const BATCH = 50;
+  const batch      = eligible.slice(0, BATCH);
+  const remaining  = Math.max(0, eligible.length - BATCH);
+
+  // 6. Look up any matching GeneratedSites for preview URLs (match by business name)
+  const names = batch.map((b) => b.name.toLowerCase());
   const sites  = await sql`
     SELECT "businessName", "previewUrl", id
     FROM "GeneratedSite"
@@ -165,39 +170,44 @@ async function handleQueue(_req: NextRequest) {
     (sites as Record<string, string>[]).map((s) => [s.businessName.toLowerCase(), s])
   );
 
-  // 6. Insert OutreachRecord rows
+  // 7. Batch insert OutreachRecord rows (process in groups of 10 to limit round-trips)
   let queued = 0;
-  for (const biz of eligible) {
-    try {
-      const site = siteByName.get(biz.name.toLowerCase());
-      await sql`
-        INSERT INTO "OutreachRecord" (
-          possible_client_id, generated_site_id,
-          business_name, business_email, business_phone,
-          preview_url, industry, location
-        ) VALUES (
-          ${biz.id},
-          ${site?.id ?? null},
-          ${biz.name},
-          ${biz.email!},
-          ${biz.phone ?? null},
-          ${site?.previewUrl ?? null},
-          ${biz.category ?? ""},
-          ${biz.city ?? ""}
-        )
-        ON CONFLICT DO NOTHING
-      `;
-      queued++;
-    } catch { /* skip on duplicate email */ }
+  for (let i = 0; i < batch.length; i += 10) {
+    const chunk = batch.slice(i, i + 10);
+    await Promise.all(chunk.map(async (biz) => {
+      try {
+        const site = siteByName.get(biz.name.toLowerCase());
+        await sql`
+          INSERT INTO "OutreachRecord" (
+            possible_client_id, generated_site_id,
+            business_name, business_email, business_phone,
+            preview_url, industry, location
+          ) VALUES (
+            ${biz.id},
+            ${site?.id ?? null},
+            ${biz.name},
+            ${biz.email!},
+            ${biz.phone ?? null},
+            ${site?.previewUrl ?? null},
+            ${biz.category ?? ""},
+            ${biz.city ?? ""}
+          )
+          ON CONFLICT DO NOTHING
+        `;
+        queued++;
+      } catch { /* skip on duplicate email */ }
+    }));
   }
 
   return NextResponse.json({
     queued,
-    total_warm_hot: withEmail.length,
-    skipped_existing: withEmail.length - eligible.length,
+    remaining,
+    total_eligible: eligible.length,
     message: queued === 0
       ? "All eligible leads already have records."
-      : `Queued ${queued} new leads (${eligible.length - queued} skipped as duplicates).`,
+      : remaining > 0
+        ? `Queued ${queued} leads. ${remaining} more eligible — click Scan again to continue.`
+        : `Queued ${queued} new leads. Queue is fully up to date.`,
   });
 }
 
