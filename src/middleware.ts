@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
 // Your public IP — add more comma-separated IPs via the ALLOWED_IPS env var
-const DEFAULT_ALLOWED_IPS = ["147.12.192.228"];
+const DEFAULT_ALLOWED_IPS = ["147.12.192.228", "2a02:6b67:d625:3500:a730:d5f3:1426:54"];
 
 function getAllowedIps(): string[] {
   const envIps = process.env.ALLOWED_IPS
