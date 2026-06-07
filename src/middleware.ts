@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-// Your public IP — add more comma-separated IPs via the ALLOWED_IPS env var
-const DEFAULT_ALLOWED_IPS = ["147.12.192.228", "2a02:6b67:d625:3500:a730:d5f3:1426:54"];
+// Exact IPs allowed (IPv4)
+const DEFAULT_ALLOWED_IPS = ["147.12.192.228"];
 
-function getAllowedIps(): string[] {
-  const envIps = process.env.ALLOWED_IPS
-    ? process.env.ALLOWED_IPS.split(",").map((ip) => ip.trim()).filter(Boolean)
-    : [];
-  return [...DEFAULT_ALLOWED_IPS, ...envIps];
+// IPv6 prefixes allowed — matches any address starting with this prefix
+// 2a02:6b67:d625:3500 is Ridley's home network prefix (stable, last half changes per device)
+const DEFAULT_ALLOWED_PREFIXES = ["2a02:6b67:d625:3500:"];
+
+function isAllowed(ip: string): boolean {
+  const exactIps = [
+    ...DEFAULT_ALLOWED_IPS,
+    ...(process.env.ALLOWED_IPS?.split(",").map((s) => s.trim()).filter(Boolean) ?? []),
+  ];
+  if (exactIps.includes(ip)) return true;
+
+  const prefixes = [
+    ...DEFAULT_ALLOWED_PREFIXES,
+    ...(process.env.ALLOWED_IP_PREFIXES?.split(",").map((s) => s.trim()).filter(Boolean) ?? []),
+  ];
+  return prefixes.some((prefix) => ip.startsWith(prefix));
 }
 
 function getClientIp(req: NextRequest): string {
@@ -26,8 +37,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedPath = pathname.startsWith("/login") || pathname.startsWith("/portal");
   if (isProtectedPath) {
     const clientIp = getClientIp(request);
-    const allowed = getAllowedIps();
-    if (!allowed.includes(clientIp)) {
+    if (!isAllowed(clientIp)) {
       return new NextResponse("Access denied", { status: 403 });
     }
   }
