@@ -74,11 +74,6 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/portal">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-          </Link>
           <Link href="/contact">
             <Button variant="gradient" size="sm">
               Book a Strategy Call
@@ -122,9 +117,6 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-riden-border">
-                <Link href="/portal" onClick={() => setIsMobileOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full">Sign In</Button>
-                </Link>
                 <Link href="/contact" onClick={() => setIsMobileOpen(false)}>
                   <Button variant="gradient" size="sm" className="w-full">Book a Strategy Call</Button>
                 </Link>
