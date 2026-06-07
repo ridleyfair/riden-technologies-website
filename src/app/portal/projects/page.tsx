@@ -756,7 +756,7 @@ function ProjectDetailModal({
     }
   }
 
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("modern-minimal");
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
@@ -2564,27 +2564,8 @@ function ProjectDetailModal({
                   onChange={(e) => setSelectedTemplate(e.target.value)}
                   className={inputCls}
                 >
-                  <option value="" className="bg-riden-surface">Auto (industry-matched)</option>
-                  <optgroup label="── Pro" className="bg-riden-surface text-slate-500">
-                    <option value="modern-minimal"   className="bg-riden-surface">Modern Minimal</option>
-                    <option value="tradie-bold"       className="bg-riden-surface">Tradie Bold</option>
-                    <option value="healthcare-clean"  className="bg-riden-surface">Healthcare Clean</option>
-                  </optgroup>
-                  <optgroup label="── Pro+" className="bg-riden-surface text-slate-500">
-                    <option value="beauty-elegant"   className="bg-riden-surface">Beauty Elegant</option>
-                    <option value="luxury-premium"   className="bg-riden-surface">Luxury Premium</option>
-                  </optgroup>
-                  <optgroup label="── Enterprise" className="bg-riden-surface text-slate-500">
-                    <option value="corporate-professional" className="bg-riden-surface">Corporate Professional</option>
-                    <option value="legal-authority"        className="bg-riden-surface">Legal Authority</option>
-                  </optgroup>
+                  <option value="modern-minimal" className="bg-riden-surface">Modern Minimal</option>
                 </select>
-                <p className="text-[10px] text-slate-600">
-                  Preview all templates at{" "}
-                  <a href="https://sites.ridentechnologies.com/templates" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400">
-                    sites.ridentechnologies.com/templates
-                  </a>
-                </p>
               </div>
 
               {error && (
