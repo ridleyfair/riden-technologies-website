@@ -5,6 +5,7 @@ import CTASection from "@/components/marketing/cta-section";
 import TrustedBrands from "@/components/marketing/trusted-brands";
 import ProcessSection from "@/components/marketing/process-section";
 import FAQSection from "@/components/marketing/faq-section";
+import { AnimatedHero } from "@/components/ui/animated-hero";
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
         <Hero />
         <TrustedBrands />
         <ProcessSection />
+        <AnimatedHero />
         <FAQSection />
         <CTASection />
       </main>
