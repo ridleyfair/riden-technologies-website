@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 
-function inferTierAndRate(notes: string | null): { tier: string; monthlyRate: number } {
+import { getTier, type PricingTier } from "@/lib/pricing";
+
+function inferMonthlyRate(pricingTier: string | null, notes: string | null): number {
+  if (pricingTier) return getTier(pricingTier as PricingTier).monthlyFee;
   const text = (notes ?? "").toLowerCase();
-  if (text.includes("enterprise") || text.includes("1,000") || text.includes("1000")) {
-    return { tier: "enterprise", monthlyRate: 100 };
-  }
-  if (text.includes("pro+") || text.includes("pro ") || text.includes("500")) {
-    return { tier: "growth", monthlyRate: 50 };
-  }
-  return { tier: "starter", monthlyRate: 25 };
+  if (text.includes("enterprise")) return 199;
+  if (text.includes("pro+"))       return 99;
+  return 50;
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -64,6 +63,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       openingHours:    body.openingHours    !== undefined ? body.openingHours                                 : ex.openingHours,
       reviewsJson:     body.reviewsJson     !== undefined ? body.reviewsJson                                  : ex.reviewsJson,
       photosJson:      body.photosJson      !== undefined ? body.photosJson                                   : ex.photosJson,
+      pricingTier:     body.pricingTier     !== undefined ? body.pricingTier                                  : (ex.pricingTier ?? "pro"),
+      setupFee:        body.setupFee        !== undefined ? Number(body.setupFee)                             : (Number(ex.setupFee) || 299),
+      monthlyFee:      body.monthlyFee      !== undefined ? Number(body.monthlyFee)                           : (Number(ex.monthlyFee) || 50),
     };
 
     // Try with completedAt + brief columns (requires migration); fall back without them
@@ -93,6 +95,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           "openingHours"    = ${vals.openingHours},
           "reviewsJson"     = ${vals.reviewsJson},
           "photosJson"      = ${vals.photosJson},
+          "pricingTier"     = ${vals.pricingTier},
+          "setupFee"        = ${vals.setupFee},
+          "monthlyFee"      = ${vals.monthlyFee},
           "updatedAt"       = ${now}
         WHERE id = ${id}
         RETURNING *
@@ -144,7 +149,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const budget = Number(body.budget ?? ex.budget ?? 0);
       const spent = Number(body.spent ?? ex.spent ?? 0);
       const profit = budget - spent;
-      const { tier, monthlyRate } = inferTierAndRate(String(body.notes ?? ex.notes ?? ""));
+      const pricingTier = String(body.pricingTier ?? ex.pricingTier ?? "pro");
+      const tier = pricingTier === "enterprise" ? "enterprise" : pricingTier === "pro_plus" ? "growth" : "starter";
+      const monthlyRate = inferMonthlyRate(pricingTier, String(body.notes ?? ex.notes ?? ""));
 
       // Try to find an email from the Lead table
       let email = "";

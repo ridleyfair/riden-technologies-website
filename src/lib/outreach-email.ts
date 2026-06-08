@@ -1,3 +1,5 @@
+import { type PricingTier, getTier } from "@/lib/pricing";
+
 export interface OutreachEmailInput {
   businessName:   string;
   ownerName?:     string;
@@ -5,6 +7,7 @@ export interface OutreachEmailInput {
   location?:      string;
   formUrl:        string;
   unsubscribeUrl: string;
+  pricingTier?:   PricingTier;
 }
 
 // Brand palette
@@ -41,6 +44,9 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
   const locRef    = p.location ? ` in ${p.location}` : "";
   const tradeNear = p.trade    ? `"${p.trade} near me"` : `"trades near me"`;
   const tradeLoc  = p.trade && p.location ? `"${p.trade} in ${p.location}"` : "";
+  const tier      = getTier(p.pricingTier ?? "pro");
+  const setupFee  = `£${tier.setupFee}`;
+  const monthly   = `£${tier.monthlyFee}`;
 
   const subject = `Free website demo for ${bizRef} — see exactly what it would look like`;
 
@@ -111,7 +117,7 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
           `<strong style="color:${TEXT_DARK};">The demo is completely free to see &mdash; no obligation whatsoever.</strong> ` +
-          `If you like it and want to go live, it&rsquo;s &pound;299 to build and launch on your own domain, then &pound;50&nbsp;a&nbsp;month for hosting, updates and support. ` +
+          `If you like it and want to go live, it&rsquo;s ${setupFee} to build and launch on your own domain, then ${monthly}&nbsp;a&nbsp;month for hosting, updates and support. ` +
           `But there&rsquo;s zero pressure &mdash; you just get to see exactly what it would look like first.` +
         `</p>` +
 
@@ -154,12 +160,12 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
             `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${WHITE};">Simple, transparent pricing</p>` +
           `</td></tr>` +
           `<tr><td style="padding:22px 24px 12px;">` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${WHITE};line-height:1;">&#163;299</span>` +
+            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${WHITE};line-height:1;">${setupFee}</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">one-off setup fee &mdash; site built &amp; live on your own domain</span>` +
           `</td></tr>` +
           `<tr><td style="padding:0 24px;"><div style="height:1px;background:rgba(255,255,255,0.08);font-size:0;">&nbsp;</div></td></tr>` +
           `<tr><td style="padding:12px 24px 20px;">` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${CYAN};line-height:1;">&#163;50</span>` +
+            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${CYAN};line-height:1;">${monthly}</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">per month &mdash; hosting, support, updates &amp; everything ongoing</span>` +
           `</td></tr>` +
           `<tr><td style="background:rgba(34,211,238,0.08);padding:14px 24px;border-top:1px solid rgba(34,211,238,0.15);">` +
