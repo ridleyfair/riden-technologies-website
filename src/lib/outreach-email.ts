@@ -1,3 +1,11 @@
+export type PricingTier = "pro" | "pro_plus" | "enterprise";
+
+export const TIER_PRICING: Record<PricingTier, { setup: number; monthly: number; label: string }> = {
+  pro:        { setup: 299,  monthly: 50,  label: "Pro" },
+  pro_plus:   { setup: 499,  monthly: 99,  label: "Pro+" },
+  enterprise: { setup: 999,  monthly: 199, label: "Enterprise" },
+};
+
 export interface OutreachEmailInput {
   businessName:   string;
   ownerName?:     string;
@@ -5,6 +13,7 @@ export interface OutreachEmailInput {
   location?:      string;
   formUrl:        string;
   unsubscribeUrl: string;
+  tier?:          PricingTier;
 }
 
 // Brand palette
@@ -37,6 +46,7 @@ function checkRow(text: string): string {
 export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string; html: string } {
   const greeting  = p.ownerName ? `Hi ${p.ownerName},` : "Hi there,";
   const bizRef    = p.businessName;
+  const pricing   = TIER_PRICING[p.tier ?? "pro"];
   const tradeRef  = p.trade    ? `${p.trade} ` : "";
   const locRef    = p.location ? ` in ${p.location}` : "";
   const tradeNear = p.trade    ? `"${p.trade} near me"` : `"trades near me"`;
@@ -111,7 +121,7 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
           `<strong style="color:${TEXT_DARK};">The demo is completely free to see &mdash; no obligation whatsoever.</strong> ` +
-          `If you like it and want to go live, it&rsquo;s &pound;299 to build and launch on your own domain, then &pound;50&nbsp;a&nbsp;month for hosting, updates and support. ` +
+          `If you like it and want to go live, it&rsquo;s &pound;${pricing.setup} to build and launch on your own domain, then &pound;${pricing.monthly}&nbsp;a&nbsp;month for hosting, updates and support. ` +
           `But there&rsquo;s zero pressure &mdash; you just get to see exactly what it would look like first.` +
         `</p>` +
 
@@ -154,12 +164,12 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
             `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${WHITE};">Simple, transparent pricing</p>` +
           `</td></tr>` +
           `<tr><td style="padding:22px 24px 12px;">` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${WHITE};line-height:1;">&#163;299</span>` +
+            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${WHITE};line-height:1;">&#163;${pricing.setup}</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">one-off setup fee &mdash; site built &amp; live on your own domain</span>` +
           `</td></tr>` +
           `<tr><td style="padding:0 24px;"><div style="height:1px;background:rgba(255,255,255,0.08);font-size:0;">&nbsp;</div></td></tr>` +
           `<tr><td style="padding:12px 24px 20px;">` +
-            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${CYAN};line-height:1;">&#163;50</span>` +
+            `<span style="font-family:Arial,Helvetica,sans-serif;font-size:38px;font-weight:700;color:${CYAN};line-height:1;">&#163;${pricing.monthly}</span>` +
             `<span style="display:block;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${TEXT_LIGHT};margin-top:3px;">per month &mdash; hosting, support, updates &amp; everything ongoing</span>` +
           `</td></tr>` +
           `<tr><td style="background:rgba(34,211,238,0.08);padding:14px 24px;border-top:1px solid rgba(34,211,238,0.15);">` +

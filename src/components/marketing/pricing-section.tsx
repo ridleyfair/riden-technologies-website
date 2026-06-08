@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 
 const plans = [
   {
-    name: "Starter",
-    tagline: "Startups, local businesses & new ventures.",
+    name: "Pro",
+    tagline: "Perfect for trades, local businesses & startups.",
     icon: Zap,
-    buildPrice: "£150 – £250",
+    buildPrice: "£299",
     buildSub: "one-time website build",
-    maintenance: "£25",
+    maintenance: "£50",
     maintSub: "per month",
     badge: null,
     gradient: "from-blue-500/[0.07] to-transparent",
@@ -32,23 +32,24 @@ const plans = [
     ctaHref: "/contact",
     ctaVariant: "outline" as const,
     features: [
-      "1-page professional website",
-      "Mobile-responsive design",
+      "5-page bespoke website",
+      "Home, Services, About, Gallery & Contact",
+      "Mobile-responsive, fast-loading design",
       "Contact & enquiry form",
-      "Basic on-page SEO setup",
+      "On-page SEO foundation",
       "CRM dashboard access",
       "Lead collection & tracking",
       "Monthly support & updates",
-      "Hosting setup assistance",
+      "Managed hosting included",
     ],
   },
   {
     name: "Pro+",
-    tagline: "Growing businesses that need automation.",
+    tagline: "Growing businesses that want automation & bookings.",
     icon: Crown,
-    buildPrice: "From £500",
+    buildPrice: "£499",
     buildSub: "one-time website build",
-    maintenance: "£50",
+    maintenance: "£99",
     maintSub: "per month",
     badge: "Most Popular",
     gradient: "from-violet-500/[0.13] to-blue-500/[0.06]",
@@ -62,23 +63,22 @@ const plans = [
     ctaHref: "/contact",
     ctaVariant: "gradient" as const,
     features: [
-      "5-page custom website",
-      "Home, Solutions, Pricing, About & Contact",
-      "Advanced responsive design",
-      "Booking & calendar system",
-      "CRM dashboard & lead management",
-      "Automation workflows",
-      "Analytics dashboard",
+      "Everything in Pro, plus:",
+      "Online booking & calendar system",
+      "Automation workflows & follow-ups",
+      "Analytics & conversion dashboard",
+      "Testimonials & review integration",
       "Priority support",
+      "Quarterly strategy review",
     ],
   },
   {
     name: "Enterprise",
     tagline: "Larger organisations with complex requirements.",
     icon: Building2,
-    buildPrice: "From £1,000",
+    buildPrice: "£999",
     buildSub: "one-time website build",
-    maintenance: "£100",
+    maintenance: "£199",
     maintSub: "per month",
     badge: null,
     gradient: "from-cyan-500/[0.07] to-transparent",
@@ -92,11 +92,9 @@ const plans = [
     ctaHref: "/contact",
     ctaVariant: "outline" as const,
     features: [
+      "Everything in Pro+, plus:",
       "10+ page fully custom website",
-      "Custom page layouts & sections",
-      "Advanced booking & scheduling system",
       "E-commerce or payment integration",
-      "Full CRM dashboard & automation",
       "Custom API & third-party integrations",
       "Advanced analytics & reporting",
       "Dedicated account manager",
@@ -124,31 +122,38 @@ type PlanPreview = {
 };
 
 const previews: Record<string, PlanPreview> = {
-  Starter: {
-    headline: "Clean, focused single-page website",
+  Pro: {
+    headline: "5-page bespoke website built for your trade",
     description:
-      "Everything a visitor needs to understand your business and get in touch — on one fast, professional page that works perfectly on every device.",
+      "A complete professional website covering everything a client needs to trust you and get in touch — delivered in 7–14 days, crafted to your brand.",
     accentColor: "text-blue-400",
     accentBorder: "border-blue-500/30",
     accentBar: "bg-blue-500",
-    pages: [{ name: "Home (single scroll)" }],
+    pages: [
+      { name: "Home" },
+      { name: "Services" },
+      { name: "About" },
+      { name: "Gallery" },
+      { name: "Contact" },
+    ],
     wire: [
       { label: "Navigation & Logo", height: "h-5", bg: "bg-slate-700/80" },
       { label: "Hero — Headline & CTA", height: "h-14", bg: "bg-blue-500/20" },
       { label: "Services Overview", height: "h-11", bg: "bg-slate-700/50" },
-      { label: "About / Who You Are", height: "h-10", bg: "bg-slate-700/50" },
+      { label: "Gallery / Portfolio", height: "h-10", bg: "bg-slate-700/50" },
+      { label: "About & Trust Section", height: "h-9", bg: "bg-slate-700/50" },
       { label: "Contact Form", height: "h-12", bg: "bg-slate-700/50" },
       { label: "Footer", height: "h-5", bg: "bg-slate-800/80" },
     ],
     stylePoints: [
-      "Minimal, distraction-free layout",
-      "Professional typography & spacing",
+      "Fully branded, bespoke design",
       "Mobile-first, fast-loading",
-      "Conversion-optimised call to action",
+      "Conversion-optimised call to actions",
+      "SEO foundations built in",
       "Brand colours & logo applied",
     ],
     goodFor:
-      "Salons, tradespeople, freelancers, local restaurants, personal brands, early-stage startups",
+      "Plumbers, electricians, builders, roofers, cleaners, landscapers, salons, local restaurants",
   },
 
   "Pro+": {
@@ -444,7 +449,7 @@ export default function PricingSection() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-cyan-500/20 text-sm text-cyan-300 mb-6"
           >
             <Crown size={14} />
-            <span>Transparent Pricing</span>
+            <span>Simple, Transparent Pricing</span>
           </motion.div>
 
           <motion.h2
@@ -454,8 +459,8 @@ export default function PricingSection() {
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
           >
-            One website.{" "}
-            <span className="gradient-text">One clear price.</span>
+            Bespoke websites.{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #60a5fa, #a78bfa)" }}>One clear price.</span>
           </motion.h2>
 
           <motion.p

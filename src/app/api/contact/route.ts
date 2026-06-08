@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Build a readable intake brief for the message field
-    const planLabel = plan === "starter" ? "Starter (£150–£250 build + £25/mo)"
-      : plan === "pro" ? "Pro+ (From £500 build + £50/mo)"
-      : plan === "enterprise" ? "Enterprise (From £1,000 build + £100/mo)"
+    const planLabel = plan === "pro" ? "Pro (£299 build + £50/mo)"
+      : plan === "pro_plus" ? "Pro+ (£499 build + £99/mo)"
+      : plan === "enterprise" ? "Enterprise (£999 build + £199/mo)"
       : service || "";
 
     const socialParts = [

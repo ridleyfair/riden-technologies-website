@@ -10,7 +10,7 @@ const services = [
     icon: Globe,
     title: "Website Design & Build",
     description:
-      "Professionally designed, custom-built websites delivered in 7–14 days. Every site is mobile-responsive, fast-loading, and built to turn visitors into enquiries.",
+      "Bespoke, professionally crafted websites delivered in 7–14 days. Every site is mobile-responsive, fast-loading, and built to turn visitors into paying customers.",
     features: ["Custom design", "Mobile-responsive", "SEO-ready structure", "7–14 day delivery"],
     gradient: "from-blue-500/20 to-blue-600/5",
     iconBg: "bg-blue-500/10",
@@ -123,7 +123,7 @@ export default function Services() {
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
           >
             Everything Your Business{" "}
-            <span className="gradient-text">Needs to Grow</span>
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #60a5fa, #a78bfa)" }}>Needs to Grow</span>
           </motion.h2>
 
           <motion.p

@@ -38,7 +38,7 @@ export interface Client {
   phone?: string;
   company: string;
   status: ClientStatus;
-  tier: "starter" | "growth" | "enterprise";
+  tier: "pro" | "pro_plus" | "enterprise";
   revenue: number;
   websites: number;
   assignedTo?: string;

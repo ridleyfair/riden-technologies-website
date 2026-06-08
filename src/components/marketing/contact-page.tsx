@@ -12,19 +12,19 @@ const contactInfo = [
 
 const plans = [
   {
-    id: "starter",
-    name: "Starter",
-    price: "From £150",
-    description: "1-page professional website. Perfect for sole traders and new businesses.",
+    id: "pro",
+    name: "Pro",
+    price: "£299",
+    description: "5-page bespoke website. Perfect for trades, local businesses & new ventures.",
     color: "border-blue-500/40 bg-blue-500/5",
     activeColor: "border-blue-500 bg-blue-500/15",
     dot: "bg-blue-400",
   },
   {
-    id: "pro",
+    id: "pro_plus",
     name: "Pro+",
-    price: "From £500",
-    description: "5-page custom site with booking system. Ideal for established small businesses.",
+    price: "£499",
+    description: "5-page site with booking system & automation. Ideal for growing businesses.",
     color: "border-violet-500/40 bg-violet-500/5",
     activeColor: "border-violet-500 bg-violet-500/15",
     dot: "bg-violet-400",
@@ -32,8 +32,8 @@ const plans = [
   {
     id: "enterprise",
     name: "Enterprise",
-    price: "From £1,000",
-    description: "10+ page fully custom build. For growing businesses that need more.",
+    price: "£999",
+    description: "10+ page fully custom build with e-commerce & advanced integrations.",
     color: "border-emerald-500/40 bg-emerald-500/5",
     activeColor: "border-emerald-500 bg-emerald-500/15",
     dot: "bg-emerald-400",

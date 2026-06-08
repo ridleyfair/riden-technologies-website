@@ -6,18 +6,18 @@ import Tracker from "@/components/tracking/tracker";
 
 export const metadata: Metadata = {
   title: {
-    default: "Riden Technologies — AI-Powered Websites & Business Automation",
+    default: "Riden Technologies — Premium Websites & Business Automation",
     template: "%s | Riden Technologies",
   },
   description:
-    "Riden Technologies builds premium AI-powered websites, automation systems, and CRM platforms that transform businesses and drive measurable growth.",
+    "Riden Technologies builds premium websites, automation systems, and CRM platforms that transform businesses and drive measurable growth.",
   keywords: [
-    "AI website builder",
+    "website design",
     "business automation",
     "CRM platform",
     "lead generation",
-    "digital transformation",
-    "AI technology",
+    "digital agency",
+    "UK web agency",
   ],
 };
 
