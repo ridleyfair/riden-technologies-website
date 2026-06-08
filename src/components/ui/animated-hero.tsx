@@ -38,7 +38,7 @@ function Hero() {
         className="absolute inset-0 w-full h-full object-cover"
         style={{ zIndex: 0 }}
       >
-        <source src="/videos/hf_20260608_210731_238b7e75-725e-4314-9f33-bf6e2ad30976.mp4" type="video/mp4" />
+        <source src="/videos/hf_20260608_212244_68f88cfc-b100-49ad-ba3f-67c8db16b13d.mp4" type="video/mp4" />
       </video>
 
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(3,4,10,0.65) 0%, rgba(3,4,10,0.5) 50%, rgba(3,4,10,0.85) 100%)", zIndex: 1 }} />
