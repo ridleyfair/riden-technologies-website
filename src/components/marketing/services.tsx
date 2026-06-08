@@ -36,14 +36,14 @@ const services = [
     icon: Users,
     title: "CRM Dashboard",
     description:
-      "A personal CRM dashboard to manage your leads, clients, projects, and invoices — all in one place. Included free with every website we build.",
+      "A personal CRM dashboard to manage your leads, clients, projects, and invoices — all in one place. Available on Pro+ and Enterprise plans.",
     features: ["Lead management", "Client tracking", "Invoice management", "Pipeline overview"],
     gradient: "from-cyan-500/20 to-cyan-600/5",
     iconBg: "bg-cyan-500/10",
     iconColor: "text-cyan-400",
     dotColor: "bg-cyan-400",
     border: "hover:border-cyan-500/30",
-    tag: "Included Free",
+    tag: "Pro+ & Enterprise",
   },
   {
     icon: BarChart3,
