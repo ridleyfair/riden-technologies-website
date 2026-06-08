@@ -632,7 +632,7 @@ function SectionPreferences({ form, set }: { form: FormState; set: (k: keyof For
         <p className="text-sm text-cyan-700 leading-relaxed">
           Once you click Submit, we&rsquo;ll get straight to work on a demo of exactly what your new website could look like.
           We&rsquo;ll be in touch within 1–2 working days — completely free to see, no obligation.
-          If you love it and want to go live, it starts from &pound;299 setup then &pound;50/month. Simple as that.
+          If you love it and want to go live, it starts from &pound;299 setup then &pound;49/month. Simple as that.
         </p>
       </div>
     </>

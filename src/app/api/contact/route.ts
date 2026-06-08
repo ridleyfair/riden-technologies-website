@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
     }
 
-    const planLabel = plan === "pro" ? "Pro (£299 setup + £50/mo)"
+    const planLabel = plan === "pro" ? "Pro (£299 setup + £49/mo)"
       : plan === "pro_plus" ? "Pro+ (£499 setup + £99/mo)"
       : plan === "enterprise" ? "Enterprise (£999 setup + £199/mo)"
       : service || "";

@@ -121,7 +121,7 @@ function CompareModal({ onClose }: { onClose: () => void }) {
             <tbody className="divide-y divide-riden-border/50">
               {[
                 ["Setup fee", "£299", "£499", "£999"],
-                ["Monthly", "£50/mo", "£99/mo", "£199/mo"],
+                ["Monthly", "£49/mo", "£99/mo", "£199/mo"],
                 ["Professional website", true, true, true],
                 ["Mobile responsive", true, true, true],
                 ["Contact forms", true, true, true],

@@ -17,7 +17,7 @@ export const PRICING_TIERS: TierConfig[] = [
     label: "Pro",
     badge: null,
     setupFee: 299,
-    monthlyFee: 50,
+    monthlyFee: 49,
     tagline: "Professional website. More calls. Less hassle.",
     bestFor: [
       "Sole traders",
