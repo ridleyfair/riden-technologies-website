@@ -8,7 +8,7 @@ const footerLinks = {
     { label: "Contact", href: "/contact" },
   ],
   Solutions: [
-    { label: "AI Websites", href: "/solutions" },
+    { label: "Custom Websites", href: "/solutions" },
     { label: "CRM Systems", href: "/solutions" },
     { label: "Automation", href: "/solutions" },
     { label: "Lead Generation", href: "/solutions" },
@@ -43,7 +43,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed mb-6">
-              AI-powered websites, automation systems, and CRM platforms that transform businesses and drive measurable growth.
+              Premium websites, automation systems, and CRM platforms that transform businesses and drive measurable growth.
             </p>
             <div className="flex items-center gap-3">
               {[
@@ -89,9 +89,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Riden Technologies. All rights reserved.
           </p>
           <div className="flex items-center gap-1 text-sm text-slate-500">
-            <span>Built with</span>
-            <span className="text-blue-400">AI</span>
-            <span>for the future of business.</span>
+            <span>Built for the future of business.</span>
           </div>
         </div>
       </div>
