@@ -10,11 +10,11 @@ export const mockLeads: Lead[] = [
 ];
 
 export const mockClients: Client[] = [
-  { id: "1", name: "Lisa Thompson", email: "lisa@retailedge.com", phone: "+1 555 0201", company: "RetailEdge Inc.", status: "active", tier: "growth", revenue: 8400, websites: 3, assignedTo: "Account Manager", tags: ["retail", "vip"], createdAt: new Date("2025-11-01"), updatedAt: new Date("2026-05-01") },
+  { id: "1", name: "Lisa Thompson", email: "lisa@retailedge.com", phone: "+1 555 0201", company: "RetailEdge Inc.", status: "active", tier: "pro_plus", revenue: 8400, websites: 3, assignedTo: "Account Manager", tags: ["retail", "vip"], createdAt: new Date("2025-11-01"), updatedAt: new Date("2026-05-01") },
   { id: "2", name: "Alex Nguyen", email: "alex@cloudscale.io", phone: "+1 555 0202", company: "CloudScale SaaS", status: "active", tier: "enterprise", revenue: 24000, websites: 8, assignedTo: "Account Manager", tags: ["saas", "enterprise"], createdAt: new Date("2025-09-15"), updatedAt: new Date("2026-05-10") },
-  { id: "3", name: "Maria Santos", email: "maria@sunrisebakery.com", company: "Sunrise Bakery", status: "active", tier: "starter", revenue: 2400, websites: 1, tags: ["food", "local"], createdAt: new Date("2026-01-20"), updatedAt: new Date("2026-04-01") },
-  { id: "4", name: "Tom Bradley", email: "tom@bradleylaw.com", phone: "+1 555 0204", company: "Bradley & Associates", status: "active", tier: "growth", revenue: 6800, websites: 2, assignedTo: "Account Manager", tags: ["legal"], createdAt: new Date("2025-12-10"), updatedAt: new Date("2026-05-08") },
-  { id: "5", name: "Zoe Harrison", email: "zoe@fitpro.com", company: "FitPro Studios", status: "inactive", tier: "starter", revenue: 1200, websites: 1, tags: ["fitness"], createdAt: new Date("2026-02-05"), updatedAt: new Date("2026-03-01") },
+  { id: "3", name: "Maria Santos", email: "maria@sunrisebakery.com", company: "Sunrise Bakery", status: "active", tier: "pro", revenue: 2400, websites: 1, tags: ["food", "local"], createdAt: new Date("2026-01-20"), updatedAt: new Date("2026-04-01") },
+  { id: "4", name: "Tom Bradley", email: "tom@bradleylaw.com", phone: "+1 555 0204", company: "Bradley & Associates", status: "active", tier: "pro_plus", revenue: 6800, websites: 2, assignedTo: "Account Manager", tags: ["legal"], createdAt: new Date("2025-12-10"), updatedAt: new Date("2026-05-08") },
+  { id: "5", name: "Zoe Harrison", email: "zoe@fitpro.com", company: "FitPro Studios", status: "inactive", tier: "pro", revenue: 1200, websites: 1, tags: ["fitness"], createdAt: new Date("2026-02-05"), updatedAt: new Date("2026-03-01") },
 ];
 
 export const mockProjects: Project[] = [
