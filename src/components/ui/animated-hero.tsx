@@ -93,8 +93,8 @@ function Hero() {
           className="text-base sm:text-xl text-slate-300 max-w-2xl leading-relaxed mb-10"
           style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}
         >
-          We design and build bespoke websites, automation systems, and CRM
-          platforms for businesses that want to stand out and{" "}
+          We design and build bespoke websites and automation systems
+          for businesses that want to stand out and{" "}
           <span className="text-white font-semibold">grow faster</span>.
         </motion.p>
 
@@ -130,7 +130,7 @@ function Hero() {
             { value: "7–14", label: "Day Build Time" },
             { value: "£0", label: "Hidden Fees" },
             { value: "UK", label: "Based & Supported" },
-            { value: "Free", label: "CRM Included" },
+            { value: "14-day", label: "Money-Back Guarantee" },
           ].map((stat, i) => (
             <div key={i} className="py-5 px-4 text-center" style={{ background: "rgba(3,4,10,0.4)" }}>
               <div className="text-xl sm:text-2xl font-bold text-white mb-0.5">{stat.value}</div>
