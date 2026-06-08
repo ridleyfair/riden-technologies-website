@@ -1,9 +1,12 @@
+import { type PricingTier, getTier } from "@/lib/pricing";
+
 export interface OutreachEmailParams {
   businessName: string;
   contactEmail?: string;
   previewUrl?: string;
   industry?: string;
   location?: string;
+  pricingTier?: PricingTier;
 }
 
 export interface OutreachEmail {
@@ -25,7 +28,11 @@ export function buildWebsitePreviewEmail(params: OutreachEmailParams): OutreachE
     contactEmail = "",
     previewUrl,
     location,
+    pricingTier,
   } = params;
+  const tier = getTier(pricingTier ?? "pro");
+  const setupFee = `£${tier.setupFee}`;
+  const monthly = `£${tier.monthlyFee}`;
 
   const subject = `Website preview for ${businessName}`;
 
@@ -43,7 +50,7 @@ I run Riden Technologies. We build modern websites for small businesses, especia
 
 This is just a preview — nothing is live or public yet. I thought it might be useful to see what your business could look like with a proper website built around your services, reviews, and photos.
 
-If you like what you see, I'd be happy to make any changes and talk through getting it live for you. No pressure at all.
+If you like what you see, I'd be happy to make any changes and talk through getting it live for you. It's ${setupFee} to set up and ${monthly} ongoing — no pressure at all.
 
 Kind regards,
 Ridley
@@ -54,7 +61,7 @@ Hope you're well.
 
 I came across ${businessName}${location ? ` in ${location}` : ""} and noticed you had a strong local presence. I build modern websites for small businesses, especially trade and service companies that want more enquiries and a cleaner online presence.
 
-I'd love to put together a free preview for your business to show you what it could look like online — no obligation at all.
+I'd love to put together a free preview for your business to show you what it could look like online — no obligation at all. Starts from ${setupFee} setup, then ${monthly}.
 
 If you're curious, just reply and I'll get something over to you.
 

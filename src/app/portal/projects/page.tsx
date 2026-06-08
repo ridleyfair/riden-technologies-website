@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { PRICING_TIERS, getTier, type PricingTier } from "@/lib/pricing";
 
 type Project = {
   id: string;
@@ -38,6 +39,9 @@ type Project = {
   openingHours?: string;
   reviewsJson?: string;
   photosJson?: string;
+  pricingTier?: string;
+  setupFee?: number;
+  monthlyFee?: number;
 };
 
 type Review = {
@@ -525,6 +529,7 @@ function ProjectDetailModal({
     socialFacebook:  initialProject.socialFacebook  ?? "",
     socialInstagram: initialProject.socialInstagram ?? "",
     openingHours:    initialProject.openingHours    ?? "",
+    pricingTier:     (initialProject.pricingTier ?? "pro") as PricingTier,
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
@@ -643,6 +648,7 @@ function ProjectDetailModal({
           socialFacebook:  p.socialFacebook  ?? "",
           socialInstagram: p.socialInstagram ?? "",
           openingHours:    p.openingHours    ?? "",
+          pricingTier:     (p.pricingTier ?? "pro") as PricingTier,
         });
         setBriefFormStatus("submitted");
       })
@@ -1583,6 +1589,23 @@ function ProjectDetailModal({
                       {INDUSTRY_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value} className="bg-riden-surface">{opt.label}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1.5">Pricing Tier</label>
+                    <select
+                      value={brief.pricingTier}
+                      onChange={(e) => setBrief((b) => ({ ...b, pricingTier: e.target.value as PricingTier }))}
+                      className={inputCls}
+                    >
+                      {PRICING_TIERS.map((t) => {
+                        const tier = getTier(t.id);
+                        return (
+                          <option key={t.id} value={t.id} className="bg-riden-surface">
+                            {t.label}{t.badge ? " ★" : ""} — £{tier.setupFee} setup + £{tier.monthlyFee}/mo
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                   <div>
