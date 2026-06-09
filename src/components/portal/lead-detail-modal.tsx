@@ -14,6 +14,25 @@ import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+type ScraperData = {
+  name?: string;
+  phone?: string | null;
+  category?: string | null;
+  city?: string | null;
+  address?: string | null;
+  rating?: number | null;
+  reviews_count?: number | null;
+  website?: string | null;
+  maps_url?: string | null;
+  lead_tier?: string | null;
+  checkatrade?: {
+    url?: string;
+    review_count?: number;
+    rating?: number;
+    confidence?: number;
+  } | null;
+};
+
 type Lead = {
   id: string;
   name: string;
@@ -23,6 +42,7 @@ type Lead = {
   service: string | null;
   message: string;
   notes?: string | null;
+  scraperDataJson?: string | null;
   status: string;
   source: string;
   score: number;
@@ -147,28 +167,147 @@ function IntakeBrief({ text }: { text: string }) {
   );
 }
 
+// ── Scraper → brief mapper ────────────────────────────────────────────────────
+
+const BEAUTY_KEYWORDS_LC = [
+  "beauty", "salon", "nail", "lash", "brow", "aesthetics", "aesthetic",
+  "skincare", "skin care", "spa", "massage", "wax", "threading", "microblading",
+  "tattoo", "permanent makeup", "hair salon", "hairdresser", "barber",
+];
+
+function detectIndustry(category: string | null): "beauty" | "trades" {
+  if (!category) return "trades";
+  const lc = category.toLowerCase();
+  return BEAUTY_KEYWORDS_LC.some(kw => lc.includes(kw)) ? "beauty" : "trades";
+}
+
+function extractUkPostcode(address: string | null): string | null {
+  if (!address) return null;
+  const m = address.match(/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i);
+  return m ? m[1].toUpperCase() : null;
+}
+
+function formatReviewCount(n: number): string {
+  if (n < 10) return String(n);
+  return `${Math.floor(n / 10) * 10}+`;
+}
+
+type BriefPreFill = {
+  phone:         string | null;
+  city:          string | null;
+  postcode:      string | null;
+  industry:      "beauty" | "trades";
+  services:      string | null;
+  accreditations: string | null;
+  photosJson:    Record<string, unknown> | null;
+  hasData:       boolean;
+  checkatradeUrl: string | null;
+  existingWebsite: string | null;
+  googleRating:  string | null;
+  reviewCount:   number | null;
+};
+
+function buildBriefFromLead(lead: Lead): BriefPreFill {
+  // Try structured scraperDataJson first
+  let sd: ScraperData | null = null;
+  if (lead.scraperDataJson) {
+    try { sd = JSON.parse(lead.scraperDataJson) as ScraperData; } catch { /* ignore */ }
+  }
+
+  if (sd) {
+    const industry = detectIndustry(sd.category ?? null);
+    const postcode = extractUkPostcode(sd.address ?? null);
+
+    // Prefer Checkatrade reviews, fall back to Google
+    const hasCT        = !!sd.checkatrade?.url;
+    const ctRating     = sd.checkatrade?.rating    ?? null;
+    const ctCount      = sd.checkatrade?.review_count ?? null;
+    const gRating      = sd.rating          ?? null;
+    const gCount       = sd.reviews_count   ?? null;
+
+    const reviewCount  = hasCT ? (ctCount ?? gCount ?? null) : (gCount ?? null);
+    const avgRating    = hasCT && ctRating != null
+      ? `${ctRating}/10`
+      : gRating != null ? `${gRating}/5` : null;
+    const platform     = hasCT ? "Checkatrade" : "Google";
+    const platformUrl  = hasCT ? (sd.checkatrade?.url ?? null) : (sd.maps_url ?? null);
+    const displayCount = reviewCount != null ? formatReviewCount(reviewCount) : null;
+
+    const photosJson: Record<string, unknown> | null = reviewCount != null ? {
+      reviewSettings: {
+        platform,
+        reviewCount,
+        displayReviewCount: displayCount,
+        averageRating: avgRating,
+        platformUrl,
+        showReviewBadge: true,
+        showRatingBadge: true,
+      },
+    } : null;
+
+    const accredParts: string[] = [];
+    if (hasCT && sd.checkatrade?.url) accredParts.push(`Checkatrade: ${sd.checkatrade.url}`);
+
+    return {
+      phone:           sd.phone        ?? lead.phone ?? null,
+      city:            sd.city         ?? null,
+      postcode:        postcode,
+      industry,
+      services:        sd.category     ?? lead.service ?? null,
+      accreditations:  accredParts.length ? accredParts.join(", ") : null,
+      photosJson,
+      hasData:         true,
+      checkatradeUrl:  sd.checkatrade?.url ?? null,
+      existingWebsite: sd.website      ?? null,
+      googleRating:    gRating != null ? `${gRating}/5 (${gCount ?? 0} reviews)` : null,
+      reviewCount,
+    };
+  }
+
+  // Fallback: only use existing Lead fields (older imports)
+  return {
+    phone:           lead.phone  ?? null,
+    city:            null,
+    postcode:        null,
+    industry:        detectIndustry(lead.service),
+    services:        lead.service ?? null,
+    accreditations:  null,
+    photosJson:      null,
+    hasData:         !!(lead.phone || lead.service),
+    checkatradeUrl:  null,
+    existingWebsite: null,
+    googleRating:    null,
+    reviewCount:     null,
+  };
+}
+
 // ── Create Project modal ──────────────────────────────────────────────────────
 
 function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
-  const deadlineRaw = parseBriefValue(lead.message, "Deadline");
-  const estimatedBudget = estimateBudget(lead.service, lead.message);
+  const deadlineRaw      = parseBriefValue(lead.message, "Deadline");
+  const estimatedBudget  = estimateBudget(lead.service, lead.message);
+  const brief            = buildBriefFromLead(lead);
+
   const [form, setForm] = useState({
-    name: lead.company ? `${lead.company} Website` : `${lead.name} Website`,
+    name:       lead.company ? `${lead.company} Website` : `${lead.name} Website`,
     clientName: lead.company || lead.name,
-    budget: estimatedBudget > 0 ? String(estimatedBudget) : "",
-    dueDate: parseDueDate(lead.message),
-    notes: [
-      lead.service && `Plan: ${lead.service}`,
+    budget:     estimatedBudget > 0 ? String(estimatedBudget) : "",
+    dueDate:    parseDueDate(lead.message),
+    notes:      [
+      lead.source === "scraper" && brief.existingWebsite && `Existing website: ${brief.existingWebsite}`,
+      lead.source === "scraper" && brief.googleRating    && `Google rating: ${brief.googleRating}`,
+      lead.service && lead.source !== "scraper" && `Plan: ${lead.service}`,
       deadlineRaw && deadlineRaw !== "None" && `Requested deadline: ${deadlineRaw}`,
       parseBriefValue(lead.message, "Services/products") && `Services: ${parseBriefValue(lead.message, "Services/products")}`,
-      parseBriefValue(lead.message, "Style preference") && `Style: ${parseBriefValue(lead.message, "Style preference")}`,
-      parseBriefValue(lead.message, "Brand colours") && `Colours: ${parseBriefValue(lead.message, "Brand colours")}`,
+      parseBriefValue(lead.message, "Style preference")  && `Style: ${parseBriefValue(lead.message, "Style preference")}`,
+      parseBriefValue(lead.message, "Brand colours")     && `Colours: ${parseBriefValue(lead.message, "Brand colours")}`,
     ].filter(Boolean).join("\n"),
   });
+
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((p) => ({ ...p, [field]: e.target.value }));
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [saving,    setSaving]    = useState(false);
+  const [error,     setError]     = useState("");
   const [createdId, setCreatedId] = useState<string | null>(null);
 
   async function handleCreate() {
@@ -178,7 +317,24 @@ function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name.trim(), clientName: form.clientName.trim(), status: "in_progress", budget: parseFloat(form.budget) || 0, spent: 0, progress: 0, dueDate: form.dueDate || null, notes: form.notes }),
+        body: JSON.stringify({
+          name:           form.name.trim(),
+          clientName:     form.clientName.trim(),
+          status:         "in_progress",
+          budget:         parseFloat(form.budget) || 0,
+          spent:          0,
+          progress:       0,
+          dueDate:        form.dueDate || null,
+          notes:          form.notes,
+          // Brief fields auto-mapped from scraper data
+          phone:          brief.phone       || null,
+          city:           brief.city        || null,
+          postcode:       brief.postcode    || null,
+          industry:       brief.industry,
+          services:       brief.services    || null,
+          accreditations: brief.accreditations || null,
+          photosJson:     brief.photosJson  || null,
+        }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to create project."); return; }
       const project = await res.json();
@@ -201,6 +357,18 @@ function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void
       </div>
     );
   }
+
+  const briefRows = [
+    brief.phone        && ["Phone",       brief.phone],
+    brief.city         && ["City",        brief.city],
+    brief.postcode     && ["Postcode",    brief.postcode],
+    brief.services     && ["Services",    brief.services],
+    brief.industry     && ["Industry",    brief.industry.charAt(0).toUpperCase() + brief.industry.slice(1)],
+    brief.checkatradeUrl && ["Checkatrade", "Profile found"],
+    brief.googleRating && ["Google",      brief.googleRating],
+    brief.accreditations && ["Accreditations", brief.accreditations.length > 50 ? brief.accreditations.slice(0, 50) + "…" : brief.accreditations],
+    brief.photosJson   && ["Reviews",     "Auto-filled from " + (brief.checkatradeUrl ? "Checkatrade" : "Google")],
+  ].filter(Boolean) as [string, string][];
 
   return (
     <div className="space-y-4 py-1">
@@ -226,8 +394,30 @@ function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void
           <span className="ml-auto text-xs font-medium text-amber-400">In Progress</span>
         </div>
       </div>
+
+      {/* Auto-filled brief preview */}
+      {briefRows.length > 0 && (
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles size={11} className="text-emerald-400" />
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+              {lead.scraperDataJson ? "Auto-filled from Google Maps scraper" : "Pre-filled from lead data"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            {briefRows.map(([label, value]) => (
+              <div key={label} className="flex gap-1.5 items-baseline min-w-0">
+                <span className="text-[10px] text-slate-500 shrink-0 w-20">{label}</span>
+                <span className="text-[11px] text-slate-300 truncate">{value}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-500 mt-2">These fields will be pre-filled in the website brief. You can edit them in the project.</p>
+        </div>
+      )}
+
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Notes (pre-filled from intake)</label>
+        <label className="block text-xs text-slate-400 mb-1.5">Notes</label>
         <textarea rows={3} value={form.notes} onChange={set("notes")} className={`${inputCls} resize-none`} />
       </div>
       {error && <p className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>}

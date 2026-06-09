@@ -43,17 +43,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const leadId = crypto.randomUUID();
     const now = new Date();
 
+    const scraperDataJson = JSON.stringify({
+      name:          b.name,
+      phone:         b.phone         ?? null,
+      category:      b.category      ?? null,
+      city:          b.city          ?? null,
+      address:       b.address       ?? null,
+      rating:        b.rating        ?? null,
+      reviews_count: b.reviews_count ?? null,
+      website:       b.website       ?? null,
+      maps_url:      b.maps_url      ?? null,
+      lead_tier:     b.lead_score?.lead_tier  ?? null,
+      lead_score:    b.lead_score?.total_score ?? null,
+      checkatrade: enrichment?.has_checkatrade ? {
+        url:           enrichment.checkatrade_url,
+        review_count:  enrichment.checkatrade_review_count,
+        rating:        enrichment.checkatrade_rating,
+        confidence:    enrichment.match_confidence,
+      } : null,
+    });
+
     const [lead] = await sql`
       INSERT INTO "Lead" (
         id, name, email, company, phone, service, message,
-        status, source, score, value, notes,
+        status, source, score, value, notes, "scraperDataJson",
         "createdAt", "updatedAt"
       ) VALUES (
         ${leadId}, ${b.name}, ${""}, ${b.name},
         ${b.phone ?? null}, ${b.category ?? null},
         ${"Imported from Google Maps scraper"},
         ${"new"}, ${"scraper"},
-        ${b.lead_score?.total_score ?? 0}, ${0}, ${notes},
+        ${b.lead_score?.total_score ?? 0}, ${0}, ${notes}, ${scraperDataJson},
         ${now}, ${now}
       )
       RETURNING *

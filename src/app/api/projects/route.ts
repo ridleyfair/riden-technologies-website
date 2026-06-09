@@ -31,6 +31,16 @@ export async function POST(req: NextRequest) {
       progress = 0,
       dueDate = null,
       notes = "",
+      // Brief fields — pre-filled from scraper data on import
+      phone        = null,
+      email        = null,
+      city         = null,
+      postcode     = null,
+      industry     = "trades",
+      services     = null,
+      about        = null,
+      accreditations = null,
+      photosJson   = null,
     } = body;
 
     if (!name || !name.trim()) {
@@ -44,11 +54,17 @@ export async function POST(req: NextRequest) {
     const [project] = await sql`
       INSERT INTO "Project" (
         id, name, "clientName", status, budget, spent, progress,
-        "dueDate", notes, "createdAt", "updatedAt"
+        "dueDate", notes,
+        phone, email, city, postcode, industry, services, about,
+        accreditations, "photosJson",
+        "createdAt", "updatedAt"
       ) VALUES (
         ${id}, ${name.trim()}, ${clientName}, ${status},
         ${Number(budget)}, ${Number(spent)}, ${Math.min(100, Math.max(0, Number(progress)))},
-        ${dueDate ?? null}, ${notes}, ${now}, ${now}
+        ${dueDate ?? null}, ${notes},
+        ${phone}, ${email}, ${city}, ${postcode}, ${industry}, ${services}, ${about},
+        ${accreditations}, ${photosJson ? JSON.stringify(photosJson) : null},
+        ${now}, ${now}
       )
       RETURNING *
     `;
