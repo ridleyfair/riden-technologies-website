@@ -16,7 +16,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { searchQuery } = body;
+    const { placeUrl } = body;
+
+    if (!placeUrl || !placeUrl.includes("google")) {
+      return NextResponse.json({ error: "Please paste a Google Maps URL" }, { status: 400 });
+    }
 
     const token = getEnv("APIFY_API_TOKEN");
     if (!token) {
@@ -30,9 +34,10 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          searchStringsArray: [searchQuery],
+          startUrls: [{ url: placeUrl }],
+          maxCrawledPlacesPerSearch: 1,
           language: "en",
-          maxCrawledPlacesPerSearch: 5,
+          countryCode: "gb",
         }),
       }
     );

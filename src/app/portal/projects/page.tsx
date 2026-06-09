@@ -1143,7 +1143,7 @@ function ProjectDetailModal({
       const res = await fetch("/api/scrape/google-maps", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ searchQuery: googleMaps.query }),
+        body: JSON.stringify({ placeUrl: googleMaps.query }),
       });
       const data = await res.json();
       if (!res.ok) { setGoogleMaps((s) => ({ ...s, error: data.error ?? "Search failed." })); return; }
@@ -2106,12 +2106,13 @@ function ProjectDetailModal({
 
               {/* Google Maps Finder */}
               <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Find on Google</h3>
+                <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Import from Google Maps</h3>
+                <p className="text-[11px] text-slate-500">Find the business on Google Maps, copy the URL from your browser, and paste it here.</p>
                 <div className="flex gap-2">
                   <input
                     value={googleMaps.query}
                     onChange={(e) => setGoogleMaps((s) => ({ ...s, query: e.target.value }))}
-                    placeholder="e.g. Smith Plumbing London"
+                    placeholder="https://www.google.com/maps/place/..."
                     className={`${inputCls} flex-1`}
                   />
                   <Button
