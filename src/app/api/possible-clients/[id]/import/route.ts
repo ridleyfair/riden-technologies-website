@@ -63,21 +63,42 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       } : null,
     });
 
-    const [lead] = await sql`
-      INSERT INTO "Lead" (
-        id, name, email, company, phone, service, message,
-        status, source, score, value, notes, "scraperDataJson",
-        "createdAt", "updatedAt"
-      ) VALUES (
-        ${leadId}, ${b.name}, ${""}, ${b.name},
-        ${b.phone ?? null}, ${b.category ?? null},
-        ${"Imported from Google Maps scraper"},
-        ${"new"}, ${"scraper"},
-        ${b.lead_score?.total_score ?? 0}, ${0}, ${notes}, ${scraperDataJson},
-        ${now}, ${now}
-      )
-      RETURNING *
-    `;
+    // Try inserting with scraperDataJson — fall back without it if column doesn't exist yet
+    let lead;
+    try {
+      [lead] = await sql`
+        INSERT INTO "Lead" (
+          id, name, email, company, phone, service, message,
+          status, source, score, value, notes, "scraperDataJson",
+          "createdAt", "updatedAt"
+        ) VALUES (
+          ${leadId}, ${b.name}, ${""}, ${b.name},
+          ${b.phone ?? null}, ${b.category ?? null},
+          ${"Imported from Google Maps scraper"},
+          ${"new"}, ${"scraper"},
+          ${b.lead_score?.total_score ?? 0}, ${0}, ${notes}, ${scraperDataJson},
+          ${now}, ${now}
+        )
+        RETURNING *
+      `;
+    } catch {
+      // scraperDataJson column not yet migrated — insert without it
+      [lead] = await sql`
+        INSERT INTO "Lead" (
+          id, name, email, company, phone, service, message,
+          status, source, score, value, notes,
+          "createdAt", "updatedAt"
+        ) VALUES (
+          ${leadId}, ${b.name}, ${""}, ${b.name},
+          ${b.phone ?? null}, ${b.category ?? null},
+          ${"Imported from Google Maps scraper"},
+          ${"new"}, ${"scraper"},
+          ${b.lead_score?.total_score ?? 0}, ${0}, ${notes},
+          ${now}, ${now}
+        )
+        RETURNING *
+      `;
+    }
 
     return NextResponse.json(lead, { status: 201 });
   } catch (err) {
