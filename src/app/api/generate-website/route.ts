@@ -150,60 +150,17 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
       { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
-  "healthcare-clean": {
-    themeId: "minimal",
-    siteType: "multi-page",
-    label: "Healthcare Clean",
-    pages: [
-      { slug: "/",         title: "Home",     sections: ["hero", "services", "testimonials", "cta", "footer"] },
-      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
-      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
-    ],
-  },
-  "beauty-elegant": {
+  "beauty-pro-booking": {
     themeId: "elegant",
     siteType: "multi-page",
-    label: "Beauty Elegant",
+    label: "Beauty Pro+ Booking",
     pages: [
-      { slug: "/",         title: "Home",     sections: ["hero", "services", "gallery", "testimonials", "cta", "footer"] },
-      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/gallery",  title: "Gallery",  sections: ["hero", "gallery", "cta", "footer"] },
-      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
-      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
-    ],
-  },
-  "luxury-premium": {
-    themeId: "elegant",
-    siteType: "multi-page",
-    label: "Luxury Premium",
-    pages: [
-      { slug: "/",         title: "Home",     sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
-      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/gallery",  title: "Gallery",  sections: ["hero", "gallery", "cta", "footer"] },
-      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
-    ],
-  },
-  "corporate-professional": {
-    themeId: "modern",
-    siteType: "multi-page",
-    label: "Corporate Professional",
-    pages: [
-      { slug: "/",         title: "Home",     sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
-      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
-      { slug: "/services", title: "Services", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
-    ],
-  },
-  "legal-authority": {
-    themeId: "classic",
-    siteType: "multi-page",
-    label: "Legal Authority",
-    pages: [
-      { slug: "/",                title: "Home",           sections: ["hero", "services", "about", "testimonials", "cta", "footer"] },
-      { slug: "/practice-areas",  title: "Practice Areas", sections: ["hero", "services", "cta", "footer"] },
-      { slug: "/about",           title: "About",          sections: ["hero", "about", "cta", "footer"] },
-      { slug: "/contact",         title: "Contact",        sections: ["hero", "contact", "footer"] },
+      { slug: "/",           title: "Home",      sections: ["hero", "services", "testimonials", "gallery", "about", "cta", "footer"] },
+      { slug: "/services",   title: "Services",  sections: ["hero", "services", "cta", "footer"] },
+      { slug: "/gallery",    title: "Gallery",   sections: ["hero", "gallery", "cta", "footer"] },
+      { slug: "/about",      title: "About",     sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/booking",    title: "Book Now",  sections: ["hero", "contact", "footer"] },
+      { slug: "/contact",    title: "Contact",   sections: ["hero", "contact", "footer"] },
     ],
   },
 };
@@ -216,14 +173,10 @@ const TEMPLATE_THEMES: Record<string, string> = Object.fromEntries(
 function pickTemplate(industry: string): { templateId: string; themeId: string } {
   const ind = (industry ?? "").toLowerCase();
   let templateId = "modern-minimal";
-  if (["trades", "automotive", "construction", "plumbing", "electrical", "roofing"].some((k) => ind.includes(k))) {
+  if (["trades", "automotive", "construction", "plumbing", "electrical", "roofing", "builder", "carpenter", "painter"].some((k) => ind.includes(k))) {
     templateId = "tradie-bold";
-  } else if (["beauty", "salon", "spa", "nails", "hair"].some((k) => ind.includes(k))) {
-    templateId = "beauty-elegant";
-  } else if (["health", "medical", "dental", "therapy", "care"].some((k) => ind.includes(k))) {
-    templateId = "healthcare-clean";
-  } else if (["legal", "law", "solicitor"].some((k) => ind.includes(k))) {
-    templateId = "legal-authority";
+  } else if (["beauty", "salon", "spa", "nails", "hair", "lash", "brow", "makeup", "aesthetics"].some((k) => ind.includes(k))) {
+    templateId = "beauty-pro-booking";
   }
   return { templateId, themeId: TEMPLATE_DEFINITIONS[templateId].themeId };
 }
