@@ -1154,8 +1154,9 @@ function ProjectDetailModal({
   }
 
 
-  // ── Import Google Maps reviews ────────────────────────────────────────────
-  function importGoogleReviews(item: Record<string, unknown>) {
+  // ── Import everything from a Google Maps result ──────────────────────────
+  function importGoogleData(item: Record<string, unknown>) {
+    // Reviews
     const rawReviews = (item.reviews ?? []) as Record<string, unknown>[];
     if (Array.isArray(rawReviews) && rawReviews.length > 0) {
       const imported: Review[] = rawReviews.map((r) => ({
@@ -1166,6 +1167,59 @@ function ProjectDetailModal({
         date:   String(r.publishedAtDate ?? r.date ?? ""),
       }));
       setReviews((prev) => [...prev, ...imported]);
+    }
+
+    // Brief fields — only fill if not already set
+    setBrief((b) => ({
+      ...b,
+      phone:    b.phone    || String(item.phone    ?? ""),
+      city:     b.city     || String(item.city     ?? (item.address ? String(item.address).split(",").at(-2)?.trim() ?? "" : "")),
+      about:    b.about    || String(item.description ?? item.editorialSummary ?? ""),
+      services: b.services || String(item.categoryName ?? item.category ?? ""),
+      openingHours: b.openingHours || (() => {
+        const oh = item.openingHours as { day?: string; hours?: string }[] | undefined;
+        return Array.isArray(oh) ? oh.map(h => `${h.day ?? ""}: ${h.hours ?? ""}`).join(", ") : "";
+      })(),
+    }));
+
+    // Review settings from Google
+    const gRating = item.totalScore ?? item.rating;
+    const gCount  = item.reviewsCount ?? item.reviews_count;
+    const mapsUrl = item.url ?? item.maps_url;
+    if (gRating != null || gCount != null) {
+      setReviewSettings((prev) => ({
+        ...prev,
+        platform:          "Google",
+        averageRating:     gRating != null ? `${Number(gRating).toFixed(1)}/5` : prev.averageRating,
+        reviewCount:       gCount  != null ? Number(gCount) : prev.reviewCount,
+        platformUrl:       mapsUrl != null ? String(mapsUrl) : prev.platformUrl,
+        showReviewBadge:   true,
+        showRatingBadge:   true,
+      }));
+    }
+
+    // Photos
+    const imgs: string[] = [];
+    if (item.imageUrl  && typeof item.imageUrl  === "string") imgs.push(item.imageUrl);
+    if (Array.isArray(item.imageUrls)) imgs.push(...(item.imageUrls as string[]).filter((u) => typeof u === "string"));
+    if (Array.isArray(item.images))    imgs.push(...(item.images as string[]).filter((u)    => typeof u === "string"));
+    const newPhotos = imgs.filter((u, i, a) => u && a.indexOf(u) === i).slice(0, 10);
+    if (newPhotos.length > 0) {
+      const newId = () => Math.random().toString(36).slice(2, 10);
+      setProjectAlbums((prev) => {
+        const existing = prev.find(a => a.title === "Google Photos");
+        if (existing) {
+          return prev.map(a => a.id === existing.id
+            ? { ...a, photos: [...a.photos, ...newPhotos.map((url, i) => ({ id: newId(), url, alt: "", caption: "", displayOrder: a.photos.length + i }))] }
+            : a
+          );
+        }
+        return [...prev, {
+          id: newId(), title: "Google Photos", description: "", category: "", sourceUrl: String(mapsUrl ?? ""),
+          coverImageUrl: newPhotos[0], enabled: true, displayOrder: prev.length,
+          photos: newPhotos.map((url, i) => ({ id: newId(), url, alt: "", caption: "", displayOrder: i })),
+        }];
+      });
     }
   }
 
@@ -2096,10 +2150,10 @@ function ProjectDetailModal({
                           )}
                         </div>
                         <button
-                          onClick={() => importGoogleReviews(item)}
-                          className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex-shrink-0"
+                          onClick={() => importGoogleData(item)}
+                          className="text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors flex-shrink-0"
                         >
-                          Import Reviews
+                          Fill Brief
                         </button>
                       </div>
                     ))}

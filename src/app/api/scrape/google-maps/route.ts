@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "APIFY_API_TOKEN not configured" }, { status: 500 });
     }
 
-    const actorId = "apify/google-maps-scraper";
+    const actorId = "apify~google-maps-scraper";
     const res = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${token}`,
       {
