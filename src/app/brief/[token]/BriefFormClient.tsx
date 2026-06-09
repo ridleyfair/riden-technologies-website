@@ -203,7 +203,44 @@ export default function BriefFormClient({ token }: { token: string }) {
       .then((data) => {
         if (data.error) { setNotFound(true); return; }
         if (data.form?.status === "submitted") { setAlreadySubmitted(true); return; }
-        setForm((f) => ({ ...f, businessName: data.form?.business_name ?? "" }));
+
+        const p = data.projectData as Record<string, string | null> | null;
+
+        // Parse opening hours from "Mon: 9am-5pm, Tue: 9am-5pm, ..." string into DayHours array
+        const prefillDays = DAYS.map((d) => ({ ...d }));
+        if (p?.openingHours) {
+          const parts = String(p.openingHours).split(",").map((s) => s.trim());
+          for (const part of parts) {
+            const colonIdx = part.indexOf(":");
+            if (colonIdx < 0) continue;
+            const dayName = part.slice(0, colonIdx).trim().toLowerCase();
+            const hours = part.slice(colonIdx + 1).trim();
+            const idx = prefillDays.findIndex((d) => d.day.toLowerCase().startsWith(dayName.slice(0, 3)));
+            if (idx >= 0 && hours) {
+              prefillDays[idx] = { ...prefillDays[idx], open: true, hours };
+            }
+          }
+        }
+
+        // Parse services from comma-separated string
+        const prefillServices = p?.services
+          ? String(p.services).split(",").map((s) => s.trim()).filter(Boolean)
+          : [];
+
+        setForm((f) => ({
+          ...f,
+          businessName:    data.form?.business_name ?? "",
+          phone:           p?.phone           ? String(p.phone)           : f.phone,
+          email:           p?.email           ? String(p.email)           : f.email,
+          city:            p?.city            ? String(p.city)            : f.city,
+          postcode:        p?.postcode        ? String(p.postcode)        : f.postcode,
+          industry:        p?.industry        ? String(p.industry)        : f.industry,
+          about:           p?.about           ? String(p.about)           : f.about,
+          socialFacebook:  p?.socialFacebook  ? String(p.socialFacebook)  : f.socialFacebook,
+          socialInstagram: p?.socialInstagram ? String(p.socialInstagram) : f.socialInstagram,
+          openingHoursDays: prefillDays,
+          services:        prefillServices.length ? prefillServices : f.services,
+        }));
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));

@@ -25,6 +25,11 @@ type ScraperData = {
   website?: string | null;
   maps_url?: string | null;
   lead_tier?: string | null;
+  description?: string | null;
+  photos?: string[];
+  opening_hours?: { day: string; hours: string }[];
+  social_facebook?: string | null;
+  social_instagram?: string | null;
   checkatrade?: {
     url?: string;
     review_count?: number;
@@ -193,19 +198,28 @@ function formatReviewCount(n: number): string {
 }
 
 type BriefPreFill = {
-  phone:         string | null;
-  city:          string | null;
-  postcode:      string | null;
-  industry:      "beauty" | "trades";
-  services:      string | null;
-  accreditations: string | null;
-  photosJson:    Record<string, unknown> | null;
-  hasData:       boolean;
-  checkatradeUrl: string | null;
+  phone:           string | null;
+  city:            string | null;
+  postcode:        string | null;
+  industry:        "beauty" | "trades";
+  services:        string | null;
+  about:           string | null;
+  accreditations:  string | null;
+  photosJson:      Record<string, unknown> | null;
+  openingHours:    string | null;
+  socialFacebook:  string | null;
+  socialInstagram: string | null;
+  hasData:         boolean;
+  checkatradeUrl:  string | null;
   existingWebsite: string | null;
-  googleRating:  string | null;
-  reviewCount:   number | null;
+  googleRating:    string | null;
+  reviewCount:     number | null;
 };
+
+function formatOpeningHours(hours: { day: string; hours: string }[]): string | null {
+  if (!hours || hours.length === 0) return null;
+  return hours.map(h => `${h.day}: ${h.hours}`).join(", ");
+}
 
 function buildBriefFromLead(lead: Lead): BriefPreFill {
   // Try structured scraperDataJson first
@@ -233,32 +247,44 @@ function buildBriefFromLead(lead: Lead): BriefPreFill {
     const platformUrl  = hasCT ? (sd.checkatrade?.url ?? null) : (sd.maps_url ?? null);
     const displayCount = reviewCount != null ? formatReviewCount(reviewCount) : null;
 
-    const photosJson: Record<string, unknown> | null = reviewCount != null ? {
-      reviewSettings: {
-        platform,
-        reviewCount,
-        displayReviewCount: displayCount,
-        averageRating: avgRating,
-        platformUrl,
-        showReviewBadge: true,
-        showRatingBadge: true,
-      },
+    // Build photosJson: review badge settings + gallery images from scraper photos
+    const reviewSettings = reviewCount != null ? {
+      platform,
+      reviewCount,
+      displayReviewCount: displayCount,
+      averageRating: avgRating,
+      platformUrl,
+      showReviewBadge: true,
+      showRatingBadge: true,
     } : null;
+
+    const photos = sd.photos ?? [];
+    const photosJson: Record<string, unknown> | null =
+      (reviewSettings || photos.length > 0)
+        ? {
+            ...(reviewSettings ? { reviewSettings } : {}),
+            ...(photos.length > 0 ? { gallery: photos.map((url, i) => ({ url, caption: `Photo ${i + 1}` })) } : {}),
+          }
+        : null;
 
     const accredParts: string[] = [];
     if (hasCT && sd.checkatrade?.url) accredParts.push(`Checkatrade: ${sd.checkatrade.url}`);
 
     return {
-      phone:           sd.phone        ?? lead.phone ?? null,
-      city:            sd.city         ?? null,
-      postcode:        postcode,
+      phone:           sd.phone            ?? lead.phone ?? null,
+      city:            sd.city             ?? null,
+      postcode,
       industry,
-      services:        sd.category     ?? lead.service ?? null,
+      services:        sd.category         ?? lead.service ?? null,
+      about:           sd.description      ?? null,
       accreditations:  accredParts.length ? accredParts.join(", ") : null,
       photosJson,
+      openingHours:    formatOpeningHours(sd.opening_hours ?? []),
+      socialFacebook:  sd.social_facebook  ?? null,
+      socialInstagram: sd.social_instagram ?? null,
       hasData:         true,
       checkatradeUrl:  sd.checkatrade?.url ?? null,
-      existingWebsite: sd.website      ?? null,
+      existingWebsite: sd.website          ?? null,
       googleRating:    gRating != null ? `${gRating}/5 (${gCount ?? 0} reviews)` : null,
       reviewCount,
     };
@@ -271,8 +297,12 @@ function buildBriefFromLead(lead: Lead): BriefPreFill {
     postcode:        null,
     industry:        detectIndustry(lead.service),
     services:        lead.service ?? null,
+    about:           null,
     accreditations:  null,
     photosJson:      null,
+    openingHours:    null,
+    socialFacebook:  null,
+    socialInstagram: null,
     hasData:         !!(lead.phone || lead.service),
     checkatradeUrl:  null,
     existingWebsite: null,
@@ -318,22 +348,26 @@ function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name:           form.name.trim(),
-          clientName:     form.clientName.trim(),
-          status:         "in_progress",
-          budget:         parseFloat(form.budget) || 0,
-          spent:          0,
-          progress:       0,
-          dueDate:        form.dueDate || null,
-          notes:          form.notes,
+          name:            form.name.trim(),
+          clientName:      form.clientName.trim(),
+          status:          "in_progress",
+          budget:          parseFloat(form.budget) || 0,
+          spent:           0,
+          progress:        0,
+          dueDate:         form.dueDate || null,
+          notes:           form.notes,
           // Brief fields auto-mapped from scraper data
-          phone:          brief.phone       || null,
-          city:           brief.city        || null,
-          postcode:       brief.postcode    || null,
-          industry:       brief.industry,
-          services:       brief.services    || null,
-          accreditations: brief.accreditations || null,
-          photosJson:     brief.photosJson  || null,
+          phone:           brief.phone           || null,
+          city:            brief.city            || null,
+          postcode:        brief.postcode        || null,
+          industry:        brief.industry,
+          services:        brief.services        || null,
+          about:           brief.about           || null,
+          accreditations:  brief.accreditations  || null,
+          photosJson:      brief.photosJson      || null,
+          openingHours:    brief.openingHours    || null,
+          socialFacebook:  brief.socialFacebook  || null,
+          socialInstagram: brief.socialInstagram || null,
         }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to create project."); return; }
@@ -358,16 +392,21 @@ function CreateProjectModal({ lead, onClose }: { lead: Lead; onClose: () => void
     );
   }
 
+  const photoCount = (brief.photosJson as { gallery?: unknown[] } | null)?.gallery?.length ?? 0;
   const briefRows = [
-    brief.phone        && ["Phone",       brief.phone],
-    brief.city         && ["City",        brief.city],
-    brief.postcode     && ["Postcode",    brief.postcode],
-    brief.services     && ["Services",    brief.services],
-    brief.industry     && ["Industry",    brief.industry.charAt(0).toUpperCase() + brief.industry.slice(1)],
-    brief.checkatradeUrl && ["Checkatrade", "Profile found"],
-    brief.googleRating && ["Google",      brief.googleRating],
+    brief.phone          && ["Phone",       brief.phone],
+    brief.city           && ["City",        brief.city],
+    brief.postcode       && ["Postcode",    brief.postcode],
+    brief.services       && ["Services",    brief.services],
+    brief.industry       && ["Industry",    brief.industry.charAt(0).toUpperCase() + brief.industry.slice(1)],
+    brief.about          && ["About",       brief.about.length > 60 ? brief.about.slice(0, 60) + "…" : brief.about],
+    brief.openingHours   && ["Hours",       brief.openingHours.length > 50 ? brief.openingHours.slice(0, 50) + "…" : brief.openingHours],
+    brief.socialFacebook  && ["Facebook",   brief.socialFacebook],
+    brief.socialInstagram && ["Instagram",  brief.socialInstagram],
+    brief.checkatradeUrl  && ["Checkatrade","Profile found"],
+    brief.googleRating   && ["Google",      brief.googleRating],
     brief.accreditations && ["Accreditations", brief.accreditations.length > 50 ? brief.accreditations.slice(0, 50) + "…" : brief.accreditations],
-    brief.photosJson   && ["Reviews",     "Auto-filled from " + (brief.checkatradeUrl ? "Checkatrade" : "Google")],
+    (brief.photosJson && (brief.reviewCount != null || photoCount > 0)) && ["Media", `${photoCount > 0 ? `${photoCount} photos` : ""}${photoCount > 0 && brief.reviewCount != null ? " · " : ""}${brief.reviewCount != null ? `reviews from ${brief.checkatradeUrl ? "Checkatrade" : "Google"}` : ""}`],
   ].filter(Boolean) as [string, string][];
 
   return (

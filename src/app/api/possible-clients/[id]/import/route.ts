@@ -4,6 +4,32 @@ import { getDb } from "@/lib/db";
 
 const SCRAPER_URL = process.env.SCRAPER_API_URL ?? "http://localhost:8000";
 
+async function scrapeSocialLinks(websiteUrl: string): Promise<{ facebook: string | null; instagram: string | null }> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(websiteUrl, {
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RidenBot/1.0)" },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return { facebook: null, instagram: null };
+    const html = await res.text();
+
+    const fbMatch = html.match(/https?:\/\/(?:www\.)?facebook\.com\/[A-Za-z0-9_./-]+/i);
+    const igMatch = html.match(/https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9_./-]+/i);
+
+    const cleanUrl = (u: string) => u.replace(/['">\s].*/g, "").split("?")[0].replace(/\/$/, "");
+
+    return {
+      facebook:  fbMatch  ? cleanUrl(fbMatch[0])  : null,
+      instagram: igMatch  ? cleanUrl(igMatch[0])  : null,
+    };
+  } catch {
+    return { facebook: null, instagram: null };
+  }
+}
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth(req);
   if (!user) return unauthorized();
@@ -26,6 +52,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       enrichment = row ?? null;
     } catch { /* table may not exist yet */ }
 
+    // Parse photos from DB (stored as JSON string)
+    let photos: string[] = [];
+    if (b.photos_json) {
+      try { photos = JSON.parse(b.photos_json); } catch { /* ignore */ }
+    }
+
+    // Parse opening hours from DB
+    let openingHours: { day: string; hours: string }[] = [];
+    if (b.opening_hours_json) {
+      try { openingHours = JSON.parse(b.opening_hours_json); } catch { /* ignore */ }
+    }
+
+    // Social links — prefer DB values, fall back to scraping the website
+    let socialFacebook: string | null = b.social_facebook ?? null;
+    let socialInstagram: string | null = b.social_instagram ?? null;
+    if (!socialFacebook && !socialInstagram && b.website) {
+      const scraped = await scrapeSocialLinks(b.website);
+      socialFacebook  = scraped.facebook;
+      socialInstagram = scraped.instagram;
+    }
+
     const notes = [
       b.city ? `City: ${b.city}` : null,
       b.address ? `Address: ${b.address}` : null,
@@ -44,17 +91,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const now = new Date();
 
     const scraperDataJson = JSON.stringify({
-      name:          b.name,
-      phone:         b.phone         ?? null,
-      category:      b.category      ?? null,
-      city:          b.city          ?? null,
-      address:       b.address       ?? null,
-      rating:        b.rating        ?? null,
-      reviews_count: b.reviews_count ?? null,
-      website:       b.website       ?? null,
-      maps_url:      b.maps_url      ?? null,
-      lead_tier:     b.lead_score?.lead_tier  ?? null,
-      lead_score:    b.lead_score?.total_score ?? null,
+      name:            b.name,
+      phone:           b.phone            ?? null,
+      category:        b.category         ?? null,
+      city:            b.city             ?? null,
+      address:         b.address          ?? null,
+      rating:          b.rating           ?? null,
+      reviews_count:   b.reviews_count    ?? null,
+      website:         b.website          ?? null,
+      maps_url:        b.maps_url         ?? null,
+      lead_tier:       b.lead_score?.lead_tier   ?? null,
+      lead_score:      b.lead_score?.total_score ?? null,
+      description:     b.description      ?? null,
+      photos:          photos,
+      opening_hours:   openingHours,
+      social_facebook: socialFacebook,
+      social_instagram: socialInstagram,
       checkatrade: enrichment?.has_checkatrade ? {
         url:           enrichment.checkatrade_url,
         review_count:  enrichment.checkatrade_review_count,

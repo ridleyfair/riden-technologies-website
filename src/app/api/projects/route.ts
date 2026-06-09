@@ -32,15 +32,18 @@ export async function POST(req: NextRequest) {
       dueDate = null,
       notes = "",
       // Brief fields — pre-filled from scraper data on import
-      phone        = null,
-      email        = null,
-      city         = null,
-      postcode     = null,
-      industry     = "trades",
-      services     = null,
-      about        = null,
-      accreditations = null,
-      photosJson   = null,
+      phone           = null,
+      email           = null,
+      city            = null,
+      postcode        = null,
+      industry        = "trades",
+      services        = null,
+      about           = null,
+      accreditations  = null,
+      photosJson      = null,
+      openingHours    = null,
+      socialFacebook  = null,
+      socialInstagram = null,
     } = body;
 
     if (!name || !name.trim()) {
@@ -56,7 +59,7 @@ export async function POST(req: NextRequest) {
         id, name, "clientName", status, budget, spent, progress,
         "dueDate", notes,
         phone, email, city, postcode, industry, services, about,
-        accreditations, "photosJson",
+        accreditations, "photosJson", "openingHours", "socialFacebook", "socialInstagram",
         "createdAt", "updatedAt"
       ) VALUES (
         ${id}, ${name.trim()}, ${clientName}, ${status},
@@ -64,6 +67,7 @@ export async function POST(req: NextRequest) {
         ${dueDate ?? null}, ${notes},
         ${phone}, ${email}, ${city}, ${postcode}, ${industry}, ${services}, ${about},
         ${accreditations}, ${photosJson ? JSON.stringify(photosJson) : null},
+        ${openingHours}, ${socialFacebook}, ${socialInstagram},
         ${now}, ${now}
       )
       RETURNING *
