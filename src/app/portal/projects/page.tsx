@@ -842,6 +842,16 @@ function ProjectDetailModal({
     setProjectAlbums(prev => prev.map(a => a.id === albumId ? {...a, coverImageUrl: url} : a));
   }
 
+  function movePhotoToHero(albumId: string, photoId: string, url: string) {
+    removePhotoFromAlbum(albumId, photoId);
+    setHeroImages(prev => prev.includes(url) ? prev : [...prev, url]);
+  }
+
+  function movePhotoBetweenAlbums(fromAlbumId: string, photoId: string, toAlbumId: string, url: string) {
+    removePhotoFromAlbum(fromAlbumId, photoId);
+    addPhotoToAlbum(toAlbumId, url);
+  }
+
   async function importPhotosToAlbum(albumId: string) {
     const url = (albumUrlInputs[albumId] ?? "").trim();
     if (!url.includes("checkatrade.com")) return;
@@ -1156,6 +1166,8 @@ function ProjectDetailModal({
 
   // ── Import everything from a Google Maps result ──────────────────────────
   function importGoogleData(item: Record<string, unknown>) {
+    console.log("[Google Import] Raw Apify item:", JSON.stringify(item, null, 2));
+
     // Reviews
     const rawReviews = (item.reviews ?? []) as Record<string, unknown>[];
     if (Array.isArray(rawReviews) && rawReviews.length > 0) {
@@ -1171,42 +1183,72 @@ function ProjectDetailModal({
       if (imported.length > 0) setReviews((prev) => [...prev, ...imported]);
     }
 
-    // Services — extract from additionalInfo sections, then fall back to categories
+    // reviewsTags = what customers actually mention — best source for services
+    const reviewsTags = (item.reviewsTags as { title: string; count: number }[] | undefined) ?? [];
+
+    // Services — reviewsTags first (actual treatments), then categories, skip additionalInfo (it's accessibility/amenities)
     const extractServices = (): string => {
-      const info = item.additionalInfo as Record<string, unknown> | null | undefined;
-      if (info && typeof info === "object") {
-        // Look for service-related sections Google Maps puts in additionalInfo
-        const serviceKeys = ["Services", "Treatments", "Highlights", "Hair services",
-          "Nail services", "Skin care services", "Other services"];
-        const found: string[] = [];
-        for (const key of Object.keys(info)) {
-          if (serviceKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
-            const section = info[key];
-            if (Array.isArray(section)) {
-              for (const entry of section) {
-                if (typeof entry === "string") found.push(entry);
-                else if (typeof entry === "object" && entry !== null) {
-                  // Google returns [{ServiceName: true}, ...]
-                  Object.keys(entry as object).forEach(k => found.push(k));
-                }
-              }
-            }
-          }
-        }
-        if (found.length > 0) return found.join("\n");
-      }
-      // Fall back to categories array, then categoryName
+      // Filter out generic non-service tags
+      const skipTags = new Set(["knowledgeable staff", "welcoming staff", "friendly staff",
+        "great service", "good service", "excellent service", "skilled team", "professional staff",
+        "clear explanations", "tailored treatment", "hygienic setting", "clean environment"]);
+      const treatmentTags = reviewsTags
+        .filter(t => !skipTags.has(t.title.toLowerCase()))
+        .sort((a, b) => b.count - a.count)
+        .map(t => t.title);
+
+      if (treatmentTags.length > 0) return treatmentTags.join("\n");
+
+      // Fall back to categories array (all of them, not just the first)
       const cats = item.categories as string[] | undefined;
       if (Array.isArray(cats) && cats.length > 0) return cats.join("\n");
+
       return String(item.categoryName ?? item.category ?? "");
+    };
+
+    // About — use description first; build from available data if empty
+    const buildAbout = (): string => {
+      const desc = String(item.description ?? item.editorialSummary ?? item.aboutFromGoogle ?? "").trim();
+      if (desc.length > 30) return desc;
+
+      const name    = String(item.title ?? item.name ?? "");
+      const city    = String(item.city  ?? "");
+      const cats    = item.categories as string[] | undefined;
+      const catText = Array.isArray(cats) && cats.length > 0 ? cats.slice(0, 2).join(" & ").toLowerCase() : String(item.categoryName ?? "").toLowerCase();
+      const rating  = item.totalScore ?? item.rating;
+      const reviews = item.reviewsCount ?? item.reviews_count;
+
+      // Pull top treatment tags for the about sentence
+      const skipTags = new Set(["knowledgeable staff", "welcoming staff", "friendly staff",
+        "great service", "good service", "excellent service", "skilled team", "professional staff",
+        "clear explanations", "tailored treatment", "hygienic setting", "clean environment"]);
+      const topTreatments = reviewsTags
+        .filter(t => !skipTags.has(t.title.toLowerCase()))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 4)
+        .map(t => t.title);
+
+      const parts: string[] = [];
+      if (name) {
+        const loc  = city ? ` based in ${city}` : "";
+        const type = catText ? `, a ${catText}` : "";
+        parts.push(`${name}${type}${loc}.`);
+      }
+      if (topTreatments.length > 0)
+        parts.push(`Specialising in ${topTreatments.join(", ")}.`);
+      if (rating != null && reviews != null)
+        parts.push(`Rated ${Number(rating).toFixed(1)}/5 on Google with ${Number(reviews)} reviews.`);
+
+      return parts.join(" ");
     };
 
     // Brief fields — only fill if not already set
     setBrief((b) => ({
       ...b,
       phone:        b.phone        || String(item.phone    ?? ""),
-      city:         b.city         || String(item.city     ?? (item.address ? String(item.address).split(",").at(-2)?.trim() ?? "" : "")),
-      about:        b.about        || String(item.description ?? (item as Record<string, unknown>).editorialSummary ?? ""),
+      city:         b.city         || String(item.city     ?? ""),
+      postcode:     b.postcode     || String(item.postalCode ?? item.postCode ?? item.postal_code ?? ""),
+      about:        b.about        || buildAbout(),
       services:     b.services     || extractServices(),
       openingHours: b.openingHours || (() => {
         const oh = item.openingHours as { day?: string; hours?: string }[] | undefined;
@@ -2603,7 +2645,7 @@ function ProjectDetailModal({
                           {/* Photo grid */}
                           {album.photos.length > 0 && (
                             <div className="space-y-1.5">
-                              <label className="text-[11px] text-slate-400">Photos ({album.photos.length}) — hover to set cover or remove</label>
+                              <label className="text-[11px] text-slate-400">Photos ({album.photos.length}) — hover to move, set cover, or remove</label>
                               <div className="grid grid-cols-5 gap-1.5">
                                 {album.photos.map(photo => (
                                   <div key={photo.id} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
@@ -2612,9 +2654,31 @@ function ProjectDetailModal({
                                     {album.coverImageUrl === photo.url && (
                                       <div className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5">Cover</div>
                                     )}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                                      <button onClick={() => setAlbumCover(album.id, photo.url)} title="Set as cover" className="w-6 h-6 rounded-md bg-blue-600 text-white text-[10px] flex items-center justify-center">⭐</button>
-                                      <button onClick={() => removePhotoFromAlbum(album.id, photo.id)} className="w-6 h-6 rounded-md bg-rose-600 text-white flex items-center justify-center"><X size={10} /></button>
+                                    <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+                                      <button
+                                        onClick={() => movePhotoToHero(album.id, photo.id, photo.url)}
+                                        title="Move to Hero Images"
+                                        className="w-full px-1 py-0.5 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-[9px] font-medium flex items-center justify-center gap-0.5"
+                                      >
+                                        → Hero
+                                      </button>
+                                      {projectAlbums.filter(a => a.id !== album.id).length > 0 && (
+                                        <select
+                                          defaultValue=""
+                                          onChange={e => { if (e.target.value) { movePhotoBetweenAlbums(album.id, photo.id, e.target.value, photo.url); e.currentTarget.value = ""; }}}
+                                          className="w-full text-[9px] bg-white/20 text-white rounded-md px-1 py-0.5 cursor-pointer"
+                                          onClick={e => e.stopPropagation()}
+                                        >
+                                          <option value="" disabled>Move to album…</option>
+                                          {projectAlbums.filter(a => a.id !== album.id).map(a => (
+                                            <option key={a.id} value={a.id} className="text-slate-900 bg-white">{a.title}</option>
+                                          ))}
+                                        </select>
+                                      )}
+                                      <div className="flex gap-1 w-full">
+                                        <button onClick={() => setAlbumCover(album.id, photo.url)} title="Set as cover" className="flex-1 h-5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-[9px] flex items-center justify-center">⭐</button>
+                                        <button onClick={() => removePhotoFromAlbum(album.id, photo.id)} title="Remove" className="flex-1 h-5 rounded-md bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center"><X size={9} /></button>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}

@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
           countryCode: "gb",
           maxReviews: 20,
           maxImages: 20,
+          scrapeImageUrls: true,
           reviewsSort: "newest",
         }),
       }

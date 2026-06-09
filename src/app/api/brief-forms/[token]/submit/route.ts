@@ -19,7 +19,8 @@ type FormAnswers = {
   socialFacebook?:      string;
   socialInstagram?:     string;
   logoUrl?:             string;
-  portfolioUrls?:       string[];
+  heroUrls?:            string[];
+  galleryUrls?:         string[];
   hasCheckatrade?:      boolean;
   checkatradeUrl?:      string;
   accreditations?:      string[];
@@ -107,15 +108,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     try { existingPhotos = JSON.parse((ex.photosJson as string) ?? "{}"); } catch { /* ignore */ }
     if (Array.isArray(existingPhotos)) existingPhotos = {};
 
-    const logoUrl       = (answers.logoUrl      ?? "").trim();
-    const portfolioUrls = (answers.portfolioUrls ?? []).filter(Boolean);
+    const logoUrl     = (answers.logoUrl    ?? "").trim();
+    const heroUrls    = (answers.heroUrls   ?? []).filter(Boolean);
+    const galleryUrls = (answers.galleryUrls ?? []).filter(Boolean);
     const newPhotosJson = {
       ...existingPhotos,
-      ...(logoUrl      ? { logo: logoUrl } : {}),
-      ...(portfolioUrls.length ? {
-        heroImages: portfolioUrls,
-        hero:       portfolioUrls[0],
-        gallery:    portfolioUrls,
+      ...(logoUrl        ? { logo: logoUrl } : {}),
+      ...(heroUrls.length ? {
+        heroImages: heroUrls,
+        hero:       heroUrls[0],
+      } : {}),
+      ...(galleryUrls.length ? {
+        gallery: galleryUrls,
       } : {}),
     };
 

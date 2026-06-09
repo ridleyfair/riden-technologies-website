@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { CheckCircle, ImagePlus, Loader2, X } from "lucide-react";
+import { ArrowRight, CheckCircle, ImagePlus, Loader2, X } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,8 @@ type FormState = {
   accreditations:      string[];
   customAccreditations: string;
   logoUrl:             string;
-  portfolioUrls:       string[];
+  heroUrls:            string[];
+  galleryUrls:         string[];
   extras:              string;
 };
 
@@ -166,12 +167,15 @@ export default function BriefFormClient({ token }: { token: string }) {
   const [error, setError] = useState("");
 
   // Upload state
-  const [logoUploading,      setLogoUploading]      = useState(false);
-  const [logoUploadError,    setLogoUploadError]     = useState("");
-  const [portfolioUploading, setPortfolioUploading]  = useState(false);
-  const [portfolioUploadErr, setPortfolioUploadErr]  = useState("");
-  const logoInputRef      = useRef<HTMLInputElement>(null);
-  const portfolioInputRef = useRef<HTMLInputElement>(null);
+  const [logoUploading,    setLogoUploading]    = useState(false);
+  const [logoUploadError,  setLogoUploadError]  = useState("");
+  const [heroUploading,    setHeroUploading]    = useState(false);
+  const [heroUploadErr,    setHeroUploadErr]    = useState("");
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryUploadErr, setGalleryUploadErr] = useState("");
+  const logoInputRef    = useRef<HTMLInputElement>(null);
+  const heroInputRef    = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<FormState>({
     businessName:        "",
@@ -193,7 +197,8 @@ export default function BriefFormClient({ token }: { token: string }) {
     accreditations:      [],
     customAccreditations: "",
     logoUrl:             "",
-    portfolioUrls:       [],
+    heroUrls:            [],
+    galleryUrls:         [],
     extras:              "",
   });
 
@@ -227,6 +232,22 @@ export default function BriefFormClient({ token }: { token: string }) {
           ? String(p.services).split(",").map((s) => s.trim()).filter(Boolean)
           : [];
 
+        // Parse photos from photosJson
+        type GalleryItem = { url?: string } | string;
+        let heroUrls: string[] = [];
+        let galleryUrls: string[] = [];
+        let prefillLogoUrl = "";
+        if (p?.photosJson) {
+          try {
+            const pj = typeof p.photosJson === "string" ? JSON.parse(p.photosJson) : p.photosJson as Record<string, unknown>;
+            if (Array.isArray(pj.heroImages)) heroUrls = (pj.heroImages as string[]).filter(Boolean);
+            if (Array.isArray(pj.gallery)) {
+              galleryUrls = (pj.gallery as GalleryItem[]).map((g) => typeof g === "string" ? g : (g.url ?? "")).filter(Boolean);
+            }
+            if (typeof pj.logo === "string" && pj.logo) prefillLogoUrl = pj.logo;
+          } catch { /* ignore */ }
+        }
+
         setForm((f) => ({
           ...f,
           businessName:    data.form?.business_name ?? "",
@@ -240,6 +261,9 @@ export default function BriefFormClient({ token }: { token: string }) {
           socialInstagram: p?.socialInstagram ? String(p.socialInstagram) : f.socialInstagram,
           openingHoursDays: prefillDays,
           services:        prefillServices.length ? prefillServices : f.services,
+          heroUrls:        heroUrls.length    ? heroUrls    : f.heroUrls,
+          galleryUrls:     galleryUrls.length ? galleryUrls : f.galleryUrls,
+          logoUrl:         prefillLogoUrl     || f.logoUrl,
         }));
       })
       .catch(() => setNotFound(true))
@@ -291,31 +315,69 @@ export default function BriefFormClient({ token }: { token: string }) {
     }
   }
 
-  async function handlePortfolioChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleHeroChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     e.target.value = "";
-    setPortfolioUploading(true);
-    setPortfolioUploadErr("");
+    setHeroUploading(true);
+    setHeroUploadErr("");
     try {
       const urls = await Promise.all(files.map(uploadFile));
-      setForm((f) => ({ ...f, portfolioUrls: [...f.portfolioUrls, ...urls] }));
+      setForm((f) => ({ ...f, heroUrls: [...f.heroUrls, ...urls] }));
     } catch (err) {
-      setPortfolioUploadErr((err as Error).message);
+      setHeroUploadErr((err as Error).message);
     } finally {
-      setPortfolioUploading(false);
+      setHeroUploading(false);
     }
   }
 
-  function removePortfolioPhoto(url: string) {
-    setForm((f) => ({ ...f, portfolioUrls: f.portfolioUrls.filter((u) => u !== url) }));
+  async function handleGalleryChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    e.target.value = "";
+    setGalleryUploading(true);
+    setGalleryUploadErr("");
+    try {
+      const urls = await Promise.all(files.map(uploadFile));
+      setForm((f) => ({ ...f, galleryUrls: [...f.galleryUrls, ...urls] }));
+    } catch (err) {
+      setGalleryUploadErr((err as Error).message);
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
+  function removeHeroPhoto(url: string) {
+    setForm((f) => ({ ...f, heroUrls: f.heroUrls.filter((u) => u !== url) }));
+  }
+
+  function removeGalleryPhoto(url: string) {
+    setForm((f) => ({ ...f, galleryUrls: f.galleryUrls.filter((u) => u !== url) }));
+  }
+
+  function moveToHero(url: string) {
+    setForm((f) => ({
+      ...f,
+      galleryUrls: f.galleryUrls.filter((u) => u !== url),
+      heroUrls:    [...f.heroUrls, url],
+    }));
+  }
+
+  function moveToGallery(url: string) {
+    setForm((f) => ({
+      ...f,
+      heroUrls:    f.heroUrls.filter((u) => u !== url),
+      galleryUrls: [...f.galleryUrls, url],
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.industry) { setError("Please select your business type."); return; }
     if (!form.logoUrl)  { setError("Please upload your logo before submitting."); return; }
-    if (form.portfolioUrls.length === 0) { setError("Please upload at least one portfolio photo before submitting."); return; }
+    if (form.heroUrls.length === 0 && form.galleryUrls.length === 0) {
+      setError("Please upload at least one photo (Hero or Gallery) before submitting."); return;
+    }
     setError("");
     setSubmitting(true);
     try {
@@ -742,17 +804,17 @@ export default function BriefFormClient({ token }: { token: string }) {
             <SectionHeader
               number={6}
               title="Photos"
-              subtitle="These go straight onto your website — upload the best ones you have."
+              subtitle="Upload your logo and photos — then assign them to the right section of your website."
             />
 
-            <div className="space-y-6">
+            <div className="space-y-8">
 
               {/* Logo */}
               <div>
-                <p className="text-sm font-medium text-slate-700 mb-1">
-                  Your logo <span className="text-red-500">*</span>
+                <p className="text-sm font-semibold text-slate-800 mb-1">
+                  Company Logo <span className="text-red-500">*</span>
                 </p>
-                <p className="text-xs text-slate-400 mb-3">Used in your website header and footer. PNG or SVG with transparent background works best.</p>
+                <p className="text-xs text-slate-400 mb-3">Shown in your website header and footer. PNG or SVG with transparent background works best.</p>
 
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
 
@@ -794,47 +856,110 @@ export default function BriefFormClient({ token }: { token: string }) {
                 {logoUploadError && <p className="mt-2 text-xs text-red-600">{logoUploadError}</p>}
               </div>
 
-              {/* Portfolio photos */}
+              {/* Hero Images */}
               <div>
-                <p className="text-sm font-medium text-slate-700 mb-1">
-                  Portfolio photos <span className="text-red-500">*</span>
-                </p>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-semibold uppercase tracking-wide">Hero</span>
+                  <p className="text-sm font-semibold text-slate-800">Hero Images</p>
+                </div>
                 <p className="text-xs text-slate-400 mb-3">
-                  Photos of your work, team, or premises — these go in your website gallery. At least 1 required, up to 20.
+                  Full-width banner photos shown at the top of your homepage. Use your best, most impactful shots here.
                 </p>
 
-                <input
-                  ref={portfolioInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handlePortfolioChange}
-                />
+                <input ref={heroInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleHeroChange} />
 
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {form.portfolioUrls.map((url) => (
-                    <div key={url} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="Portfolio photo" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removePortfolioPhoto(url)}
-                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                      >
-                        <X size={10} />
-                      </button>
+                  {form.heroUrls.map((url) => (
+                    <div key={url} className="relative rounded-xl overflow-hidden border-2 border-violet-300 bg-slate-50 flex flex-col">
+                      <div className="aspect-square w-full overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="Hero photo" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex border-t border-violet-200 bg-violet-50">
+                        <button
+                          type="button"
+                          onClick={() => moveToGallery(url)}
+                          className="flex-1 flex items-center justify-center gap-0.5 py-1.5 text-[10px] font-medium text-violet-700 hover:bg-violet-100 transition-colors"
+                        >
+                          <ArrowRight size={9} /> Gallery
+                        </button>
+                        <div className="w-px bg-violet-200" />
+                        <button
+                          type="button"
+                          onClick={() => removeHeroPhoto(url)}
+                          className="flex items-center justify-center px-2 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                          <X size={11} />
+                        </button>
+                      </div>
                     </div>
                   ))}
 
-                  {form.portfolioUrls.length < 20 && (
+                  {form.heroUrls.length < 10 && (
                     <button
                       type="button"
-                      onClick={() => portfolioInputRef.current?.click()}
-                      disabled={portfolioUploading}
-                      className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 cursor-pointer"
+                      onClick={() => heroInputRef.current?.click()}
+                      disabled={heroUploading}
+                      className="aspect-square rounded-xl border-2 border-dashed border-violet-200 hover:border-violet-400 bg-violet-50 hover:bg-violet-100 transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 cursor-pointer min-h-[80px]"
                     >
-                      {portfolioUploading ? (
+                      {heroUploading ? (
+                        <Loader2 size={18} className="text-violet-500 animate-spin" />
+                      ) : (
+                        <><ImagePlus size={18} className="text-violet-400" /><span className="text-[10px] text-violet-500">Add</span></>
+                      )}
+                    </button>
+                  )}
+                </div>
+                {heroUploadErr && <p className="mt-2 text-xs text-red-600">{heroUploadErr}</p>}
+              </div>
+
+              {/* Gallery Photos */}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold uppercase tracking-wide">Gallery</span>
+                  <p className="text-sm font-semibold text-slate-800">Gallery Photos</p>
+                </div>
+                <p className="text-xs text-slate-400 mb-3">
+                  Photos of your work, team, or premises — shown in your website portfolio gallery. At least 1 required.
+                </p>
+
+                <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryChange} />
+
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {form.galleryUrls.map((url) => (
+                    <div key={url} className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex flex-col">
+                      <div className="aspect-square w-full overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt="Gallery photo" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex border-t border-slate-200 bg-slate-50">
+                        <button
+                          type="button"
+                          onClick={() => moveToHero(url)}
+                          className="flex-1 flex items-center justify-center gap-0.5 py-1.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                          <ArrowRight size={9} /> Hero
+                        </button>
+                        <div className="w-px bg-slate-200" />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryPhoto(url)}
+                          className="flex items-center justify-center px-2 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                          <X size={11} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {form.galleryUrls.length < 30 && (
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      disabled={galleryUploading}
+                      className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 bg-slate-50 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center gap-1 disabled:opacity-50 cursor-pointer min-h-[80px]"
+                    >
+                      {galleryUploading ? (
                         <Loader2 size={18} className="text-blue-500 animate-spin" />
                       ) : (
                         <><ImagePlus size={18} className="text-slate-400" /><span className="text-[10px] text-slate-400">Add</span></>
@@ -842,7 +967,7 @@ export default function BriefFormClient({ token }: { token: string }) {
                     </button>
                   )}
                 </div>
-                {portfolioUploadErr && <p className="mt-2 text-xs text-red-600">{portfolioUploadErr}</p>}
+                {galleryUploadErr && <p className="mt-2 text-xs text-red-600">{galleryUploadErr}</p>}
               </div>
 
             </div>
