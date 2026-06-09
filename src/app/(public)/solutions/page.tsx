@@ -3,8 +3,16 @@ import Services from "@/components/marketing/services";
 import CTASection from "@/components/marketing/cta-section";
 
 export const metadata: Metadata = {
-  title: "Solutions",
-  description: "Websites, CRM dashboards, automation, booking systems, analytics, and ongoing support — everything your business needs to grow online.",
+  title: "Web Design & Digital Services for Small Businesses",
+  description:
+    "Professional website design, CRM systems, booking tools, and local SEO for small businesses and tradespeople across the UK. Everything you need to grow online in one place.",
+  alternates: { canonical: "https://ridentechnologies.com/solutions" },
+  openGraph: {
+    title: "Web Design & Digital Services for Small Businesses | Riden Technologies",
+    description:
+      "Professional websites, CRM systems, and local SEO for small businesses and tradespeople across the UK.",
+    url: "https://ridentechnologies.com/solutions",
+  },
 };
 
 export default function Solutions() {
