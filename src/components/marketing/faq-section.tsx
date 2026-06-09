@@ -7,7 +7,7 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 const faqs = [
   {
     q: "How quickly can you build and launch my website?",
-    a: "Most websites are fully designed, built, and launched within 7–14 business days. For larger projects with more pages or custom features, we'll give you a precise timeline during your discovery call.",
+    a: "Most websites are fully designed, built, and launched within 2–5 business days. For larger projects with more pages or custom features, we'll give you a precise timeline during your discovery call.",
   },
   {
     q: "Is the website built from scratch or from a template?",

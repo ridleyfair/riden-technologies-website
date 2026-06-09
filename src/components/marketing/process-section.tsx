@@ -40,7 +40,7 @@ const steps = [
     step: "04",
     title: "Go Live",
     description:
-      "Your new website goes live. We handle deployment, final checks, and make sure everything runs exactly as it should — typically within 7–14 days.",
+      "Your new website goes live. We handle deployment, final checks, and make sure everything runs exactly as it should — typically within 2–5 business days.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",

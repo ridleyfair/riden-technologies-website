@@ -10,8 +10,8 @@ const services = [
     icon: Globe,
     title: "Website Design & Build",
     description:
-      "Bespoke, professionally crafted websites delivered in 7–14 days. Every site is mobile-responsive, fast-loading, and built to turn visitors into paying customers.",
-    features: ["Custom design", "Mobile-responsive", "SEO-ready structure", "7–14 day delivery"],
+      "Bespoke, professionally crafted websites delivered in 2–5 business days. Every site is mobile-responsive, fast-loading, and built to turn visitors into paying customers.",
+    features: ["Custom design", "Mobile-responsive", "SEO-ready structure", "2–5 business day delivery"],
     gradient: "from-blue-500/20 to-blue-600/5",
     iconBg: "bg-blue-500/10",
     iconColor: "text-blue-400",

@@ -127,7 +127,7 @@ function Hero() {
           style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}
         >
           {[
-            { value: "7–14", label: "Day Build Time" },
+            { value: "2–5", label: "Business Day Build" },
             { value: "£0", label: "Hidden Fees" },
             { value: "UK", label: "Based & Supported" },
             { value: "14-day", label: "Money-Back Guarantee" },
