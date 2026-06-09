@@ -23,7 +23,7 @@ export default function Solutions() {
           Our <span className="gradient-text">Solutions</span>
         </h1>
         <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto">
-          Everything your business needs online — built, managed, and supported by our team.
+          Everything your business needs online. Built, managed, and supported by our team.
         </p>
       </div>
       <Services />

@@ -365,7 +365,7 @@ export default function PricingSection() {
         >
           Not sure which plan fits?{" "}
           <Link href="/contact" className="text-blue-400 hover:text-blue-300 underline underline-offset-4 transition-colors">
-            Talk to us — we&apos;ll recommend the right option.
+            Talk to us and we&apos;ll recommend the right option.
           </Link>
         </motion.p>
       </div>

@@ -23,7 +23,7 @@ const services = [
     icon: Zap,
     title: "Workflow Automation",
     description:
-      "We set up automations that handle the repetitive work for you — from lead follow-up emails to client onboarding sequences — so nothing slips through the cracks.",
+      "We set up automations that handle the repetitive work for you, from lead follow-up emails to client onboarding sequences, so nothing slips through the cracks.",
     features: ["Lead follow-up emails", "Client onboarding flows", "Booking confirmations", "CRM automation"],
     gradient: "from-violet-500/20 to-violet-600/5",
     iconBg: "bg-violet-500/10",
@@ -36,7 +36,7 @@ const services = [
     icon: Users,
     title: "CRM Dashboard",
     description:
-      "A personal CRM dashboard to manage your leads, clients, projects, and invoices — all in one place. Available on Pro+ and Enterprise plans.",
+      "A personal CRM dashboard to manage your leads, clients, projects, and invoices. All in one place. Available on Pro+ and Enterprise plans.",
     features: ["Lead management", "Client tracking", "Invoice management", "Pipeline overview"],
     gradient: "from-cyan-500/20 to-cyan-600/5",
     iconBg: "bg-cyan-500/10",
@@ -49,7 +49,7 @@ const services = [
     icon: BarChart3,
     title: "Analytics & Tracking",
     description:
-      "See exactly where your visitors come from, which pages perform best, and which sources are generating real leads — so you can make informed decisions.",
+      "See exactly where your visitors come from, which pages perform best, and which sources are generating real leads so you can make smarter decisions.",
     features: ["Visitor tracking", "Lead source analytics", "Conversion monitoring", "Monthly reporting"],
     gradient: "from-emerald-500/20 to-emerald-600/5",
     iconBg: "bg-emerald-500/10",
@@ -75,7 +75,7 @@ const services = [
     icon: Wrench,
     title: "Maintenance & Support",
     description:
-      "Ongoing website maintenance, content updates, security monitoring, and support — so your site stays fast, up to date, and working exactly as it should.",
+      "Ongoing website maintenance, content updates, security monitoring, and support so your site stays fast, up to date, and working exactly as it should.",
     features: ["Monthly updates", "Security monitoring", "Content changes", "Priority support"],
     gradient: "from-rose-500/20 to-rose-600/5",
     iconBg: "bg-rose-500/10",
@@ -134,7 +134,7 @@ export default function Services() {
             className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto"
           >
             From a professional website and CRM dashboard to booking systems,
-            automation, and ongoing support — we handle the digital side so you
+            automation, and ongoing support. We handle the digital side so you
             can focus on running your business.
           </motion.p>
         </div>

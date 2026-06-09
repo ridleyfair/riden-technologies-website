@@ -15,7 +15,7 @@ const values = [
   {
     icon: Wrench,
     title: "Crafted with Care",
-    description: "We build every website from scratch — bespoke to your business, not copied from a template.",
+    description: "We build every website from scratch, bespoke to your business, not copied from a template.",
     color: "text-violet-400",
     bg: "bg-violet-500/10",
   },
@@ -29,7 +29,7 @@ const values = [
   {
     icon: Globe,
     title: "Built to Grow",
-    description: "Everything we build is designed to grow with your business — not lock you in.",
+    description: "Everything we build is designed to grow with your business, not lock you in.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
   },
@@ -75,7 +75,7 @@ export default function AboutPage() {
             className="text-base sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed"
           >
             Riden Technologies was founded with a simple idea: every business deserves a
-            professional online presence — not just the big ones with big budgets.
+            professional online presence. Not just the big ones with big budgets.
           </motion.p>
         </div>
       </section>
@@ -96,8 +96,8 @@ export default function AboutPage() {
                 </span>
               </h2>
               <p className="text-slate-400 leading-relaxed mb-6">
-                We started Riden Technologies because we saw a problem: trades businesses —
-                plumbers, electricians, builders, roofers — were working hard every day but
+                We started Riden Technologies because we saw a problem: trades businesses like
+                plumbers, electricians, builders, and roofers were working hard every day but
                 losing potential clients to competitors with better-looking websites.
               </p>
               <p className="text-slate-400 leading-relaxed mb-8">

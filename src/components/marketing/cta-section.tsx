@@ -49,7 +49,7 @@ export default function CTASection() {
           className="text-base sm:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed"
         >
           Book a free call with our team. We&apos;ll listen to your business, talk through
-          what you need, and give you an honest recommendation — no pressure, no jargon.
+          what you need, and give you an honest recommendation. No pressure, no jargon.
         </motion.p>
 
         <motion.div

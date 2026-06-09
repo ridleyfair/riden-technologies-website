@@ -10,7 +10,7 @@ const steps = [
     step: "01",
     title: "Discovery Call",
     description:
-      "We take the time to understand your trade, your customers, and what makes your business tick — so every decision we make is built around you.",
+      "We take the time to understand your trade, your customers, and what makes your business tick. Every decision we make is built around you.",
     color: "text-blue-400",
     bg: "bg-blue-500/10",
     border: "border-blue-500/20",
@@ -20,7 +20,7 @@ const steps = [
     step: "02",
     title: "Bespoke Blueprint",
     description:
-      "Our team crafts a tailored plan for your website — from the layout and pages through to your CRM setup and any automation flows you need.",
+      "Our team crafts a tailored plan for your website, covering the layout and pages through to your CRM setup and any automation flows you need.",
     color: "text-violet-400",
     bg: "bg-violet-500/10",
     border: "border-violet-500/20",
@@ -30,7 +30,7 @@ const steps = [
     step: "03",
     title: "Build & Craft",
     description:
-      "We design and build your website from scratch — no templates, no shortcuts. Your CRM is configured and everything is tested before it goes live.",
+      "We design and build your website from scratch. No templates, no shortcuts. Your CRM is configured and everything is tested before it goes live.",
     color: "text-cyan-400",
     bg: "bg-cyan-500/10",
     border: "border-cyan-500/20",
@@ -40,7 +40,7 @@ const steps = [
     step: "04",
     title: "Go Live",
     description:
-      "Your new website goes live. We handle deployment, final checks, and make sure everything runs exactly as it should — typically within 2–5 business days.",
+      "Your new website goes live. We handle deployment, final checks, and make sure everything runs exactly as it should, typically within 2–5 business days.",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
@@ -95,7 +95,7 @@ export default function ProcessSection() {
             className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto"
           >
             A straightforward five-step process that takes your business from a blank slate
-            to a fully built, live website — in as little as two weeks.
+            to a fully built, live website in as little as two weeks.
           </motion.p>
         </div>
 

@@ -9,7 +9,7 @@ import FAQSection from "@/components/marketing/faq-section";
 import { AnimatedHero } from "@/components/ui/animated-hero";
 
 export const metadata: Metadata = {
-  title: "Riden Technologies — Web Design Agency London | Websites for Small Businesses",
+  title: "Riden Technologies | Web Design Agency London | Websites for Small Businesses",
   description:
     "London-based web design agency building professional websites for small businesses, tradespeople, and local companies across the UK. Get online in 2–5 business days from £299. No hidden fees.",
   alternates: { canonical: "https://ridentechnologies.com" },
@@ -115,7 +115,7 @@ const jsonLd = {
           name: "Do you build websites for tradespeople?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes — we specialise in websites for tradespeople and local service businesses including plumbers, electricians, builders, landscapers, and more.",
+            text: "Yes, we specialise in websites for tradespeople and local service businesses including plumbers, electricians, builders, landscapers, and more.",
           },
         },
         {

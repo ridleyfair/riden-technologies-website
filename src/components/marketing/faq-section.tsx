@@ -11,11 +11,11 @@ const faqs = [
   },
   {
     q: "Is the website built from scratch or from a template?",
-    a: "Every website we build is crafted from scratch, tailored specifically to your business. We don't reuse templates across clients — your site will be unique to you.",
+    a: "Every website we build is crafted from scratch, tailored specifically to your business. We don't reuse templates across clients. Your site will be unique to you.",
   },
   {
     q: "Do I need any technical knowledge to use the CRM?",
-    a: "Not at all. Our CRM is designed to be simple and intuitive — if you can use a smartphone, you can use it. We also provide full onboarding and training when we hand over.",
+    a: "Not at all. Our CRM is designed to be simple and intuitive. If you can use a smartphone, you can use it. We also provide full onboarding and training when we hand over.",
   },
   {
     q: "Can you work with the tools I already use?",
@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "What support do I get after launch?",
-    a: "All plans include ongoing maintenance and support. We handle updates, security monitoring, and content changes — so your site stays fast, secure, and up to date.",
+    a: "All plans include ongoing maintenance and support. We handle updates, security monitoring, and content changes so your site stays fast, secure, and up to date.",
   },
   {
     q: "Is there a long-term contract?",
@@ -31,11 +31,11 @@ const faqs = [
   },
   {
     q: "Do you handle hosting?",
-    a: "Yes — all websites include managed hosting, an SSL certificate, and security monitoring. We take care of everything technical so you can focus on running your business.",
+    a: "Yes, all websites include managed hosting, an SSL certificate, and security monitoring. We take care of everything technical so you can focus on running your business.",
   },
   {
     q: "Can you migrate my existing website?",
-    a: "Absolutely. We handle full migrations from WordPress, Wix, Squarespace, or any other platform — with zero downtime and all your content preserved.",
+    a: "Absolutely. We handle full migrations from WordPress, Wix, Squarespace, or any other platform, with zero downtime and all your content preserved.",
   },
 ];
 

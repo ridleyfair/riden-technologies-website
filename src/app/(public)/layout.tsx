@@ -6,7 +6,7 @@ import Tracker from "@/components/tracking/tracker";
 
 export const metadata: Metadata = {
   title: {
-    default: "Riden Technologies — Premium Websites & Business Automation",
+    default: "Riden Technologies | Web Design Agency London",
     template: "%s | Riden Technologies",
   },
   description:

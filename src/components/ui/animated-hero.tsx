@@ -53,7 +53,7 @@ function Hero() {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/15 bg-white/5 text-xs sm:text-sm text-slate-300 mb-8 backdrop-blur-sm"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-          Premium Web Agency — UK Based
+          Premium Web Agency, UK Based
         </motion.div>
 
         <motion.h1
@@ -218,7 +218,7 @@ function AnimatedHero() {
               className="text-base md:text-lg leading-relaxed tracking-tight text-slate-400 max-w-xl text-center"
             >
               Most trade businesses rely on word of mouth alone. A professionally built website
-              puts you in front of customers actively searching for your services — every day.
+              puts you in front of customers actively searching for your services, every single day.
             </motion.p>
           </div>
 

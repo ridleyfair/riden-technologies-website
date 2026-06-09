@@ -4,12 +4,12 @@ import CTASection from "@/components/marketing/cta-section";
 import FAQSection from "@/components/marketing/faq-section";
 
 export const metadata: Metadata = {
-  title: "Website Design Pricing UK — From £299 | No Hidden Fees",
+  title: "Website Design Pricing UK | From £299 | No Hidden Fees",
   description:
     "Transparent website design pricing for UK small businesses. Pro from £299 + £49/mo. Pro+ from £499 + £99/mo. Enterprise from £999 + £199/mo. 14-day money-back guarantee.",
   alternates: { canonical: "https://ridentechnologies.com/pricing" },
   openGraph: {
-    title: "Website Design Pricing UK — From £299 | Riden Technologies",
+    title: "Website Design Pricing UK | From £299 | Riden Technologies",
     description:
       "Honest website design pricing for small businesses. No hidden fees, no long-term contracts. 14-day money-back guarantee.",
     url: "https://ridentechnologies.com/pricing",
