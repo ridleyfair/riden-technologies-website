@@ -2587,7 +2587,8 @@ function ProjectDetailModal({
                   onChange={(e) => setSelectedTemplate(e.target.value)}
                   className={inputCls}
                 >
-                  <option value="modern-minimal" className="bg-riden-surface">Modern Minimal</option>
+                  <option value="modern-minimal" className="bg-riden-surface">Modern Minimal — Trades &amp; General</option>
+                  <option value="beauty-pro-booking" className="bg-riden-surface">Beauty Pro+ Booking — Salons &amp; Therapists</option>
                 </select>
               </div>
 
