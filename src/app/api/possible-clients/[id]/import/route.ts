@@ -4,7 +4,15 @@ import { getDb } from "@/lib/db";
 
 const SCRAPER_URL = process.env.SCRAPER_API_URL ?? "http://localhost:8000";
 
-async function scrapeSocialLinks(websiteUrl: string): Promise<{ facebook: string | null; instagram: string | null }> {
+type WebsiteData = {
+  facebook:    string | null;
+  instagram:   string | null;
+  description: string | null;
+  phone:       string | null;
+};
+
+async function scrapeWebsiteData(websiteUrl: string): Promise<WebsiteData> {
+  const empty: WebsiteData = { facebook: null, instagram: null, description: null, phone: null };
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -13,20 +21,37 @@ async function scrapeSocialLinks(websiteUrl: string): Promise<{ facebook: string
       headers: { "User-Agent": "Mozilla/5.0 (compatible; RidenBot/1.0)" },
     });
     clearTimeout(timeout);
-    if (!res.ok) return { facebook: null, instagram: null };
+    if (!res.ok) return empty;
     const html = await res.text();
-
-    const fbMatch = html.match(/https?:\/\/(?:www\.)?facebook\.com\/[A-Za-z0-9_./-]+/i);
-    const igMatch = html.match(/https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9_./-]+/i);
 
     const cleanUrl = (u: string) => u.replace(/['">\s].*/g, "").split("?")[0].replace(/\/$/, "");
 
+    // Social links
+    const fbMatch = html.match(/https?:\/\/(?:www\.)?facebook\.com\/(?!sharer|share|dialog)[A-Za-z0-9_./-]+/i);
+    const igMatch = html.match(/https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9_.-]+/i);
+
+    // Meta description
+    const metaMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']{20,300})["']/i)
+      ?? html.match(/<meta[^>]+content=["']([^"']{20,300})["'][^>]+name=["']description["']/i);
+    const ogMatch = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']{20,300})["']/i)
+      ?? html.match(/<meta[^>]+content=["']([^"']{20,300})["'][^>]+property=["']og:description["']/i);
+    const rawDescription = metaMatch?.[1] ?? ogMatch?.[1] ?? null;
+    const description = rawDescription
+      ? rawDescription.replace(/&#\d+;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').trim()
+      : null;
+
+    // Phone number (UK format)
+    const phoneMatch = html.match(/\b((?:0|\+44)[0-9()\s-]{9,14})\b/);
+    const phone = phoneMatch ? phoneMatch[1].replace(/\s+/g, " ").trim() : null;
+
     return {
-      facebook:  fbMatch  ? cleanUrl(fbMatch[0])  : null,
-      instagram: igMatch  ? cleanUrl(igMatch[0])  : null,
+      facebook:    fbMatch  ? cleanUrl(fbMatch[0])  : null,
+      instagram:   igMatch  ? cleanUrl(igMatch[0])  : null,
+      description,
+      phone,
     };
   } catch {
-    return { facebook: null, instagram: null };
+    return empty;
   }
 }
 
@@ -64,14 +89,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       try { openingHours = JSON.parse(b.opening_hours_json); } catch { /* ignore */ }
     }
 
-    // Social links — prefer DB values, fall back to scraping the website
-    let socialFacebook: string | null = b.social_facebook ?? null;
+    // Enrich from business website — social links, description, phone
+    let socialFacebook: string | null  = b.social_facebook ?? null;
     let socialInstagram: string | null = b.social_instagram ?? null;
-    if (!socialFacebook && !socialInstagram && b.website) {
-      const scraped = await scrapeSocialLinks(b.website);
-      socialFacebook  = scraped.facebook;
-      socialInstagram = scraped.instagram;
+    let websiteDescription: string | null = null;
+    let websitePhone: string | null = null;
+
+    if (b.website) {
+      const site = await scrapeWebsiteData(b.website);
+      if (!socialFacebook)  socialFacebook  = site.facebook;
+      if (!socialInstagram) socialInstagram = site.instagram;
+      websiteDescription = site.description;
+      websitePhone       = site.phone;
     }
+
+    // Description: prefer Google Maps, fall back to website meta
+    const description: string | null = b.description ?? websiteDescription ?? null;
+    // Phone: prefer Google Maps, fall back to website
+    const phone: string | null = b.phone ?? websitePhone ?? null;
 
     const notes = [
       b.city ? `City: ${b.city}` : null,
@@ -91,21 +126,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const now = new Date();
 
     const scraperDataJson = JSON.stringify({
-      name:            b.name,
-      phone:           b.phone            ?? null,
-      category:        b.category         ?? null,
-      city:            b.city             ?? null,
-      address:         b.address          ?? null,
-      rating:          b.rating           ?? null,
-      reviews_count:   b.reviews_count    ?? null,
-      website:         b.website          ?? null,
-      maps_url:        b.maps_url         ?? null,
-      lead_tier:       b.lead_score?.lead_tier   ?? null,
-      lead_score:      b.lead_score?.total_score ?? null,
-      description:     b.description      ?? null,
-      photos:          photos,
-      opening_hours:   openingHours,
-      social_facebook: socialFacebook,
+      name:             b.name,
+      phone:            phone,
+      category:         b.category         ?? null,
+      city:             b.city             ?? null,
+      address:          b.address          ?? null,
+      rating:           b.rating           ?? null,
+      reviews_count:    b.reviews_count    ?? null,
+      website:          b.website          ?? null,
+      maps_url:         b.maps_url         ?? null,
+      lead_tier:        b.lead_score?.lead_tier   ?? null,
+      lead_score:       b.lead_score?.total_score ?? null,
+      description,
+      photos,
+      opening_hours:    openingHours,
+      social_facebook:  socialFacebook,
       social_instagram: socialInstagram,
       checkatrade: enrichment?.has_checkatrade ? {
         url:           enrichment.checkatrade_url,
@@ -125,7 +160,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           "createdAt", "updatedAt"
         ) VALUES (
           ${leadId}, ${b.name}, ${""}, ${b.name},
-          ${b.phone ?? null}, ${b.category ?? null},
+          ${phone}, ${b.category ?? null},
           ${"Imported from Google Maps scraper"},
           ${"new"}, ${"scraper"},
           ${b.lead_score?.total_score ?? 0}, ${0}, ${notes}, ${scraperDataJson},
@@ -142,7 +177,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           "createdAt", "updatedAt"
         ) VALUES (
           ${leadId}, ${b.name}, ${""}, ${b.name},
-          ${b.phone ?? null}, ${b.category ?? null},
+          ${phone}, ${b.category ?? null},
           ${"Imported from Google Maps scraper"},
           ${"new"}, ${"scraper"},
           ${b.lead_score?.total_score ?? 0}, ${0}, ${notes},
