@@ -141,10 +141,13 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
   },
   "tradie-bold": {
     themeId: "bold",
-    siteType: "single-page",
+    siteType: "multi-page",
     label: "Tradie Bold",
     pages: [
-      { slug: "/", title: "Home", sections: ["hero", "services", "about", "gallery", "testimonials", "cta", "footer"] },
+      { slug: "/",         title: "Home",     sections: ["hero", "stats", "services", "process", "testimonials", "gallery", "about", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "faq", "cta", "footer"] },
+      { slug: "/gallery",  title: "Gallery",  sections: ["hero", "gallery", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
   "healthcare-clean": {
@@ -620,7 +623,7 @@ function buildPagesJson(
       switch (sType) {
         case "hero":
           if (isHome) {
-            sectionJsons.push(`{ "type": "hero", "content": { "tagline": "<specific tagline using About facts — NOT generic filler>", "subHeadline": "<specific sub-headline with real services or trust signals>", "cta": "Get a Free Quote", "ctaHref": "tel:${phone}" } }`);
+            sectionJsons.push(`{ "type": "hero", "content": { "tagline": "<specific tagline using About facts — NOT generic filler>", "subHeadline": "<specific sub-headline with real services or trust signals>", "cta": "Get a Free Quote", "ctaHref": "tel:${phone}", "badge": "<top accreditation or trust badge, e.g. 'Gas Safe Registered' or 'NICEIC Approved' — from Accreditations; leave empty string if none>", "stats": [ <3 punchy stats — pick from: jobs completed, years in business, rating, response time, service area — e.g. {"value":"500+","label":"Jobs Done"}, {"value":"4.8★","label":"Google Rating"}, {"value":"24/7","label":"Emergency Line"}> ] } }`);
           } else {
             sectionJsons.push(`{ "type": "hero", "content": { "tagline": "<${page.title} — concise page headline>", "subHeadline": "<1-line page intro>", "variant": "mini" } }`);
           }
@@ -682,7 +685,15 @@ function buildPagesJson(
           break;
 
         case "process":
-          sectionJsons.push(`{ "type": "process", "content": { "headline": "How We Work", "subHeadline": "<1-line description of the simple, clear process>", "steps": [ <4 steps specific to ${body.industry} work: each has number ("1"/"2"/"3"/"4"), title (2-4 words), description (max 10 words — one very short sentence, no filler)> ] } }`);
+          sectionJsons.push(`{ "type": "process", "content": { "headline": "How We Work", "subHeadline": "<1-line description of the simple, clear process>", "steps": [ <4 steps specific to ${body.industry} work: each has "title" (2-4 words), "description" (max 12 words, one short sentence, no filler), "icon" (pick from: clipboard|calendar|zap|check|wrench|phone|truck|home)> ] } }`);
+          break;
+
+        case "stats":
+          sectionJsons.push(`{ "type": "stats", "content": { "items": [ <4 trust stats drawn from About/accreditations — e.g. jobs completed, years in business, rating, service availability — each: "value" (bold text like "500+", "4.9★", "15yr", "24/7"), "label" (2-4 words), "sub" (8-12 word supporting detail)> ] } }`);
+          break;
+
+        case "faq":
+          sectionJsons.push(`{ "type": "faq", "content": { "headline": "Common Questions", "subHeadline": "Still unsure? Give us a call.", "items": [ <5-6 FAQ items specific to ${body.industry} in ${city} — cover qualifications, response times, service areas, pricing, guarantees — each: "question" (natural phrasing a customer would use), "answer" (2-3 sentences, factual, grounded in About/accreditations data, no filler)> ] } }`);
           break;
 
         case "footer":
