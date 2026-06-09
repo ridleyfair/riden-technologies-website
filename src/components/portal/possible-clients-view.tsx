@@ -257,6 +257,18 @@ const GOOGLE_TRADES = [
   "extension builders", "groundworkers", "glaziers", "scaffolders",
 ];
 
+const GOOGLE_BEAUTY = [
+  "beauty therapists", "beauty salons", "nail technicians", "nail salons",
+  "lash technicians", "lash extensions", "brow specialists", "brow bars",
+  "aesthetics clinics", "aesthetics practitioners", "skincare clinics",
+  "makeup artists", "hair salons", "hairdressers", "barbershops",
+  "waxing salons", "threading salons", "tanning salons",
+  "massage therapists", "wellness studios", "spas",
+  "microblading artists", "semi permanent makeup artists",
+  "cosmetic tattoo artists", "lip filler clinics", "botox clinics",
+  "dermaplaning specialists", "facial specialists",
+];
+
 const CHECKATRADE_TRADES = [
   "Plumber", "Electrician", "Gas Engineer", "Roofer", "Builder",
   "Painter & Decorator", "Plasterer", "Joiner", "Carpenter",
@@ -267,6 +279,39 @@ const CHECKATRADE_TRADES = [
   "Boiler Engineer", "Solar Panel Installer", "Loft Conversion Specialist",
   "Extension Builder", "Groundworker", "Glazier", "Scaffolder",
 ];
+
+const BEAUTY_KEYWORDS_LC = [
+  "beauty", "salon", "nail", "lash", "brow", "aesthet", "spa", "skincare",
+  "makeup", "cosmetic", "wax", "threading", "tanning", "facial", "therapist",
+  "microblad", "semi-permanent", "lip filler", "botox", "dermaplaning",
+  "massage", "wellness", "barber", "hairdress", "hair salon",
+];
+
+function getIndustryType(category: string | null): "beauty" | "trades" | "other" {
+  if (!category) return "other";
+  const lower = category.toLowerCase();
+  if (BEAUTY_KEYWORDS_LC.some((kw) => lower.includes(kw))) return "beauty";
+  return "trades";
+}
+
+function IndustryBadge({ category }: { category: string | null }) {
+  const type = getIndustryType(category);
+  if (type === "beauty") {
+    return (
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-pink-500/10 border border-pink-500/20 text-pink-400">
+        💅 Beauty
+      </span>
+    );
+  }
+  if (type === "trades") {
+    return (
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-500/10 border border-blue-500/20 text-blue-400">
+        🔧 Trades
+      </span>
+    );
+  }
+  return null;
+}
 
 const SELECT_CLASS =
   "w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20";
@@ -290,18 +335,28 @@ function ScrapeModal({
   const [keywordCustom, setKeywordCustom] = useState("");
   const [maxResults, setMaxResults] = useState(100);
   const [source, setSource] = useState("google_maps");
+  const [industry, setIndustry] = useState<"trades" | "beauty">("trades");
 
   const city    = citySelect    === "__other__" ? cityCustom    : citySelect;
   const keyword = keywordSelect === "__other__" ? keywordCustom : keywordSelect;
 
-  const trades = source === "checkatrade" ? CHECKATRADE_TRADES : GOOGLE_TRADES;
+  const keywordList =
+    source === "checkatrade" ? CHECKATRADE_TRADES :
+    industry === "beauty"    ? GOOGLE_BEAUTY       : GOOGLE_TRADES;
   const keywordLabel = source === "checkatrade" ? "Trade type" : "Keyword";
 
-  // Reset keyword when source changes (lists are different)
   const handleSourceChange = (val: string) => {
     setSource(val);
     setKeywordSelect("");
     setKeywordCustom("");
+  };
+
+  const handleIndustryChange = (val: "trades" | "beauty") => {
+    setIndustry(val);
+    setKeywordSelect("");
+    setKeywordCustom("");
+    // Beauty doesn't have Checkatrade listings — switch back to Google Maps
+    if (val === "beauty") setSource("google_maps");
   };
 
   return (
@@ -338,25 +393,54 @@ function ScrapeModal({
         </div>
 
         <div className="space-y-4">
-          {/* Source */}
+          {/* Industry */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">Industry</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: "trades" as const, label: "🔧 Trades" },
+                { value: "beauty" as const, label: "💅 Beauty" },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleIndustryChange(opt.value)}
+                  className={cn(
+                    "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+                    industry === opt.value
+                      ? opt.value === "beauty"
+                        ? "bg-pink-500/10 border-pink-500/30 text-pink-400"
+                        : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                      : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Source — Checkatrade only applies to trades */}
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1.5">Source</label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { value: "google_maps", label: "Google Maps" },
-                { value: "checkatrade", label: "Checkatrade" },
+                { value: "checkatrade", label: "Checkatrade", disabled: industry === "beauty" },
               ].map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => handleSourceChange(opt.value)}
+                  onClick={() => !opt.disabled && handleSourceChange(opt.value)}
+                  disabled={"disabled" in opt && opt.disabled}
                   className={cn(
                     "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
                     source === opt.value
                       ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
-                      : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+                      : "bg-riden-muted border-riden-border text-slate-400 hover:text-white",
+                    "disabled" in opt && opt.disabled && "opacity-30 cursor-not-allowed"
                   )}
                 >
                   {opt.label}
+                  {"disabled" in opt && opt.disabled && <span className="block text-[10px] opacity-60">Trades only</span>}
                 </button>
               ))}
             </div>
@@ -396,8 +480,8 @@ function ScrapeModal({
               onChange={(e) => setKeywordSelect(e.target.value)}
               className={SELECT_CLASS}
             >
-              <option value="">— Select trade —</option>
-              {trades.map((t) => (
+              <option value="">— Select {industry === "beauty" ? "treatment type" : "trade"} —</option>
+              {keywordList.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
               <option value="__other__">Other — type your own</option>
@@ -405,7 +489,11 @@ function ScrapeModal({
             {keywordSelect === "__other__" && (
               <input
                 type="text"
-                placeholder={source === "checkatrade" ? "e.g. Flooring Fitter" : "e.g. solar panel installers"}
+                placeholder={
+                  source === "checkatrade" ? "e.g. Flooring Fitter" :
+                  industry === "beauty" ? "e.g. spray tan technicians" :
+                  "e.g. solar panel installers"
+                }
                 value={keywordCustom}
                 onChange={(e) => setKeywordCustom(e.target.value)}
                 className={cn(INPUT_CLASS, "mt-2")}
@@ -471,6 +559,7 @@ export default function PossibleClientsView() {
   const [sourceFilter, setSourceFilter] = useState("");
   const [hasCheckatradeFilter, setHasCheckatradeFilter] = useState(false);
   const [hotLeadsOnly, setHotLeadsOnly] = useState(false);
+  const [industryFilter, setIndustryFilter] = useState<"" | "trades" | "beauty">("");
 
   // Scrape
   const [scrapeModal, setScrapeModal] = useState(false);
@@ -819,6 +908,7 @@ export default function PossibleClientsView() {
   if (sourceFilter)           visibleBusinesses = visibleBusinesses.filter((b) => getSource(b) === sourceFilter);
   if (hasCheckatradeFilter)   visibleBusinesses = visibleBusinesses.filter((b) => enrichments[b.id]?.has_checkatrade);
   if (hotLeadsOnly)           visibleBusinesses = visibleBusinesses.filter((b) => !b.website && enrichments[b.id]?.has_checkatrade);
+  if (industryFilter)         visibleBusinesses = visibleBusinesses.filter((b) => getIndustryType(b.category) === industryFilter);
 
   const totalPages    = Math.ceil(total / PAGE_SIZE);
   const checkatradeCount = Object.values(enrichments).filter((e) => e.has_checkatrade).length;
@@ -1048,6 +1138,28 @@ export default function PossibleClientsView() {
             </span>
           </button>
           <button
+            onClick={() => setIndustryFilter((v) => v === "trades" ? "" : "trades")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+              industryFilter === "trades"
+                ? "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+            )}
+          >
+            🔧 Trades
+          </button>
+          <button
+            onClick={() => setIndustryFilter((v) => v === "beauty" ? "" : "beauty")}
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+              industryFilter === "beauty"
+                ? "bg-pink-500/10 border-pink-500/30 text-pink-400"
+                : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+            )}
+          >
+            💅 Beauty
+          </button>
+          <button
             onClick={() => fetchBusinesses(page)}
             className="p-2 rounded-lg bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors"
             title="Refresh"
@@ -1138,8 +1250,9 @@ export default function PossibleClientsView() {
                           {b.city ?? "—"}
                         </td>
 
-                        <td className="px-4 py-3 text-slate-400 max-w-[120px] truncate">
-                          {b.category ?? "—"}
+                        <td className="px-4 py-3 max-w-[140px]">
+                          <div className="truncate text-slate-400 text-sm">{b.category ?? "—"}</div>
+                          <IndustryBadge category={b.category} />
                         </td>
 
                         <td className="px-4 py-3">
