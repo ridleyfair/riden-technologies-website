@@ -1159,23 +1159,55 @@ function ProjectDetailModal({
     // Reviews
     const rawReviews = (item.reviews ?? []) as Record<string, unknown>[];
     if (Array.isArray(rawReviews) && rawReviews.length > 0) {
-      const imported: Review[] = rawReviews.map((r) => ({
-        author: String(r.name   ?? r.author ?? "Google User"),
-        rating: Number(r.stars  ?? r.rating ?? 5),
-        body:   String(r.text   ?? r.body   ?? ""),
-        source: "google" as const,
-        date:   String(r.publishedAtDate ?? r.date ?? ""),
-      }));
-      setReviews((prev) => [...prev, ...imported]);
+      const imported: Review[] = rawReviews
+        .filter((r) => String(r.text ?? r.body ?? "").trim().length > 0)
+        .map((r) => ({
+          author: String(r.name   ?? r.author ?? "Google User"),
+          rating: Number(r.stars  ?? r.rating ?? 5),
+          body:   String(r.text   ?? r.body   ?? ""),
+          source: "google" as const,
+          date:   String(r.publishedAtDate ?? r.date ?? ""),
+        }));
+      if (imported.length > 0) setReviews((prev) => [...prev, ...imported]);
     }
+
+    // Services — extract from additionalInfo sections, then fall back to categories
+    const extractServices = (): string => {
+      const info = item.additionalInfo as Record<string, unknown> | null | undefined;
+      if (info && typeof info === "object") {
+        // Look for service-related sections Google Maps puts in additionalInfo
+        const serviceKeys = ["Services", "Treatments", "Highlights", "Hair services",
+          "Nail services", "Skin care services", "Other services"];
+        const found: string[] = [];
+        for (const key of Object.keys(info)) {
+          if (serviceKeys.some(sk => key.toLowerCase().includes(sk.toLowerCase()))) {
+            const section = info[key];
+            if (Array.isArray(section)) {
+              for (const entry of section) {
+                if (typeof entry === "string") found.push(entry);
+                else if (typeof entry === "object" && entry !== null) {
+                  // Google returns [{ServiceName: true}, ...]
+                  Object.keys(entry as object).forEach(k => found.push(k));
+                }
+              }
+            }
+          }
+        }
+        if (found.length > 0) return found.join("\n");
+      }
+      // Fall back to categories array, then categoryName
+      const cats = item.categories as string[] | undefined;
+      if (Array.isArray(cats) && cats.length > 0) return cats.join("\n");
+      return String(item.categoryName ?? item.category ?? "");
+    };
 
     // Brief fields — only fill if not already set
     setBrief((b) => ({
       ...b,
-      phone:    b.phone    || String(item.phone    ?? ""),
-      city:     b.city     || String(item.city     ?? (item.address ? String(item.address).split(",").at(-2)?.trim() ?? "" : "")),
-      about:    b.about    || String(item.description ?? item.editorialSummary ?? ""),
-      services: b.services || String(item.categoryName ?? item.category ?? ""),
+      phone:        b.phone        || String(item.phone    ?? ""),
+      city:         b.city         || String(item.city     ?? (item.address ? String(item.address).split(",").at(-2)?.trim() ?? "" : "")),
+      about:        b.about        || String(item.description ?? (item as Record<string, unknown>).editorialSummary ?? ""),
+      services:     b.services     || extractServices(),
       openingHours: b.openingHours || (() => {
         const oh = item.openingHours as { day?: string; hours?: string }[] | undefined;
         return Array.isArray(oh) ? oh.map(h => `${h.day ?? ""}: ${h.hours ?? ""}`).join(", ") : "";
@@ -1189,21 +1221,37 @@ function ProjectDetailModal({
     if (gRating != null || gCount != null) {
       setReviewSettings((prev) => ({
         ...prev,
-        platform:          "Google",
-        averageRating:     gRating != null ? `${Number(gRating).toFixed(1)}/5` : prev.averageRating,
-        reviewCount:       gCount  != null ? Number(gCount) : prev.reviewCount,
-        platformUrl:       mapsUrl != null ? String(mapsUrl) : prev.platformUrl,
-        showReviewBadge:   true,
-        showRatingBadge:   true,
+        platform:        "Google",
+        averageRating:   gRating != null ? `${Number(gRating).toFixed(1)}/5` : prev.averageRating,
+        reviewCount:     gCount  != null ? Number(gCount) : prev.reviewCount,
+        platformUrl:     mapsUrl != null ? String(mapsUrl) : prev.platformUrl,
+        showReviewBadge: true,
+        showRatingBadge: true,
       }));
     }
 
-    // Photos
+    // Photos — actor returns images as {imageUrl: "..."} objects OR plain strings
+    const extractUrl = (img: unknown): string | null => {
+      if (typeof img === "string") return img;
+      if (img && typeof img === "object") {
+        const o = img as Record<string, unknown>;
+        return typeof o.imageUrl === "string" ? o.imageUrl
+          : typeof o.url === "string" ? o.url : null;
+      }
+      return null;
+    };
     const imgs: string[] = [];
-    if (item.imageUrl  && typeof item.imageUrl  === "string") imgs.push(item.imageUrl);
-    if (Array.isArray(item.imageUrls)) imgs.push(...(item.imageUrls as string[]).filter((u) => typeof u === "string"));
-    if (Array.isArray(item.images))    imgs.push(...(item.images as string[]).filter((u)    => typeof u === "string"));
-    const newPhotos = imgs.filter((u, i, a) => u && a.indexOf(u) === i).slice(0, 10);
+    if (item.imageUrl && typeof item.imageUrl === "string") imgs.push(item.imageUrl);
+    for (const key of ["imageUrls", "images", "photos"] as const) {
+      const arr = item[key];
+      if (Array.isArray(arr)) {
+        for (const img of arr) {
+          const u = extractUrl(img);
+          if (u && !imgs.includes(u)) imgs.push(u);
+        }
+      }
+    }
+    const newPhotos = imgs.slice(0, 20);
     if (newPhotos.length > 0) {
       const newId = () => Math.random().toString(36).slice(2, 10);
       setProjectAlbums((prev) => {

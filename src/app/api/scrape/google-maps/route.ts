@@ -38,6 +38,9 @@ export async function POST(req: NextRequest) {
           maxCrawledPlacesPerSearch: 1,
           language: "en",
           countryCode: "gb",
+          maxReviews: 20,
+          maxImages: 20,
+          reviewsSort: "newest",
         }),
       }
     );
