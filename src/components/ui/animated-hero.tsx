@@ -114,7 +114,7 @@ function Hero() {
           </Link>
           <Link href="/solutions">
             <Button variant="outline" size="xl" className="px-10 backdrop-blur-sm border-white/20 text-white hover:bg-white/10">
-              See Our Work
+              View Our Services
             </Button>
           </Link>
         </motion.div>
