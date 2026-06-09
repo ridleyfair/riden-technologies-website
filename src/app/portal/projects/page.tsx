@@ -315,6 +315,57 @@ const INDUSTRY_OPTIONS = [
 const inputCls =
   "w-full bg-riden-muted border border-riden-border rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors";
 
+// ─── Template brief configs ───────────────────────────────────────────────────
+// Controls which brief sections are shown per template.
+
+type TemplateBriefConfig = {
+  label:               string;
+  description:         string;
+  tier:                string;
+  servicesLabel:       string;
+  servicesPlaceholder: string;
+  showAboutProofCards: boolean;
+  showTrustCards:      boolean;
+  showAccreditations:  boolean;
+  showCheckatrade:     boolean;
+};
+
+const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
+  'modern-minimal': {
+    label:               'Modern Minimal',
+    description:         'Clean light layout — trades, general business',
+    tier:                'Pro+',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Boiler installation, central heating, emergency call-outs...',
+    showAboutProofCards: true,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+  },
+  'tradie-bold': {
+    label:               'Tradie Bold',
+    description:         'High-contrast dark design — electricians, plumbers, builders',
+    tier:                'Pro',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Emergency callouts, full rewires, EV charger installation...',
+    showAboutProofCards: false,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+  },
+  'beauty-pro-booking': {
+    label:               'Beauty Pro+ Booking',
+    description:         'Elegant booking template — salons, therapists, spas',
+    tier:                'Pro+',
+    servicesLabel:       'Treatments & Services',
+    servicesPlaceholder: 'e.g. Facials, massage, eyelash extensions, waxing, microblading...',
+    showAboutProofCards: false,
+    showTrustCards:      false,
+    showAccreditations:  false,
+    showCheckatrade:     false,
+  },
+};
+
 function inferMonthlyRate(notes: string | null): number {
   const text = (notes ?? "").toLowerCase();
   if (text.includes("enterprise") || text.includes("1,000") || text.includes("1000")) return 100;
@@ -762,7 +813,10 @@ function ProjectDetailModal({
     }
   }
 
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("modern-minimal");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(
+    (initialProject as Record<string, unknown>).templateId as string ?? "modern-minimal"
+  );
+  const templateBriefConfig = TEMPLATE_BRIEF_CONFIGS[selectedTemplate] ?? TEMPLATE_BRIEF_CONFIGS['modern-minimal'];
 
   // Checkatrade scraper state
   const [checkatrade, setCheckatrade] = useState<{
@@ -1683,6 +1737,34 @@ function ProjectDetailModal({
                 </div>
               </div>
 
+              {/* Template Selector — top of brief */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Template</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {Object.entries(TEMPLATE_BRIEF_CONFIGS).map(([id, cfg]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setSelectedTemplate(id)}
+                      className={`flex items-center gap-3 w-full text-left rounded-xl border px-3 py-2.5 transition-colors ${
+                        selectedTemplate === id
+                          ? "border-blue-500/50 bg-blue-500/10"
+                          : "border-riden-border bg-riden-muted hover:border-slate-600"
+                      }`}
+                    >
+                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${selectedTemplate === id ? "bg-blue-500" : "bg-slate-700"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-white">{cfg.label}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{cfg.description}</p>
+                      </div>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                        cfg.tier === 'Pro+' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      }`}>{cfg.tier}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Business Info */}
               <div>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Business Info</h3>
@@ -1766,12 +1848,12 @@ function ProjectDetailModal({
 
               {/* Services */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1.5">Services</label>
+                <label className="block text-xs text-slate-400 mb-1.5">{templateBriefConfig.servicesLabel}</label>
                 <textarea
                   rows={3}
                   value={brief.services}
                   onChange={(e) => setBrief((b) => ({ ...b, services: e.target.value }))}
-                  placeholder="e.g. Boiler installation, central heating, emergency call-outs..."
+                  placeholder={templateBriefConfig.servicesPlaceholder}
                   className={`${inputCls} resize-none`}
                 />
               </div>
@@ -1789,15 +1871,17 @@ function ProjectDetailModal({
               </div>
 
               {/* Accreditations */}
-              <div>
-                <label className="block text-xs text-slate-400 mb-1.5">Accreditations</label>
-                <input
-                  value={brief.accreditations}
-                  onChange={(e) => setBrief((b) => ({ ...b, accreditations: e.target.value }))}
-                  placeholder="e.g. Gas Safe, NICEIC"
-                  className={inputCls}
-                />
-              </div>
+              {templateBriefConfig.showAccreditations && (
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1.5">Accreditations & Certifications</label>
+                  <input
+                    value={brief.accreditations}
+                    onChange={(e) => setBrief((b) => ({ ...b, accreditations: e.target.value }))}
+                    placeholder="e.g. Gas Safe, NICEIC, CHAS, Which? Trusted Trader"
+                    className={inputCls}
+                  />
+                </div>
+              )}
 
               {/* Social Links */}
               <div>
@@ -1881,7 +1965,7 @@ function ProjectDetailModal({
               </div>
 
               {/* Trust Cards */}
-              <div className="space-y-3">
+              {templateBriefConfig.showTrustCards && <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Star size={11} /> Trust Cards
@@ -1969,10 +2053,10 @@ function ProjectDetailModal({
                     </div>
                   ))}
                 </div>
-              </div>
+              </div>}
 
               {/* About Proof Cards */}
-              <div className="space-y-3">
+              {templateBriefConfig.showAboutProofCards && <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Star size={11} /> About Proof Cards
@@ -2048,10 +2132,10 @@ function ProjectDetailModal({
                     </div>
                   ))}
                 </div>
-              </div>
+              </div>}
 
               {/* Checkatrade Finder */}
-              <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
+              {templateBriefConfig.showCheckatrade && <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
                 <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Import from Checkatrade</h3>
                 <p className="text-[11px] text-slate-500">Paste the client&apos;s Checkatrade profile URL to auto-import their business info and reviews.</p>
                 <div className="flex gap-2">
@@ -2106,7 +2190,7 @@ function ProjectDetailModal({
                   <p className="text-xs text-rose-400">{checkatrade.error}</p>
                 )}
 
-              </div>
+              </div>}
 
               {/* Review Settings */}
               <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 space-y-3">
@@ -2745,19 +2829,6 @@ function ProjectDetailModal({
                   </button>
                 </motion.div>
               )}
-
-              {/* Template Selector */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Template</h3>
-                <select
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                  className={inputCls}
-                >
-                  <option value="modern-minimal" className="bg-riden-surface">Modern Minimal — Trades &amp; General</option>
-                  <option value="beauty-pro-booking" className="bg-riden-surface">Beauty Pro+ Booking — Salons &amp; Therapists</option>
-                </select>
-              </div>
 
               {error && (
                 <p className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">{error}</p>
