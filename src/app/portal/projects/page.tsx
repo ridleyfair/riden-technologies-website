@@ -429,6 +429,26 @@ const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
   },
 };
 
+// Demo sites in the template engine used for live template previews
+const TEMPLATE_PREVIEW_DEMOS: Record<string, string> = {
+  'modern-minimal':     'plumber',
+  'tradie-bold':        'electrician',
+  'beauty-pro-booking': 'beauty',
+  'outdoor-transform':  'demo-outdoor',
+  'emergency-trade':    'demo-emergency',
+  'reno-showcase':      'demo-reno',
+  'finish-decor':       'demo-finish',
+};
+
+function templatePreviewUrl(templateId: string): string | null {
+  const demo = TEMPLATE_PREVIEW_DEMOS[templateId];
+  if (!demo) return null;
+  const base = typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : "https://sites.ridentechnologies.com";
+  return `${base}/preview/${demo}`;
+}
+
 function inferMonthlyRate(notes: string | null): number {
   const text = (notes ?? "").toLowerCase();
   if (text.includes("enterprise") || text.includes("1,000") || text.includes("1000")) return 100;
@@ -1893,27 +1913,44 @@ function ProjectDetailModal({
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Template</h3>
                 <div className="grid grid-cols-1 gap-2">
-                  {Object.entries(TEMPLATE_BRIEF_CONFIGS).map(([id, cfg]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSelectedTemplate(id)}
-                      className={`flex items-center gap-3 w-full text-left rounded-xl border px-3 py-2.5 transition-colors ${
-                        selectedTemplate === id
-                          ? "border-blue-500/50 bg-blue-500/10"
-                          : "border-riden-border bg-riden-muted hover:border-slate-600"
-                      }`}
-                    >
-                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${selectedTemplate === id ? "bg-blue-500" : "bg-slate-700"}`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-white">{cfg.label}</p>
-                        <p className="text-[10px] text-slate-500 truncate">{cfg.description}</p>
+                  {Object.entries(TEMPLATE_BRIEF_CONFIGS).map(([id, cfg]) => {
+                    const previewUrl = templatePreviewUrl(id);
+                    return (
+                      <div
+                        key={id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedTemplate(id)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setSelectedTemplate(id); }}
+                        className={`flex items-center gap-3 w-full text-left rounded-xl border px-3 py-2.5 transition-colors cursor-pointer ${
+                          selectedTemplate === id
+                            ? "border-blue-500/50 bg-blue-500/10"
+                            : "border-riden-border bg-riden-muted hover:border-slate-600"
+                        }`}
+                      >
+                        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${selectedTemplate === id ? "bg-blue-500" : "bg-slate-700"}`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-white">{cfg.label}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{cfg.description}</p>
+                        </div>
+                        {previewUrl && (
+                          <a
+                            href={previewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[10px] font-medium px-2 py-0.5 rounded-full flex-shrink-0 border border-riden-border text-slate-400 hover:text-white hover:border-blue-500/50 transition-colors"
+                            title="Open a live demo of this template in a new tab"
+                          >
+                            Preview ↗
+                          </a>
+                        )}
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                          cfg.tier === 'Pro+' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                        }`}>{cfg.tier}</span>
                       </div>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                        cfg.tier === 'Pro+' ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                      }`}>{cfg.tier}</span>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
