@@ -125,6 +125,17 @@ type ProjectAlbum = {
   displayOrder:   number;
 };
 
+type BriefBeforeAfterPair = {
+  id:           string;
+  beforeUrl:    string;
+  afterUrl:     string;
+  title?:       string;
+  caption?:     string;
+  category?:    string;
+  displayOrder: number;
+  enabled:      boolean;
+};
+
 // ── Checkatrade import parser ─────────────────────────────────────────────────
 
 type ParsedCheckatradeImport = {
@@ -328,6 +339,7 @@ type TemplateBriefConfig = {
   showTrustCards:      boolean;
   showAccreditations:  boolean;
   showCheckatrade:     boolean;
+  showBeforeAfter:     boolean;
 };
 
 const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
@@ -341,6 +353,7 @@ const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
     showTrustCards:      true,
     showAccreditations:  true,
     showCheckatrade:     true,
+    showBeforeAfter:     false,
   },
   'tradie-bold': {
     label:               'Tradie Bold',
@@ -352,6 +365,55 @@ const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
     showTrustCards:      true,
     showAccreditations:  true,
     showCheckatrade:     true,
+    showBeforeAfter:     false,
+  },
+  'outdoor-transform': {
+    label:               'Outdoor Transformations',
+    description:         'Before/after led — landscapers, driveways, fencing, tree surgery',
+    tier:                'Pro',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Garden landscaping, driveway installation, fencing, turfing, tree surgery...',
+    showAboutProofCards: false,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+    showBeforeAfter:     true,
+  },
+  'emergency-trade': {
+    label:               'Emergency & Response',
+    description:         'Call-now led — emergency plumbers, electricians, locksmiths, drainage',
+    tier:                'Pro',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Emergency call-outs, boiler repairs, blocked drains, fault finding...',
+    showAboutProofCards: false,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+    showBeforeAfter:     false,
+  },
+  'reno-showcase': {
+    label:               'Renovation Showcase',
+    description:         'Showroom feel — kitchens, bathrooms, lofts, extensions, builders',
+    tier:                'Pro',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Kitchen fitting, bathroom renovation, loft conversions, extensions...',
+    showAboutProofCards: false,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+    showBeforeAfter:     true,
+  },
+  'finish-decor': {
+    label:               'Finish & Decorating',
+    description:         'Finish-quality led — painters, plasterers, tilers, flooring',
+    tier:                'Pro',
+    servicesLabel:       'Services',
+    servicesPlaceholder: 'e.g. Interior painting, exterior decorating, plastering, tiling, flooring...',
+    showAboutProofCards: false,
+    showTrustCards:      true,
+    showAccreditations:  true,
+    showCheckatrade:     true,
+    showBeforeAfter:     true,
   },
   'beauty-pro-booking': {
     label:               'Beauty Pro+ Booking',
@@ -363,6 +425,7 @@ const TEMPLATE_BRIEF_CONFIGS: Record<string, TemplateBriefConfig> = {
     showTrustCards:      false,
     showAccreditations:  false,
     showCheckatrade:     false,
+    showBeforeAfter:     false,
   },
 };
 
@@ -597,7 +660,7 @@ function ProjectDetailModal({
     }
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: legacyAlbum(raw as string[]) };
+      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: legacyAlbum(raw as string[]), beforeAfterPairs: [] as BriefBeforeAfterPair[] };
       const rc = raw.colours && typeof raw.colours === "object" ? raw.colours as Record<string, unknown> : {};
       const heroImages: string[] = Array.isArray(raw.heroImages) ? raw.heroImages as string[] : raw.hero ? [String(raw.hero)] : [];
       const gallery: string[] = Array.isArray(raw.gallery) ? raw.gallery as string[] : [];
@@ -614,8 +677,9 @@ function ProjectDetailModal({
         aboutProofCards: Array.isArray(raw.aboutProofCards) ? raw.aboutProofCards as AboutProofCard[] : DEFAULT_ABOUT_PROOF_CARDS,
         reviewSettings:  raw.reviewSettings && typeof raw.reviewSettings === "object" ? raw.reviewSettings as ReviewSettings : DEFAULT_REVIEW_SETTINGS,
         projectAlbums,
+        beforeAfterPairs: Array.isArray(raw.beforeAfterPairs) ? raw.beforeAfterPairs as BriefBeforeAfterPair[] : [],
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: empty }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: empty, beforeAfterPairs: [] as BriefBeforeAfterPair[] }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -632,6 +696,7 @@ function ProjectDetailModal({
   const [aboutProofCards, setAboutProofCards]   = useState<AboutProofCard[]>(parsedPhotos.aboutProofCards ?? DEFAULT_ABOUT_PROOF_CARDS);
   const [reviewSettings,  setReviewSettings]    = useState<ReviewSettings>(parsedPhotos.reviewSettings ?? DEFAULT_REVIEW_SETTINGS);
   const [projectAlbums,   setProjectAlbums]     = useState<ProjectAlbum[]>(parsedPhotos.projectAlbums ?? []);
+  const [beforeAfterPairs, setBeforeAfterPairs] = useState<BriefBeforeAfterPair[]>(parsedPhotos.beforeAfterPairs ?? []);
   const [expandedAlbumId, setExpandedAlbumId]   = useState<string | null>(null);
   const [albumUrlInputs,  setAlbumUrlInputs]    = useState<Record<string, string>>({});
   const [albumImportingMap, setAlbumImportingMap] = useState<Record<string, boolean>>({});
@@ -813,9 +878,11 @@ function ProjectDetailModal({
     }
   }
 
-  const [selectedTemplate, setSelectedTemplate] = useState<string>(
-    (initialProject as Record<string, unknown>).templateId as string ?? "modern-minimal"
-  );
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(() => {
+    const p = initialProject as Record<string, unknown>;
+    const candidate = (p.templateId as string) || (p.recommendedTemplate as string) || "modern-minimal";
+    return candidate in TEMPLATE_BRIEF_CONFIGS ? candidate : "modern-minimal";
+  });
   const templateBriefConfig = TEMPLATE_BRIEF_CONFIGS[selectedTemplate] ?? TEMPLATE_BRIEF_CONFIGS['modern-minimal'];
 
   // Checkatrade scraper state
@@ -941,8 +1008,34 @@ function ProjectDetailModal({
     }
   }
 
+  // ── Before/After pair helpers ─────────────────────────────────────────────
+  function addBeforeAfterPair() {
+    setBeforeAfterPairs(prev => [...prev, { id: newId(), beforeUrl: "", afterUrl: "", title: "", caption: "", category: "", displayOrder: prev.length, enabled: true }]);
+  }
+
+  function updateBeforeAfterPair(pairId: string, fields: Partial<BriefBeforeAfterPair>) {
+    setBeforeAfterPairs(prev => prev.map(p => p.id === pairId ? { ...p, ...fields } : p));
+  }
+
+  function deleteBeforeAfterPair(pairId: string) {
+    setBeforeAfterPairs(prev => prev.filter(p => p.id !== pairId).map((p, i) => ({ ...p, displayOrder: i })));
+  }
+
+  function moveBeforeAfterPair(pairId: string, dir: -1 | 1) {
+    setBeforeAfterPairs(prev => {
+      const idx = prev.findIndex(p => p.id === pairId);
+      if (idx < 0) return prev;
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= prev.length) return prev;
+      const arr = [...prev];
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr.map((p, i) => ({ ...p, displayOrder: i }));
+    });
+  }
+
 
   // Google Maps scraper state
+  const [autoGoogleImporting, setAutoGoogleImporting] = useState(false);
   const [googleMaps, setGoogleMaps] = useState<{
     query:   string;
     runId:   string | null;
@@ -1014,7 +1107,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }),
+          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings, beforeAfterPairs }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -1034,7 +1127,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings, beforeAfterPairs }) }),
     });
   }
 
@@ -1214,6 +1307,62 @@ function ProjectDetailModal({
       setGoogleMaps((s) => ({ ...s, runId: data.runId, polling: true }));
     } catch {
       setGoogleMaps((s) => ({ ...s, error: "Network error starting search." }));
+    }
+  }
+
+  async function autoImportLinkedGoogleBusiness() {
+    setAutoGoogleImporting(true);
+    setGoogleMaps((s) => ({ ...s, error: "" }));
+    try {
+      const res = await fetch(`/api/projects/${project.id}/import-google-business`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placeUrl: googleMaps.query.includes("google") ? googleMaps.query : undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setGoogleMaps((s) => ({ ...s, error: data.error ?? "Google Business import failed." }));
+        return;
+      }
+      const updated = data.project as Project;
+      setProject(updated);
+      onUpdate(updated);
+      setBrief({
+        phone:           updated.phone           ?? "",
+        email:           updated.email           ?? "",
+        city:            updated.city            ?? "",
+        postcode:        updated.postcode        ?? "",
+        industry:        updated.industry        ?? "trades",
+        services:        updated.services        ?? "",
+        about:           updated.about           ?? "",
+        accreditations:  updated.accreditations  ?? "",
+        socialFacebook:  updated.socialFacebook  ?? "",
+        socialInstagram: updated.socialInstagram ?? "",
+        openingHours:    updated.openingHours    ?? "",
+        pricingTier:     (updated.pricingTier ?? "pro") as PricingTier,
+      });
+      try { setReviews(JSON.parse(updated.reviewsJson ?? "[]")); } catch {}
+      try {
+        const raw = JSON.parse(updated.photosJson ?? "{}");
+        if (Array.isArray(raw)) {
+          setPhotos(raw);
+        } else {
+          setLogoUrl(String(raw.logo ?? ""));
+          setHeroImages(Array.isArray(raw.heroImages) ? raw.heroImages : raw.hero ? [String(raw.hero)] : []);
+          setHeroMobilePhoto(String(raw.heroMobile ?? ""));
+          setPhotos(Array.isArray(raw.gallery) ? raw.gallery : []);
+          setProjectAlbums(Array.isArray(raw.projectAlbums) ? raw.projectAlbums : []);
+          if (Array.isArray(raw.beforeAfterPairs)) setBeforeAfterPairs(raw.beforeAfterPairs as BriefBeforeAfterPair[]);
+          if (raw.reviewSettings && typeof raw.reviewSettings === "object") setReviewSettings(raw.reviewSettings as ReviewSettings);
+          if (Array.isArray(raw.trustCards)) setTrustCards(raw.trustCards as TrustCard[]);
+          if (Array.isArray(raw.aboutProofCards)) setAboutProofCards(raw.aboutProofCards as AboutProofCard[]);
+        }
+      } catch {}
+      setGoogleMaps((s) => ({ ...s, query: data.placeUrl ?? s.query, error: "" }));
+    } catch {
+      setGoogleMaps((s) => ({ ...s, error: "Network error importing Google Business data." }));
+    } finally {
+      setAutoGoogleImporting(false);
     }
   }
 
@@ -1414,6 +1563,9 @@ function ProjectDetailModal({
           templateId:      selectedTemplate || undefined,
           photos:          projectAlbums.filter(a => a.enabled).flatMap(a => a.photos.map(p => p.url)),
           projectAlbums:   projectAlbums.filter(a => a.enabled),
+          beforeAfterPairs: beforeAfterPairs.filter(p => p.enabled && p.beforeUrl && p.afterUrl).length > 0
+            ? beforeAfterPairs.filter(p => p.enabled && p.beforeUrl && p.afterUrl)
+            : undefined,
           brandColours: (() => {
             const isHex = (s: string) => /^#[0-9a-fA-F]{6}$/.test(s);
             const c = {
@@ -2282,6 +2434,16 @@ function ProjectDetailModal({
               <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-3">
                 <h3 className="text-xs font-semibold text-blue-400 flex items-center gap-1.5"><Search size={11} /> Import from Google Maps</h3>
                 <p className="text-[11px] text-slate-500">Find the business on Google Maps, copy the URL from your browser, and paste it here.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={autoImportLinkedGoogleBusiness}
+                  disabled={autoGoogleImporting}
+                  className="w-full justify-center border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
+                >
+                  {autoGoogleImporting ? <RefreshCw size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  {autoGoogleImporting ? "Importing Google Business into brief..." : "Agent: Auto-fill from linked Google Business"}
+                </Button>
                 <div className="flex gap-2">
                   <input
                     value={googleMaps.query}
@@ -2804,6 +2966,141 @@ function ProjectDetailModal({
                   </button>
                 )}
               </div>
+
+              {/* Before & After Pairs — only for transformation-led templates */}
+              {templateBriefConfig.showBeforeAfter && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Before &amp; After Pairs ({beforeAfterPairs.length})
+                    </h3>
+                    <button
+                      onClick={addBeforeAfterPair}
+                      className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      <Plus size={11} /> Add Pair
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Pair a before photo with its after photo. Pairs appear on the website as a draggable comparison slider, with the first pair featured large. Only pairs that are On and have both photos are published.
+                  </p>
+
+                  {beforeAfterPairs.length === 0 && (
+                    <button
+                      onClick={addBeforeAfterPair}
+                      className="w-full py-6 rounded-xl border border-dashed border-riden-border text-xs text-slate-500 hover:text-slate-300 hover:border-slate-500 transition-colors"
+                    >
+                      + Add your first before &amp; after pair
+                    </button>
+                  )}
+
+                  <div className="space-y-2">
+                    {[...beforeAfterPairs].sort((a, b) => a.displayOrder - b.displayOrder).map((pair, idx) => (
+                      <div key={pair.id} className="border border-riden-border rounded-xl bg-riden-surface p-3 space-y-3">
+                        {/* Header row: title + controls */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={pair.title ?? ""}
+                            onChange={e => updateBeforeAfterPair(pair.id, { title: e.target.value })}
+                            placeholder={`Pair ${idx + 1} title (e.g. Driveway resurfacing, Solihull)`}
+                            className="flex-1 bg-transparent border-b border-slate-700 focus:border-blue-500 text-xs text-white pb-0.5 outline-none placeholder:text-slate-600"
+                          />
+                          <button
+                            onClick={() => updateBeforeAfterPair(pair.id, { enabled: !pair.enabled })}
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${pair.enabled ? "bg-emerald-500/20 text-emerald-400" : "bg-riden-muted text-slate-500"}`}
+                          >
+                            {pair.enabled ? "On" : "Off"}
+                          </button>
+                          <button onClick={() => moveBeforeAfterPair(pair.id, -1)} disabled={idx === 0} className="p-1 text-slate-500 hover:text-white disabled:opacity-25 text-xs">↑</button>
+                          <button onClick={() => moveBeforeAfterPair(pair.id, 1)} disabled={idx === beforeAfterPairs.length - 1} className="p-1 text-slate-500 hover:text-white disabled:opacity-25 text-xs">↓</button>
+                          <button onClick={() => deleteBeforeAfterPair(pair.id)} className="p-1 text-slate-500 hover:text-rose-400 transition-colors flex-shrink-0">
+                            <X size={12} />
+                          </button>
+                        </div>
+
+                        {/* Before / After slots */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {(["beforeUrl", "afterUrl"] as const).map((field) => {
+                            const label = field === "beforeUrl" ? "Before" : "After";
+                            const url = pair[field];
+                            return (
+                              <div key={field} className="space-y-1.5">
+                                <label className="text-[11px] text-slate-400 font-medium">{label}</label>
+                                {url ? (
+                                  <div className="relative group rounded-lg overflow-hidden border border-riden-border aspect-video">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={url} alt={`${label} photo`} className="w-full h-full object-cover" />
+                                    <button
+                                      onClick={() => updateBeforeAfterPair(pair.id, { [field]: "" })}
+                                      className="absolute top-1 right-1 w-5 h-5 rounded-md bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                      title={`Remove ${label.toLowerCase()} photo`}
+                                    >
+                                      <X size={10} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="rounded-lg border border-dashed border-riden-border aspect-video flex items-center justify-center text-[10px] text-slate-600">
+                                    No {label.toLowerCase()} photo
+                                  </div>
+                                )}
+                                <input
+                                  value={url}
+                                  onChange={e => updateBeforeAfterPair(pair.id, { [field]: e.target.value.trim() })}
+                                  placeholder="https://…"
+                                  className={`${inputCls} text-xs`}
+                                />
+                                {projectAlbums.some(a => a.photos.length > 0) && (
+                                  <select
+                                    value=""
+                                    onChange={e => { if (e.target.value) updateBeforeAfterPair(pair.id, { [field]: e.target.value }); }}
+                                    className="w-full text-[11px] bg-riden-muted border border-riden-border rounded-lg px-2 py-1.5 text-slate-400 outline-none"
+                                  >
+                                    <option value="" disabled>Pick from albums…</option>
+                                    {projectAlbums.filter(a => a.photos.length > 0).map(a => (
+                                      <optgroup key={a.id} label={a.title}>
+                                        {a.photos.map((p, pi) => (
+                                          <option key={p.id} value={p.url} className="bg-riden-surface">
+                                            {a.title} photo {pi + 1}{p.caption ? ` — ${p.caption}` : ""}
+                                          </option>
+                                        ))}
+                                      </optgroup>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Category + caption */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={pair.category ?? ""}
+                            onChange={e => updateBeforeAfterPair(pair.id, { category: e.target.value })}
+                            placeholder="Category (e.g. Driveways)"
+                            className={`${inputCls} text-xs`}
+                          />
+                          <input
+                            value={pair.caption ?? ""}
+                            onChange={e => updateBeforeAfterPair(pair.id, { caption: e.target.value })}
+                            placeholder="Short caption (optional)"
+                            className={`${inputCls} text-xs`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {beforeAfterPairs.length > 0 && (
+                    <button
+                      onClick={addBeforeAfterPair}
+                      className="w-full py-2 rounded-xl border border-dashed border-riden-border text-xs text-slate-500 hover:text-slate-300 hover:border-slate-500 transition-colors"
+                    >
+                      + Add Pair
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Generated URL success panel */}
               {generatedUrl && (

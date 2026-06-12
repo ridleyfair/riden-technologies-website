@@ -105,6 +105,16 @@ interface GenerateBody {
   serviceAreas?:         string[];   // explicit list from Checkatrade areas field
   checkatradeProfileUrl?: string;    // for sameAs schema
   googleBusinessUrl?:    string;     // for sameAs schema
+  beforeAfterPairs?: Array<{
+    id:           string;
+    beforeUrl:    string;
+    afterUrl:     string;
+    title?:       string;
+    caption?:     string;
+    category?:    string;
+    displayOrder: number;
+    enabled:      boolean;
+  }>;
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
@@ -150,6 +160,54 @@ const TEMPLATE_DEFINITIONS: Record<string, TemplateDef> = {
       { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
     ],
   },
+  "outdoor-transform": {
+    themeId: "modern",
+    siteType: "multi-page",
+    label: "Outdoor Transformations",
+    pages: [
+      { slug: "/",                title: "Home",            sections: ["hero", "stats", "before-after", "services", "gallery", "testimonials", "process", "cta", "footer"] },
+      { slug: "/transformations", title: "Transformations", sections: ["hero", "before-after", "gallery", "cta", "footer"] },
+      { slug: "/services",        title: "Services",        sections: ["hero", "services", "faq", "cta", "footer"] },
+      { slug: "/about",           title: "About",           sections: ["hero", "about", "testimonials", "cta", "footer"] },
+      { slug: "/contact",         title: "Contact",         sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "emergency-trade": {
+    themeId: "bold",
+    siteType: "multi-page",
+    label: "Emergency & Response",
+    pages: [
+      { slug: "/",         title: "Home",           sections: ["hero", "stats", "services", "service-areas", "testimonials", "process", "faq", "cta", "footer"] },
+      { slug: "/services", title: "Services",       sections: ["hero", "services", "faq", "cta", "footer"] },
+      { slug: "/areas",    title: "Areas We Cover", sections: ["hero", "service-areas", "testimonials", "cta", "footer"] },
+      { slug: "/about",    title: "About",          sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",        sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "reno-showcase": {
+    themeId: "classic",
+    siteType: "multi-page",
+    label: "Renovation Showcase",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "stats", "gallery", "before-after", "services", "process", "testimonials", "cta", "footer"] },
+      { slug: "/projects", title: "Projects", sections: ["hero", "gallery", "before-after", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "process", "faq", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "testimonials", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
+  "finish-decor": {
+    themeId: "minimal",
+    siteType: "multi-page",
+    label: "Finish & Decorating",
+    pages: [
+      { slug: "/",         title: "Home",     sections: ["hero", "before-after", "services", "gallery", "testimonials", "process", "cta", "footer"] },
+      { slug: "/our-work", title: "Our Work", sections: ["hero", "before-after", "gallery", "cta", "footer"] },
+      { slug: "/services", title: "Services", sections: ["hero", "services", "faq", "cta", "footer"] },
+      { slug: "/about",    title: "About",    sections: ["hero", "about", "cta", "footer"] },
+      { slug: "/contact",  title: "Contact",  sections: ["hero", "contact", "footer"] },
+    ],
+  },
   "beauty-pro-booking": {
     themeId: "elegant",
     siteType: "multi-page",
@@ -170,10 +228,36 @@ const TEMPLATE_THEMES: Record<string, string> = Object.fromEntries(
   Object.entries(TEMPLATE_DEFINITIONS).map(([id, def]) => [id, def.themeId]),
 );
 
+// Sector-family keyword routing — most specific match wins, checked in order.
+// Each scraped trade maps to the sector template built for how that business
+// actually sells (transformations / emergency response / showroom / finish).
+const SECTOR_TEMPLATE_KEYWORDS: Array<{ templateId: string; keywords: string[] }> = [
+  {
+    templateId: "outdoor-transform",
+    keywords: ["landscap", "garden", "driveway", "paving", "patio", "fenc", "tree surg", "turf", "decking", "groundwork", "artificial grass", "hedge"],
+  },
+  {
+    templateId: "emergency-trade",
+    keywords: ["plumb", "electric", "gas engineer", "gas safe", "heating", "boiler", "locksmith", "drain", "pest control", "emergency"],
+  },
+  {
+    templateId: "reno-showcase",
+    keywords: ["kitchen", "bathroom", "loft", "extension", "renovation", "refurbish", "builder", "building", "joiner", "carpent", "roof", "solar"],
+  },
+  {
+    templateId: "finish-decor",
+    keywords: ["paint", "decorat", "plaster", "tiler", "tiling", "floor", "window fitt", "glaz", "render"],
+  },
+];
+
 function pickTemplate(industry: string): { templateId: string; themeId: string } {
   const ind = (industry ?? "").toLowerCase();
   let templateId = "modern-minimal";
-  if (["trades", "automotive", "construction", "plumbing", "electrical", "roofing", "builder", "carpenter", "painter"].some((k) => ind.includes(k))) {
+
+  const sectorMatch = SECTOR_TEMPLATE_KEYWORDS.find((s) => s.keywords.some((k) => ind.includes(k)));
+  if (sectorMatch) {
+    templateId = sectorMatch.templateId;
+  } else if (["trades", "automotive", "construction", "scaffold", "handyman"].some((k) => ind.includes(k))) {
     templateId = "tradie-bold";
   } else if (["beauty", "salon", "spa", "nails", "hair", "lash", "brow", "makeup", "aesthetics"].some((k) => ind.includes(k))) {
     templateId = "beauty-pro-booking";
@@ -647,6 +731,20 @@ function buildPagesJson(
 
         case "faq":
           sectionJsons.push(`{ "type": "faq", "content": { "headline": "Common Questions", "subHeadline": "Still unsure? Give us a call.", "items": [ <5-6 FAQ items specific to ${body.industry} in ${city} — cover qualifications, response times, service areas, pricing, guarantees — each: "question" (natural phrasing a customer would use), "answer" (2-3 sentences, factual, grounded in About/accreditations data, no filler)> ] } }`);
+          break;
+
+        case "before-after": {
+          // Only included when the brief has enabled before/after pairs.
+          // Pair image URLs are injected post-generation — Claude writes copy only.
+          const activePairs = (body.beforeAfterPairs ?? []).filter((p) => p.enabled && p.beforeUrl && p.afterUrl);
+          if (activePairs.length === 0) break;
+          sectionJsons.push(`{ "type": "before-after", "content": { "headline": "<transformation-led headline for ${body.industry} work, e.g. 'See the Transformation' — specific, not generic>", "subHeadline": "<one line inviting the visitor to drag the slider and compare real ${body.industry} results in ${city}>", "pairs": [] } }`);
+          break;
+        }
+
+        case "service-areas":
+          // Area names are injected post-generation from the brief/About data.
+          sectionJsons.push(`{ "type": "service-areas", "content": { "headline": "Areas We Cover", "subHeadline": "<one line about fast local coverage around ${city}>", "responsePromise": "<specific response promise ONLY if stated in About, e.g. 'On site within 60 minutes' — empty string if not stated>", "available247": <true ONLY if About/opening hours state 24/7 or emergency availability, else false>, "areas": [] } }`);
           break;
 
         case "footer":
@@ -1167,9 +1265,36 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // ── Before/After injection ────────────────────────────────────────────
+        // Inject the brief's enabled pairs (absolute URLs, ordered) into every
+        // before-after section; drop the section entirely if no pairs remain.
+        const activePairs = (body.beforeAfterPairs ?? [])
+          .filter((p) => p.enabled && p.beforeUrl && p.afterUrl)
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+
+        for (const section of sections) {
+          if ((section.type as string) !== "before-after") continue;
+          (section.content as Record<string, unknown>).pairs = activePairs.map((p) => ({
+            id:        p.id,
+            beforeUrl: toAbsUrl(p.beforeUrl),
+            afterUrl:  toAbsUrl(p.afterUrl),
+            title:     p.title || "",
+            caption:   p.caption || "",
+            category:  p.category || "",
+          }));
+        }
+        sections = sections.filter((s) => {
+          if ((s.type as string) !== "before-after") return true;
+          return activePairs.length > 0;
+        });
+        page.sections = sections;
+
         // Strip CTA sections from gallery pages — MMGallery renders its own
         // CTA at the bottom, so a page-level CTA creates a duplicate.
-        if (sections.some((s) => s.type === "gallery")) {
+        // The sector templates render plain galleries without a built-in CTA,
+        // so their page-level CTAs must be kept.
+        const galleryRendersOwnCta = !["outdoor-transform", "emergency-trade", "reno-showcase", "finish-decor"].includes(resolvedTemplateId);
+        if (galleryRendersOwnCta && sections.some((s) => s.type === "gallery")) {
           (page as Record<string, unknown>).sections = sections.filter((s) => s.type !== "cta");
         }
       }
@@ -1213,6 +1338,22 @@ export async function POST(req: NextRequest) {
       effectiveServiceAreas = extractServiceAreas(body.about ?? '', body.city)
     }
     if (effectiveServiceAreas.length > 0) seo.serviceAreas = effectiveServiceAreas
+
+    // ── Service-areas section injection (emergency-trade template) ────────────
+    // Fill every service-areas section with the verified area list and phone;
+    // Claude only wrote the copy around them.
+    if (Array.isArray(pages)) {
+      const areaNames = effectiveServiceAreas.length > 0 ? effectiveServiceAreas : [body.city]
+      for (const page of pages) {
+        if (!Array.isArray(page.sections)) continue
+        for (const section of page.sections as Record<string, unknown>[]) {
+          if ((section.type as string) !== 'service-areas') continue
+          const sa = section.content as Record<string, unknown>
+          sa.areas = areaNames
+          sa.phone = body.phone
+        }
+      }
+    }
 
     // Primary location always set
     if (!seo.primaryLocation) seo.primaryLocation = body.city
