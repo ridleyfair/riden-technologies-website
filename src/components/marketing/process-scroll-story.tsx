@@ -209,7 +209,7 @@ export default function ProcessScrollStory() {
             </div>
 
             {/* crossfading stage copy */}
-            <div className="relative min-h-[15rem] sm:min-h-[13rem]">
+            <div className="relative min-h-[12rem] sm:min-h-[13rem]">
               {stages.map((s, i) => (
                 <div
                   key={s.n}
@@ -244,6 +244,18 @@ export default function ProcessScrollStory() {
                 </li>
               ))}
             </ol>
+
+            {/* Mobile-only scene — below the rail, zoom-scaled to fit */}
+            <div className="mt-5 lg:hidden" style={{ zoom: 0.68 }}>
+              {stages.map((s, i) => {
+                const Scene = s.Scene;
+                return (
+                  <div key={s.n} className={i === active ? undefined : "hidden"} aria-hidden={i !== active}>
+                    <Scene />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* right: crossfading scene — hidden on mobile/tablet, shown on desktop */}

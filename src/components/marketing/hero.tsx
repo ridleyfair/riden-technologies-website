@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Paintbrush, Search, Server, Wrench, Star } from "lucide-react";
@@ -98,17 +99,19 @@ export default function Hero() {
           >
             <div className="flex -space-x-2.5">
               {[
-                { initials: "MC", from: "from-blue-500", to: "to-cyan-500" },
-                { initials: "DT", from: "from-amber-400", to: "to-orange-500" },
-                { initials: "SB", from: "from-violet-500", to: "to-purple-500" },
-                { initials: "JR", from: "from-emerald-500", to: "to-teal-500" },
-              ].map(({ initials, from, to }) => (
-                <div
-                  key={initials}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br ${from} ${to} text-[9px] font-bold text-white`}
-                >
-                  {initials}
-                </div>
+                "/images/testimonials/mark-collins.jpg",
+                "/images/testimonials/dave-turner.jpg",
+                "/images/testimonials/sarah-booth.jpg",
+                "/images/testimonials/jamie-renshaw.jpg",
+              ].map((src) => (
+                <Image
+                  key={src}
+                  src={src}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                />
               ))}
             </div>
             <div>
