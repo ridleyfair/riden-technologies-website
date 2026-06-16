@@ -5,23 +5,21 @@ import path from 'node:path';
 
 const componentPath = path.join(process.cwd(), 'src/components/marketing/process-scroll-story.tsx');
 
-test('responsive device scene renders premium 3-device composition', () => {
+test('responsive device scene renders desktop + tablet side-by-side composition', () => {
   const source = fs.readFileSync(componentPath, 'utf8');
   const block = source.slice(
     source.indexOf('function TinyTabletContent()'),
     source.indexOf('function SeoScene()')
   );
 
-  // Purpose-built mini content functions exist
+  // Purpose-built mini content function exists
   assert.match(block, /TinyTabletContent/);
-  assert.match(block, /TinyPhoneContent/);
 
-  // All three device frame components used
+  // Device frame components used
   assert.match(block, /DesktopMock/);
   assert.match(block, /TabletMock/);
-  assert.match(block, /PhoneMock/);
 
-  // Desktop content still uses ScaledFrame
+  // Desktop content uses ScaledFrame
   assert.match(block, /ScaledFrame/);
 
   // No MiniSiteMobile inside ResponsiveScene
@@ -31,7 +29,7 @@ test('responsive device scene renders premium 3-device composition', () => {
   );
   assert.doesNotMatch(onlyResponsive, /<MiniSiteMobile/);
 
-  // Premium badge labels present
+  // Badge labels present
   assert.match(block, /Desktop Optimised/);
   assert.match(block, /Tablet Friendly/);
   assert.match(block, /Mobile Responsive/);

@@ -28,7 +28,6 @@ import {
   BrowserMock,
   DesktopMock,
   TabletMock,
-  PhoneMock,
   MiniSite,
   ScaledFrame,
   type SiteTheme,
@@ -528,62 +527,48 @@ function TinyPhoneContent() {
 function ResponsiveScene() {
   return (
     <div className="relative w-full max-w-md" aria-hidden="true">
-      {/* Ambient glow behind the entire composition */}
+      {/* Ambient glow */}
       <div className="absolute -inset-8 -z-10 rounded-[3rem] bg-gradient-to-br from-blue-300/25 via-cyan-200/15 to-transparent blur-3xl" />
 
-      {/* iMac — centrepiece, fades + scales in */}
-      <motion.div
-        className="relative z-0"
-        initial={{ opacity: 0, y: 18, scale: 0.93 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <DesktopMock url="harperplumbing.co.uk">
-          <ScaledFrame width={440}>
-            <MiniSite theme={SCENE_THEME} />
-          </ScaledFrame>
-        </DesktopMock>
-      </motion.div>
-
-      {/* iPad + iPhone row — negative margin pulls them up to overlap the iMac bottom */}
-      <div className="relative -mt-20 flex items-end justify-between" style={{ zIndex: 10 }}>
-        {/* iPad Pro — bottom-left, -6° */}
+      {/* Desktop + Tablet — side by side, iPad overlaps right edge of iMac */}
+      <div className="flex items-start">
+        {/* iMac — 60% width, behind the tablet */}
         <motion.div
-          className="w-[38%] -translate-x-3 -rotate-[6deg] drop-shadow-2xl"
-          style={{ zIndex: 20 }}
-          initial={{ opacity: 0, y: 44 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
+          className="relative z-0 w-[60%] flex-shrink-0"
+          initial={{ opacity: 0, x: -14, scale: 0.94 }}
+          whileInView={{ opacity: 1, x: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <DesktopMock url="harperplumbing.co.uk">
+            <ScaledFrame width={440}>
+              <MiniSite theme={SCENE_THEME} />
+            </ScaledFrame>
+          </DesktopMock>
+        </motion.div>
+
+        {/* iPad — 40% width, overlaps the iMac right edge, slightly lower + tilted */}
+        <motion.div
+          className="relative mt-6 w-[40%] flex-shrink-0 -rotate-[3deg] drop-shadow-2xl"
+          style={{ marginLeft: "-6%", zIndex: 10 }}
+          initial={{ opacity: 0, x: 20, y: 14 }}
+          whileInView={{ opacity: 1, x: 0, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
         >
           <TabletMock>
             <TinyTabletContent />
           </TabletMock>
         </motion.div>
-
-        {/* iPhone — bottom-right, +8° */}
-        <motion.div
-          className="w-[24%] translate-x-2 rotate-[8deg] drop-shadow-2xl"
-          style={{ zIndex: 30 }}
-          initial={{ opacity: 0, y: 44 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <PhoneMock>
-            <TinyPhoneContent />
-          </PhoneMock>
-        </motion.div>
       </div>
 
-      {/* Floating device badges */}
+      {/* Device badges */}
       <motion.div
         className="mt-5 flex flex-wrap justify-center gap-2"
         initial={{ opacity: 0, y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.45 }}
+        transition={{ duration: 0.5, delay: 0.35 }}
       >
         {(["Desktop Optimised", "Tablet Friendly", "Mobile Responsive"] as const).map((label) => (
           <span
