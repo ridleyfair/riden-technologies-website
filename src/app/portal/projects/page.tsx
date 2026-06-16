@@ -1754,6 +1754,7 @@ function ProjectDetailModal({
             };
             return (c.primary || c.secondary || c.tertiary) ? c : undefined;
           })(),
+          aboutImage:      aboutImage || undefined,
           trustCards:      trustCards.filter(c => c.enabled && c.title.trim() !== ''),
           aboutProofCards: aboutProofCards.filter(c => c.enabled && c.title.trim() !== ''),
           serviceAreas:    checkatrade.serviceAreas && checkatrade.serviceAreas.length > 0 ? checkatrade.serviceAreas : undefined,

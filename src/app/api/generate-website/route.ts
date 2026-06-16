@@ -120,6 +120,7 @@ interface GenerateBody {
     displayOrder: number;
     enabled:      boolean;
   }>;
+  aboutImage?: string;
 }
 
 // ── Template definitions ──────────────────────────────────────────────────────
@@ -1286,6 +1287,16 @@ export async function POST(req: NextRequest) {
           return activePairs.length > 0;
         });
         page.sections = sections;
+
+        // ── About image injection ─────────────────────────────────────────────
+        // If the brief has an aboutImage, inject it into every about section.
+        if (body.aboutImage) {
+          for (const section of sections) {
+            if ((section.type as string) === "about") {
+              (section.content as Record<string, unknown>).image = body.aboutImage;
+            }
+          }
+        }
 
         // Strip CTA sections from gallery pages — MMGallery renders its own
         // CTA at the bottom, so a page-level CTA creates a duplicate.
