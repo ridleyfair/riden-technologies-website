@@ -697,6 +697,7 @@ function ProjectDetailModal({
         trustCards:      Array.isArray(raw.trustCards)      ? raw.trustCards      as TrustCard[]      : DEFAULT_TRUST_CARDS,
         aboutProofCards: Array.isArray(raw.aboutProofCards) ? raw.aboutProofCards as AboutProofCard[] : DEFAULT_ABOUT_PROOF_CARDS,
         reviewSettings:  raw.reviewSettings && typeof raw.reviewSettings === "object" ? raw.reviewSettings as ReviewSettings : DEFAULT_REVIEW_SETTINGS,
+        aboutImage:  String(raw.aboutImage ?? ""),
         projectAlbums,
         beforeAfterPairs: Array.isArray(raw.beforeAfterPairs) ? raw.beforeAfterPairs as BriefBeforeAfterPair[] : [],
         qa: {
@@ -719,6 +720,7 @@ function ProjectDetailModal({
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
   const [heroImages, setHeroImages]             = useState<string[]>(parsedPhotos.heroImages);
   const [heroMobilePhoto, setHeroMobilePhoto]   = useState<string>(parsedPhotos.heroMobile);
+  const [aboutImage,      setAboutImage]        = useState<string>(parsedPhotos.aboutImage ?? "");
   const [photos, setPhotos]                     = useState<string[]>(parsedPhotos.gallery);
   const logoFileRef                             = useRef<HTMLInputElement>(null);
   const heroFileRef                             = useRef<HTMLInputElement>(null);
@@ -1139,6 +1141,7 @@ function ProjectDetailModal({
       hero: heroImages[0] ?? "",
       primaryHeroImage: extraQa.primaryHeroImage ?? heroImages[0] ?? "",
       heroMobile: heroMobilePhoto,
+      aboutImage,
       gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)),
       projectAlbums,
       heroHotspots,
@@ -1503,6 +1506,7 @@ function ProjectDetailModal({
           setLogoUrl(String(raw.logo ?? ""));
           setHeroImages(Array.isArray(raw.heroImages) ? raw.heroImages : raw.hero ? [String(raw.hero)] : []);
           setHeroMobilePhoto(String(raw.heroMobile ?? ""));
+          setAboutImage(String(raw.aboutImage ?? ""));
           setPhotos(Array.isArray(raw.gallery) ? raw.gallery : []);
           setProjectAlbums(Array.isArray(raw.projectAlbums) ? raw.projectAlbums : []);
           if (Array.isArray(raw.beforeAfterPairs)) setBeforeAfterPairs(raw.beforeAfterPairs as BriefBeforeAfterPair[]);
@@ -3053,6 +3057,33 @@ function ProjectDetailModal({
                   {heroMobileUploadError && <p className="text-[10px] text-rose-400">{heroMobileUploadError}</p>}
                 </div>
               )}
+
+              {/* About Us Photo */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">About Us Photo</h3>
+                <p className="text-[11px] text-slate-500">Team or company photo shown in the About section of the website.</p>
+                {aboutImage ? (
+                  <div className="relative rounded-xl overflow-hidden border border-riden-border">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={aboutImage} alt="About Us" className="w-full h-48 object-cover object-center" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                    <button
+                      onClick={() => setAboutImage("")}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                    >
+                      <X size={11} />
+                    </button>
+                    <span className="absolute bottom-2 left-3 text-[10px] text-white/60">About us photo</span>
+                  </div>
+                ) : (
+                  <input
+                    value={aboutImage}
+                    onChange={(e) => setAboutImage(e.target.value)}
+                    placeholder="Paste a photo URL..."
+                    className={`${inputCls} text-xs`}
+                  />
+                )}
+              </div>
 
               {/* Project Albums */}
               <div className="space-y-3">
