@@ -5,31 +5,34 @@ import path from 'node:path';
 
 const componentPath = path.join(process.cwd(), 'src/components/marketing/process-scroll-story.tsx');
 
-test('responsive device scene renders tablet and phone with purpose-built content', () => {
+test('responsive device scene renders premium 3-device composition', () => {
   const source = fs.readFileSync(componentPath, 'utf8');
-  const responsiveScene = source.slice(
+  const block = source.slice(
     source.indexOf('function TinyTabletContent()'),
     source.indexOf('function SeoScene()')
   );
 
   // Purpose-built mini content functions exist
-  assert.match(responsiveScene, /TinyTabletContent/);
-  assert.match(responsiveScene, /TinyPhoneContent/);
+  assert.match(block, /TinyTabletContent/);
+  assert.match(block, /TinyPhoneContent/);
 
-  // Device frame components used
-  assert.match(responsiveScene, /TabletMock/);
-  assert.match(responsiveScene, /PhoneMock/);
+  // All three device frame components used
+  assert.match(block, /DesktopMock/);
+  assert.match(block, /TabletMock/);
+  assert.match(block, /PhoneMock/);
 
-  // Desktop browser still uses ScaledFrame
-  assert.match(responsiveScene, /ScaledFrame/);
+  // Desktop content still uses ScaledFrame
+  assert.match(block, /ScaledFrame/);
 
-  // No MiniSiteMobile inside ResponsiveScene (replaced by TinyPhoneContent)
+  // No MiniSiteMobile inside ResponsiveScene
   const onlyResponsive = source.slice(
     source.indexOf('function ResponsiveScene()'),
     source.indexOf('function SeoScene()')
   );
   assert.doesNotMatch(onlyResponsive, /<MiniSiteMobile/);
 
-  // Device labels present
-  assert.match(responsiveScene, /Desktop.*Tablet.*Mobile|Tablet.*Mobile/s);
+  // Premium badge labels present
+  assert.match(block, /Desktop Optimised/);
+  assert.match(block, /Tablet Friendly/);
+  assert.match(block, /Mobile Responsive/);
 });

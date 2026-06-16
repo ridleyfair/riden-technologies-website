@@ -123,6 +123,50 @@ export function BrowserMock({
   );
 }
 
+/* ── iMac-style desktop monitor frame ──────────────────────────────────── */
+
+export function DesktopMock({
+  url = "www.yourbusiness.co.uk",
+  children,
+  className,
+}: {
+  url?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col items-center", className)}>
+      {/* Monitor — dark thin bezel, iMac aesthetic */}
+      <div className="relative w-full overflow-hidden rounded-xl border-[4px] border-slate-800 bg-slate-900 shadow-[0_24px_56px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(255,255,255,0.06)]">
+        {/* Subtle screen glare */}
+        <div className="pointer-events-none absolute inset-0 z-10 rounded-lg bg-gradient-to-br from-white/[0.04] to-transparent" />
+        {/* Browser chrome */}
+        <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-900 px-3 py-2">
+          <div className="flex gap-1">
+            <span className="h-2 w-2 rounded-full bg-[#ff5f57]" />
+            <span className="h-2 w-2 rounded-full bg-[#febc2e]" />
+            <span className="h-2 w-2 rounded-full bg-[#28c840]" />
+          </div>
+          <div className="flex-1 rounded bg-slate-700/80 px-2 py-[3px] text-[8px] font-medium text-slate-400">
+            {url}
+          </div>
+        </div>
+        <div className="bg-white">{children}</div>
+      </div>
+      {/* Neck — tapered like iMac stand */}
+      <div
+        className="bg-gradient-to-b from-slate-600 to-slate-500"
+        style={{ width: 32, height: 24, clipPath: "polygon(25% 0%, 75% 0%, 82% 100%, 18% 100%)" }}
+      />
+      {/* Base — oval, flat */}
+      <div
+        className="rounded-full bg-gradient-to-b from-slate-500 to-slate-400 shadow-sm"
+        style={{ width: 88, height: 8 }}
+      />
+    </div>
+  );
+}
+
 /* ── Phone frame ────────────────────────────────────────────────────────── */
 
 export function PhoneMock({

@@ -26,6 +26,7 @@ import {
 import { AiBackdrop } from "@/components/marketing/visuals/ai-backdrop";
 import {
   BrowserMock,
+  DesktopMock,
   TabletMock,
   PhoneMock,
   MiniSite,
@@ -527,43 +528,73 @@ function TinyPhoneContent() {
 function ResponsiveScene() {
   return (
     <div className="relative w-full max-w-md" aria-hidden="true">
-      <div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-gradient-to-br from-blue-200/40 via-cyan-100/30 to-transparent blur-2xl" />
+      {/* Ambient glow behind the entire composition */}
+      <div className="absolute -inset-8 -z-10 rounded-[3rem] bg-gradient-to-br from-blue-300/25 via-cyan-200/15 to-transparent blur-3xl" />
 
-      {/* Desktop browser — full width */}
-      <BrowserMock url="harperplumbing.co.uk">
-        <ScaledFrame width={440}>
-          <MiniSite theme={SCENE_THEME} />
-        </ScaledFrame>
-      </BrowserMock>
+      {/* iMac — centrepiece, fades + scales in */}
+      <motion.div
+        className="relative z-0"
+        initial={{ opacity: 0, y: 18, scale: 0.93 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <DesktopMock url="harperplumbing.co.uk">
+          <ScaledFrame width={440}>
+            <MiniSite theme={SCENE_THEME} />
+          </ScaledFrame>
+        </DesktopMock>
+      </motion.div>
 
-      {/* iPad + iPhone — overlapping composition */}
-      <div className="relative mx-auto mt-3 w-56" style={{ height: 290 }}>
-        {/* iPad — behind, tilted left */}
-        <div className="absolute left-0 top-0 w-44 -rotate-[4deg] drop-shadow-xl">
+      {/* iPad + iPhone row — negative margin pulls them up to overlap the iMac bottom */}
+      <div className="relative -mt-20 flex items-end justify-between" style={{ zIndex: 10 }}>
+        {/* iPad Pro — bottom-left, -6° */}
+        <motion.div
+          className="w-[38%] -translate-x-3 -rotate-[6deg] drop-shadow-2xl"
+          style={{ zIndex: 20 }}
+          initial={{ opacity: 0, y: 44 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.7, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+        >
           <TabletMock>
             <TinyTabletContent />
           </TabletMock>
-        </div>
-        {/* iPhone — in front, tilted right, overlapping iPad */}
-        <div className="absolute bottom-0 right-0 w-24 rotate-[5deg] drop-shadow-2xl" style={{ zIndex: 10 }}>
+        </motion.div>
+
+        {/* iPhone — bottom-right, +8° */}
+        <motion.div
+          className="w-[24%] translate-x-2 rotate-[8deg] drop-shadow-2xl"
+          style={{ zIndex: 30 }}
+          initial={{ opacity: 0, y: 44 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
           <PhoneMock>
             <TinyPhoneContent />
           </PhoneMock>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Device labels */}
-      <div className="mt-4 flex justify-center gap-2">
-        {(["Desktop", "Tablet", "Mobile"] as const).map((d) => (
+      {/* Floating device badges */}
+      <motion.div
+        className="mt-5 flex flex-wrap justify-center gap-2"
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.45 }}
+      >
+        {(["Desktop Optimised", "Tablet Friendly", "Mobile Responsive"] as const).map((label) => (
           <span
-            key={d}
+            key={label}
             className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-semibold text-blue-700 ring-1 ring-blue-100"
           >
             <Check className="h-3 w-3" />
-            {d}
+            {label}
           </span>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }
