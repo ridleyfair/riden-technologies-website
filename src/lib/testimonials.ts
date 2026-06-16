@@ -7,9 +7,11 @@ export interface Testimonial {
   business: string;
   /** 1–5. */
   rating: number;
-  /** Two-letter initials for the avatar. */
+  /** Two-letter initials for the avatar fallback. */
   initials: string;
   accent: "blue" | "violet" | "cyan" | "emerald" | "amber";
+  /** Path to profile photo — falls back to initials avatar if absent. */
+  avatar?: string;
   /** When true, the card is rendered as a non-attributed sample. */
   isPlaceholder?: boolean;
 }
@@ -23,6 +25,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "MC",
     accent: "blue",
+    avatar: "/images/testimonials/mark-collins.jpg",
   },
   {
     quote:
@@ -32,6 +35,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "DT",
     accent: "amber",
+    avatar: "/images/testimonials/dave-turner.jpg",
   },
   {
     quote:
@@ -41,6 +45,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "SB",
     accent: "violet",
+    avatar: "/images/testimonials/sarah-booth.jpg",
   },
   {
     quote:
@@ -50,6 +55,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "TW",
     accent: "cyan",
+    avatar: "/images/testimonials/tom-whitfield.jpg",
   },
   {
     quote:
@@ -59,6 +65,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "JR",
     accent: "emerald",
+    avatar: "/images/testimonials/jamie-renshaw.jpg",
   },
   {
     quote:
@@ -68,6 +75,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     initials: "LP",
     accent: "blue",
+    avatar: "/images/testimonials/lisa-patel.jpg",
   },
 ];
 
