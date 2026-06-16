@@ -46,7 +46,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     industry: "Landscaping & Garden Design",
     location: "Surrey, UK",
     url: "https://elmcroftlandscapes.uk",
-    image: "/images/portfolio/greenfield-landscapes.jpg",
+    image: "/images/portfolio/elmcroft-landscapes.jpg",
     blurb: "Garden transformation specialist with a stunning before/after portfolio and instant quote requests.",
     accent: "cyan",
   },
