@@ -135,12 +135,29 @@ export function PhoneMock({
   return (
     <div
       className={cn(
-        "relative rounded-[2.2rem] border-[6px] border-slate-900 bg-slate-900 shadow-float",
+        "relative rounded-[2rem] border-[5px] border-slate-800 bg-slate-800",
+        "shadow-[0_12px_40px_rgba(0,0,0,0.35),inset_0_0_0_1px_rgba(255,255,255,0.07)]",
         className
       )}
     >
-      <div className="absolute left-1/2 top-0 z-10 h-4 w-20 -translate-x-1/2 rounded-b-2xl bg-slate-900" />
-      <div className="overflow-hidden rounded-[1.7rem] bg-white">{children}</div>
+      {/* Power button */}
+      <div className="absolute -right-[6px] top-10 h-8 w-[3px] rounded-full bg-slate-700" />
+      {/* Volume buttons */}
+      <div className="absolute -left-[6px] top-8 h-5 w-[3px] rounded-full bg-slate-700" />
+      <div className="absolute -left-[6px] top-16 h-6 w-[3px] rounded-full bg-slate-700" />
+      <div className="absolute -left-[6px] top-24 h-6 w-[3px] rounded-full bg-slate-700" />
+      {/* Screen */}
+      <div className="overflow-hidden rounded-[1.6rem] bg-white">
+        {/* Dynamic Island */}
+        <div className="flex justify-center bg-white pb-0.5 pt-2">
+          <div className="h-[11px] w-12 rounded-full bg-slate-900" />
+        </div>
+        {children}
+        {/* Home indicator */}
+        <div className="flex justify-center bg-white pb-1.5 pt-1">
+          <div className="h-[3px] w-8 rounded-full bg-slate-300" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,11 +174,24 @@ export function TabletMock({
   return (
     <div
       className={cn(
-        "rounded-[1.4rem] border-[7px] border-slate-900 bg-slate-900 shadow-float",
+        "relative rounded-[1.5rem] border-[5px] border-slate-800 bg-slate-800",
+        "shadow-[0_12px_40px_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.07)]",
         className
       )}
     >
-      <div className="overflow-hidden rounded-[0.9rem] bg-white">{children}</div>
+      {/* Top-edge power button */}
+      <div className="absolute -top-[6px] right-14 h-[3px] w-6 rounded-full bg-slate-700" />
+      {/* Side volume buttons */}
+      <div className="absolute -right-[6px] top-10 h-6 w-[3px] rounded-full bg-slate-700" />
+      <div className="absolute -right-[6px] top-[4.5rem] h-6 w-[3px] rounded-full bg-slate-700" />
+      {/* Screen */}
+      <div className="overflow-hidden rounded-[1.1rem] bg-white">
+        {/* Camera dot */}
+        <div className="flex justify-center bg-white pb-0.5 pt-2">
+          <div className="h-[5px] w-[5px] rounded-full bg-slate-700" />
+        </div>
+        {children}
+      </div>
     </div>
   );
 }

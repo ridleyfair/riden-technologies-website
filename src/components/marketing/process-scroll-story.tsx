@@ -245,12 +245,12 @@ export default function ProcessScrollStory() {
               ))}
             </ol>
 
-            {/* Mobile-only scene — zoom-scaled to fit */}
-            <div className="mt-5 lg:hidden" style={{ zoom: 0.68 }}>
+            {/* Mobile-only scene — zoom-scaled, centered */}
+            <div className="mt-5 flex justify-center lg:hidden" style={{ zoom: 0.68 }}>
               {stages.map((s, i) => {
                 const Scene = s.Scene;
                 return (
-                  <div key={s.n} className={i === active ? undefined : "hidden"} aria-hidden={i !== active}>
+                  <div key={s.n} className={i === active ? "w-full max-w-md" : "hidden"} aria-hidden={i !== active}>
                     <Scene />
                   </div>
                 );
@@ -412,35 +412,36 @@ function DesignScene() {
 
 function ResponsiveScene() {
   return (
-    <div className="relative w-full max-w-xl px-3 pb-6" aria-hidden="true">
+    <div className="relative w-full max-w-md" aria-hidden="true">
       <div className="absolute -inset-5 -z-10 rounded-[2.5rem] bg-gradient-to-br from-blue-200/40 via-cyan-100/30 to-transparent blur-2xl" />
 
-      <div className="relative mx-auto min-h-[19rem]">
-        {/* Desktop preview stays central so it reads clearly. */}
-        <div className="relative z-10 mx-auto w-[86%]">
-          <BrowserMock url="harperplumbing.co.uk">
-            <ScaledFrame width={440}>
-              <MiniSite theme={SCENE_THEME} />
-            </ScaledFrame>
-          </BrowserMock>
-        </div>
+      {/* Desktop browser — full width */}
+      <BrowserMock url="harperplumbing.co.uk">
+        <ScaledFrame width={440}>
+          <MiniSite theme={SCENE_THEME} />
+        </ScaledFrame>
+      </BrowserMock>
 
-        {/* Tablet and phone sit inside the composition instead of hanging off the edge. */}
-        <div className="absolute bottom-5 left-0 z-20 w-40 -rotate-3 drop-shadow-2xl sm:w-44">
-          <TabletMock className="border-[5px]">
-            <MiniTabletPreview />
+      {/* Tablet + Phone row — in-flow, never overflows */}
+      <div className="mt-3 flex items-end justify-center gap-3">
+        <div className="w-44 -rotate-2 drop-shadow-xl">
+          <TabletMock>
+            <ScaledFrame width={380}>
+              <MiniSite theme={SCENE_THEME} compact />
+            </ScaledFrame>
           </TabletMock>
         </div>
-
-        <div className="absolute bottom-1 right-7 z-30 w-28 rotate-2 drop-shadow-2xl sm:right-10 sm:w-32">
-          <PhoneMock className="border-[5px]">
-            <MiniPhonePreview />
+        <div className="w-24 rotate-1 drop-shadow-xl">
+          <PhoneMock>
+            <ScaledFrame width={240}>
+              <MiniSiteMobile theme={SCENE_THEME} />
+            </ScaledFrame>
           </PhoneMock>
         </div>
       </div>
 
       {/* Device labels */}
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
+      <div className="mt-4 flex justify-center gap-2">
         {(["Desktop", "Tablet", "Mobile"] as const).map((d) => (
           <span
             key={d}
@@ -452,22 +453,6 @@ function ResponsiveScene() {
         ))}
       </div>
     </div>
-  );
-}
-
-function MiniTabletPreview() {
-  return (
-    <ScaledFrame width={480}>
-      <MiniSite theme={SCENE_THEME} compact />
-    </ScaledFrame>
-  );
-}
-
-function MiniPhonePreview() {
-  return (
-    <ScaledFrame width={280}>
-      <MiniSiteMobile theme={SCENE_THEME} />
-    </ScaledFrame>
   );
 }
 
