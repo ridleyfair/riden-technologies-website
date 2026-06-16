@@ -1,0 +1,1193 @@
+{
+  "updatedAt": "2026-06-16T08:30:32.320Z",
+  "queue": [
+    {
+      "id": "e7ecc9ca7964af91",
+      "batchId": "london-plumbers_20260610T175041Z",
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "phone": "+44 7424 542122",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T17:50:41.962Z",
+      "updatedAt": "2026-06-10T17:50:58.956Z",
+      "whatsapp": {
+        "approvalCode": "WA-YQ1F6C",
+        "status": "pending_review",
+        "draft": "Hi Kenley Plumbers, hope you’re well — I came across Kenley Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null,
+        "updatedAt": "2026-06-10T17:50:58.956Z"
+      },
+      "email": {
+        "approvalCode": "EM-GVU5YC",
+        "status": "pending_review",
+        "subject": "Quick website idea for Kenley Plumbers",
+        "draft": "Hi Kenley Plumbers,\n\nI came across Kenley Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T17:50:41.962Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "66c1dd3f89700937",
+      "batchId": "london-plumbers_20260610T175041Z",
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "phone": "+44 20 8099 8170",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T17:50:41.964Z",
+      "updatedAt": "2026-06-10T17:50:41.964Z",
+      "whatsapp": {
+        "approvalCode": "WA-PYUAHL",
+        "status": "pending_review",
+        "draft": "Hi Plumb London, hope you’re well — I came across Plumb London while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-KZLGDQ",
+        "status": "pending_review",
+        "subject": "Quick website idea for Plumb London",
+        "draft": "Hi Plumb London,\n\nI came across Plumb London while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T17:50:41.964Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "dddef9bc14c9394e",
+      "batchId": "london-plumbers_20260610T182347Z",
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "phone": "+44 7424 542122",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T18:23:47.770Z",
+      "updatedAt": "2026-06-10T18:23:47.770Z",
+      "whatsapp": {
+        "approvalCode": "WA-IH9MY9",
+        "status": "pending_review",
+        "draft": "Hi Kenley Plumbers, hope you’re well — I came across Kenley Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-TUXALW",
+        "status": "pending_review",
+        "subject": "Quick website idea for Kenley Plumbers",
+        "draft": "Hi Kenley Plumbers,\n\nI came across Kenley Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T18:23:47.770Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "8a6702aa622c66a9",
+      "batchId": "london-plumbers_20260610T182347Z",
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "phone": "+44 20 8099 8170",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T18:23:47.771Z",
+      "updatedAt": "2026-06-10T18:23:47.771Z",
+      "whatsapp": {
+        "approvalCode": "WA-FQ4RMO",
+        "status": "pending_review",
+        "draft": "Hi Plumb London, hope you’re well — I came across Plumb London while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-ZRVIIF",
+        "status": "pending_review",
+        "subject": "Quick website idea for Plumb London",
+        "draft": "Hi Plumb London,\n\nI came across Plumb London while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T18:23:47.771Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "7543c11833e029e5",
+      "batchId": "london-plumbers_20260611T083032Z",
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "phone": "+44 7424 542122",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-11T08:30:32.863Z",
+      "updatedAt": "2026-06-11T08:30:32.863Z",
+      "whatsapp": {
+        "approvalCode": "WA-E2GLVD",
+        "status": "pending_review",
+        "draft": "Hi Kenley Plumbers, hope you’re well — I came across Kenley Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-MBYCV5",
+        "status": "pending_review",
+        "subject": "Quick website idea for Kenley Plumbers",
+        "draft": "Hi Kenley Plumbers,\n\nI came across Kenley Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-11T08:30:32.863Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "bb8fb3bbd91aaf58",
+      "batchId": "london-plumbers_20260611T083032Z",
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "phone": "+44 20 8099 8170",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-11T08:30:32.864Z",
+      "updatedAt": "2026-06-11T08:30:32.864Z",
+      "whatsapp": {
+        "approvalCode": "WA-MKJ1HS",
+        "status": "pending_review",
+        "draft": "Hi Plumb London, hope you’re well — I came across Plumb London while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-XDMARG",
+        "status": "pending_review",
+        "subject": "Quick website idea for Plumb London",
+        "draft": "Hi Plumb London,\n\nI came across Plumb London while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-11T08:30:32.864Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "39ce4e15843e5026",
+      "batchId": "london-plumbers_20260612T083040Z",
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "phone": "+44 7546 185778",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-12T08:30:40.603Z",
+      "updatedAt": "2026-06-12T08:30:40.603Z",
+      "whatsapp": {
+        "approvalCode": "WA-CWKPC2",
+        "status": "pending_review",
+        "draft": "Hi London City Plumbers, hope you’re well — I came across London City Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-2D4UQU",
+        "status": "pending_review",
+        "subject": "Quick website idea for London City Plumbers",
+        "draft": "Hi London City Plumbers,\n\nI came across London City Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-12T08:30:40.603Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "8ae7cb19faac942a",
+      "batchId": "london-plumbers_20260612T083040Z",
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "phone": "+44 7905 231110",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-12T08:30:40.604Z",
+      "updatedAt": "2026-06-12T08:30:40.604Z",
+      "whatsapp": {
+        "approvalCode": "WA-DIQLQ6",
+        "status": "pending_review",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent, hope you’re well — I came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-VWHH3W",
+        "status": "pending_review",
+        "subject": "Quick website idea for AJD Plumbing Services Ltd - South East London & Kent",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent,\n\nI came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-12T08:30:40.604Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "05aaa57e01a8a432",
+      "batchId": "london-plumbers_20260612T083040Z",
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "phone": "+44 20 8304 0586",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-12T08:30:40.604Z",
+      "updatedAt": "2026-06-12T08:30:40.604Z",
+      "whatsapp": {
+        "approvalCode": "WA-9L0BMJ",
+        "status": "pending_review",
+        "draft": "Hi Welling Plumbing & Heating Ltd., hope you’re well — I came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-SR7QCY",
+        "status": "pending_review",
+        "subject": "Quick website idea for Welling Plumbing & Heating Ltd.",
+        "draft": "Hi Welling Plumbing & Heating Ltd.,\n\nI came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-12T08:30:40.604Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "27e30a7a51a883a6",
+      "batchId": "london-plumbers_20260612T083040Z",
+      "leadId": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "businessName": "LDD plumbing",
+      "phone": "+44 7473 464477",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-12T08:30:40.604Z",
+      "updatedAt": "2026-06-12T08:30:40.604Z",
+      "whatsapp": {
+        "approvalCode": "WA-F6LMAP",
+        "status": "pending_review",
+        "draft": "Hi LDD plumbing, hope you’re well — I came across LDD plumbing while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-QUKEVE",
+        "status": "pending_review",
+        "subject": "Quick website idea for LDD plumbing",
+        "draft": "Hi LDD plumbing,\n\nI came across LDD plumbing while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-12T08:30:40.604Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "ff46f3f86b6545be",
+      "batchId": "london-plumbers_20260612T083040Z",
+      "leadId": "62e481fc-833b-47e3-8479-13a842c804e9",
+      "businessName": "London Emergency Plumbers Ltd",
+      "phone": "+44 7778 486101",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-12T08:30:40.604Z",
+      "updatedAt": "2026-06-12T08:30:40.604Z",
+      "whatsapp": {
+        "approvalCode": "WA-C6BAIG",
+        "status": "pending_review",
+        "draft": "Hi London Emergency Plumbers Ltd, hope you’re well — I came across London Emergency Plumbers Ltd while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (11 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-TDBEHU",
+        "status": "pending_review",
+        "subject": "Quick website idea for London Emergency Plumbers Ltd",
+        "draft": "Hi London Emergency Plumbers Ltd,\n\nI came across London Emergency Plumbers Ltd while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (11 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-12T08:30:40.604Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "2186937efde0cf7b",
+      "batchId": "london-plumbers_20260613T083050Z",
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "phone": "+44 7546 185778",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-13T08:30:50.156Z",
+      "updatedAt": "2026-06-13T08:30:50.156Z",
+      "whatsapp": {
+        "approvalCode": "WA-NKYU30",
+        "status": "pending_review",
+        "draft": "Hi London City Plumbers, hope you’re well — I came across London City Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-EM9W1R",
+        "status": "pending_review",
+        "subject": "Quick website idea for London City Plumbers",
+        "draft": "Hi London City Plumbers,\n\nI came across London City Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-13T08:30:50.156Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "a4608e1e026733b9",
+      "batchId": "london-plumbers_20260613T083050Z",
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "phone": "+44 7905 231110",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-13T08:30:50.157Z",
+      "updatedAt": "2026-06-13T08:30:50.157Z",
+      "whatsapp": {
+        "approvalCode": "WA-CQXRJX",
+        "status": "pending_review",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent, hope you’re well — I came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-VKPTRH",
+        "status": "pending_review",
+        "subject": "Quick website idea for AJD Plumbing Services Ltd - South East London & Kent",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent,\n\nI came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-13T08:30:50.157Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "16a3d2cefd960d1c",
+      "batchId": "london-plumbers_20260613T083050Z",
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "phone": "+44 20 8304 0586",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-13T08:30:50.157Z",
+      "updatedAt": "2026-06-13T08:30:50.157Z",
+      "whatsapp": {
+        "approvalCode": "WA-P71TKL",
+        "status": "pending_review",
+        "draft": "Hi Welling Plumbing & Heating Ltd., hope you’re well — I came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-BVFTCO",
+        "status": "pending_review",
+        "subject": "Quick website idea for Welling Plumbing & Heating Ltd.",
+        "draft": "Hi Welling Plumbing & Heating Ltd.,\n\nI came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-13T08:30:50.157Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "3e01e81f44135477",
+      "batchId": "london-plumbers_20260613T083050Z",
+      "leadId": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "businessName": "LDD plumbing",
+      "phone": "+44 7473 464477",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-13T08:30:50.157Z",
+      "updatedAt": "2026-06-13T08:30:50.157Z",
+      "whatsapp": {
+        "approvalCode": "WA-QAYCWT",
+        "status": "pending_review",
+        "draft": "Hi LDD plumbing, hope you’re well — I came across LDD plumbing while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-BR7QDN",
+        "status": "pending_review",
+        "subject": "Quick website idea for LDD plumbing",
+        "draft": "Hi LDD plumbing,\n\nI came across LDD plumbing while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-13T08:30:50.157Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "1341c72f25ba4f3f",
+      "batchId": "london-plumbers_20260613T083050Z",
+      "leadId": "62e481fc-833b-47e3-8479-13a842c804e9",
+      "businessName": "London Emergency Plumbers Ltd",
+      "phone": "+44 7778 486101",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-13T08:30:50.158Z",
+      "updatedAt": "2026-06-13T08:30:50.158Z",
+      "whatsapp": {
+        "approvalCode": "WA-MCC48Y",
+        "status": "pending_review",
+        "draft": "Hi London Emergency Plumbers Ltd, hope you’re well — I came across London Emergency Plumbers Ltd while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (11 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-MDPFWO",
+        "status": "pending_review",
+        "subject": "Quick website idea for London Emergency Plumbers Ltd",
+        "draft": "Hi London Emergency Plumbers Ltd,\n\nI came across London Emergency Plumbers Ltd while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (11 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-13T08:30:50.158Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "f49a73a9638a8867",
+      "batchId": "london-plumbers_20260614T083049Z",
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "phone": "+44 7546 185778",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-14T08:30:49.475Z",
+      "updatedAt": "2026-06-14T08:30:49.475Z",
+      "whatsapp": {
+        "approvalCode": "WA-97GPUM",
+        "status": "pending_review",
+        "draft": "Hi London City Plumbers, hope you’re well — I came across London City Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-RL5GUU",
+        "status": "pending_review",
+        "subject": "Quick website idea for London City Plumbers",
+        "draft": "Hi London City Plumbers,\n\nI came across London City Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-14T08:30:49.475Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "098e1aa3e23c9258",
+      "batchId": "london-plumbers_20260614T083049Z",
+      "leadId": "7dbeba24-8cfd-4d06-a357-c98e066d0b31",
+      "businessName": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+      "phone": "+44 7955 014805",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-14T08:30:49.476Z",
+      "updatedAt": "2026-06-14T08:30:49.476Z",
+      "whatsapp": {
+        "approvalCode": "WA-B1H2XV",
+        "status": "pending_review",
+        "draft": "Hi Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd, hope you’re well — I came across Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (396 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-LP2N4B",
+        "status": "pending_review",
+        "subject": "Quick website idea for Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+        "draft": "Hi Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd,\n\nI came across Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (396 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-14T08:30:49.476Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "b5ae6cdc0fc4f33b",
+      "batchId": "london-plumbers_20260614T083049Z",
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "phone": "+44 7905 231110",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-14T08:30:49.476Z",
+      "updatedAt": "2026-06-14T08:30:49.476Z",
+      "whatsapp": {
+        "approvalCode": "WA-B7YWFZ",
+        "status": "pending_review",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent, hope you’re well — I came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-MGOFKR",
+        "status": "pending_review",
+        "subject": "Quick website idea for AJD Plumbing Services Ltd - South East London & Kent",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent,\n\nI came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-14T08:30:49.476Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "faf7b70a7171970b",
+      "batchId": "london-plumbers_20260614T083049Z",
+      "leadId": "922cb66c-61fa-40bf-aa02-35436abf26fc",
+      "businessName": "Peak Plumbers Ltd",
+      "phone": "+44 7854 029809",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-14T08:30:49.476Z",
+      "updatedAt": "2026-06-14T08:30:49.476Z",
+      "whatsapp": {
+        "approvalCode": "WA-EIAUKI",
+        "status": "pending_review",
+        "draft": "Hi Peak Plumbers Ltd, hope you’re well — I came across Peak Plumbers Ltd while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-ZVIVLL",
+        "status": "pending_review",
+        "subject": "Quick website idea for Peak Plumbers Ltd",
+        "draft": "Hi Peak Plumbers Ltd,\n\nI came across Peak Plumbers Ltd while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-14T08:30:49.476Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "2ef19fae382cb405",
+      "batchId": "london-plumbers_20260614T083049Z",
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "phone": "+44 20 8304 0586",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-14T08:30:49.476Z",
+      "updatedAt": "2026-06-14T08:30:49.476Z",
+      "whatsapp": {
+        "approvalCode": "WA-NTAGXY",
+        "status": "pending_review",
+        "draft": "Hi Welling Plumbing & Heating Ltd., hope you’re well — I came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-CXWPM7",
+        "status": "pending_review",
+        "subject": "Quick website idea for Welling Plumbing & Heating Ltd.",
+        "draft": "Hi Welling Plumbing & Heating Ltd.,\n\nI came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-14T08:30:49.476Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "f0745cc97a9be3e5",
+      "batchId": "london-plumbers_20260615T083020Z",
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "phone": "+44 7546 185778",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-15T08:30:20.893Z",
+      "updatedAt": "2026-06-15T08:30:20.893Z",
+      "whatsapp": {
+        "approvalCode": "WA-8KLXFU",
+        "status": "pending_review",
+        "draft": "Hi London City Plumbers, hope you’re well — I came across London City Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-CLICUP",
+        "status": "pending_review",
+        "subject": "Quick website idea for London City Plumbers",
+        "draft": "Hi London City Plumbers,\n\nI came across London City Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-15T08:30:20.893Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "2f3d477a51edf56a",
+      "batchId": "london-plumbers_20260615T083020Z",
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "phone": "+44 7905 231110",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-15T08:30:20.894Z",
+      "updatedAt": "2026-06-15T08:30:20.894Z",
+      "whatsapp": {
+        "approvalCode": "WA-PX5YZD",
+        "status": "pending_review",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent, hope you’re well — I came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-ASE8WU",
+        "status": "pending_review",
+        "subject": "Quick website idea for AJD Plumbing Services Ltd - South East London & Kent",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent,\n\nI came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-15T08:30:20.894Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "2b9323e515e3ee98",
+      "batchId": "london-plumbers_20260615T083020Z",
+      "leadId": "38e35d7d-4a7a-4fb7-b681-f8273e41d4f7",
+      "businessName": "Dave Morrison Plumbing & Heating",
+      "phone": "+44 7931 727255",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-15T08:30:20.894Z",
+      "updatedAt": "2026-06-15T08:30:20.894Z",
+      "whatsapp": {
+        "approvalCode": "WA-EFBPWT",
+        "status": "pending_review",
+        "draft": "Hi Dave Morrison Plumbing & Heating, hope you’re well — I came across Dave Morrison Plumbing & Heating while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (2 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-EWCEEO",
+        "status": "pending_review",
+        "subject": "Quick website idea for Dave Morrison Plumbing & Heating",
+        "draft": "Hi Dave Morrison Plumbing & Heating,\n\nI came across Dave Morrison Plumbing & Heating while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (2 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-15T08:30:20.894Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "d77eeca13bf9799c",
+      "batchId": "london-plumbers_20260615T083020Z",
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "phone": "+44 20 8304 0586",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-15T08:30:20.894Z",
+      "updatedAt": "2026-06-15T08:30:20.894Z",
+      "whatsapp": {
+        "approvalCode": "WA-NZNSVE",
+        "status": "pending_review",
+        "draft": "Hi Welling Plumbing & Heating Ltd., hope you’re well — I came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-HPPLEB",
+        "status": "pending_review",
+        "subject": "Quick website idea for Welling Plumbing & Heating Ltd.",
+        "draft": "Hi Welling Plumbing & Heating Ltd.,\n\nI came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-15T08:30:20.894Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "d5f0e60152997e30",
+      "batchId": "london-plumbers_20260615T083020Z",
+      "leadId": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "businessName": "LDD plumbing",
+      "phone": "+44 7473 464477",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-15T08:30:20.894Z",
+      "updatedAt": "2026-06-15T08:30:20.894Z",
+      "whatsapp": {
+        "approvalCode": "WA-QFSM2P",
+        "status": "pending_review",
+        "draft": "Hi LDD plumbing, hope you’re well — I came across LDD plumbing while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-GAGO6W",
+        "status": "pending_review",
+        "subject": "Quick website idea for LDD plumbing",
+        "draft": "Hi LDD plumbing,\n\nI came across LDD plumbing while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-15T08:30:20.894Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "a59533920e7aaf01",
+      "batchId": "london-plumbers_20260616T083032Z",
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "phone": "+44 7546 185778",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-16T08:30:32.319Z",
+      "updatedAt": "2026-06-16T08:30:32.319Z",
+      "whatsapp": {
+        "approvalCode": "WA-IWQEJO",
+        "status": "pending_review",
+        "draft": "Hi London City Plumbers, hope you’re well — I came across London City Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-9CIEE0",
+        "status": "pending_review",
+        "subject": "Quick website idea for London City Plumbers",
+        "draft": "Hi London City Plumbers,\n\nI came across London City Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (4.7 (185 reviews)), so I thought there might be a good opportunity to improve how the business shows up online.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-16T08:30:32.319Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "c84398b9c8c0f51c",
+      "batchId": "london-plumbers_20260616T083032Z",
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "phone": "+44 7905 231110",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-16T08:30:32.319Z",
+      "updatedAt": "2026-06-16T08:30:32.319Z",
+      "whatsapp": {
+        "approvalCode": "WA-QID6DQ",
+        "status": "pending_review",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent, hope you’re well — I came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-XFQYXG",
+        "status": "pending_review",
+        "subject": "Quick website idea for AJD Plumbing Services Ltd - South East London & Kent",
+        "draft": "Hi AJD Plumbing Services Ltd - South East London & Kent,\n\nI came across AJD Plumbing Services Ltd - South East London & Kent while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (252 reviews)), so I noticed the website could probably do more to turn visitors into enquiries.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-16T08:30:32.319Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "4776bb9a131351c0",
+      "batchId": "london-plumbers_20260616T083032Z",
+      "leadId": "38e35d7d-4a7a-4fb7-b681-f8273e41d4f7",
+      "businessName": "Dave Morrison Plumbing & Heating",
+      "phone": "+44 7931 727255",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-16T08:30:32.319Z",
+      "updatedAt": "2026-06-16T08:30:32.319Z",
+      "whatsapp": {
+        "approvalCode": "WA-HUCTDN",
+        "status": "pending_review",
+        "draft": "Hi Dave Morrison Plumbing & Heating, hope you’re well — I came across Dave Morrison Plumbing & Heating while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (2 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-G30OK5",
+        "status": "pending_review",
+        "subject": "Quick website idea for Dave Morrison Plumbing & Heating",
+        "draft": "Hi Dave Morrison Plumbing & Heating,\n\nI came across Dave Morrison Plumbing & Heating while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (2 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-16T08:30:32.319Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "8fa2d4976ebbab8f",
+      "batchId": "london-plumbers_20260616T083032Z",
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "phone": "+44 20 8304 0586",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-16T08:30:32.320Z",
+      "updatedAt": "2026-06-16T08:30:32.320Z",
+      "whatsapp": {
+        "approvalCode": "WA-695MGL",
+        "status": "pending_review",
+        "draft": "Hi Welling Plumbing & Heating Ltd., hope you’re well — I came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-QIOURB",
+        "status": "pending_review",
+        "subject": "Quick website idea for Welling Plumbing & Heating Ltd.",
+        "draft": "Hi Welling Plumbing & Heating Ltd.,\n\nI came across Welling Plumbing & Heating Ltd. while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-16T08:30:32.320Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "167a9e3cfa9d551d",
+      "batchId": "london-plumbers_20260616T083032Z",
+      "leadId": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "businessName": "LDD plumbing",
+      "phone": "+44 7473 464477",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-16T08:30:32.320Z",
+      "updatedAt": "2026-06-16T08:30:32.320Z",
+      "whatsapp": {
+        "approvalCode": "WA-WYXTNC",
+        "status": "pending_review",
+        "draft": "Hi LDD plumbing, hope you’re well — I came across LDD plumbing while looking at plumbing businesses around London.\n\nYou’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-XCHDNY",
+        "status": "pending_review",
+        "subject": "Quick website idea for LDD plumbing",
+        "draft": "Hi LDD plumbing,\n\nI came across LDD plumbing while looking at plumbing businesses around London. You’ve already got a good start with your Google reviews (5 (3 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-16T08:30:32.320Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "records": 31,
+    "channels": 62,
+    "pending_review": 62,
+    "approved": 0,
+    "rejected": 0,
+    "rewrite_requested": 0,
+    "sent": 0
+  }
+}

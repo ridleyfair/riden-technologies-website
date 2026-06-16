@@ -1,0 +1,118 @@
+{
+  "target": "London plumbers",
+  "signoff": "Ridley from Riden Technologies",
+  "batchId": "london-plumbers_20260610T175041Z",
+  "drafts": [
+    {
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "phone": "+44 7424 542122",
+      "score": 53,
+      "target": "London plumbers",
+      "whatsapp": "Hi Kenley Plumbers, hope you’re well — I came across Kenley Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+      "email": {
+        "subject": "Quick website idea for Kenley Plumbers",
+        "body": "Hi Kenley Plumbers,\n\nI came across Kenley Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies"
+      },
+      "guardrails": {
+        "sent": false,
+        "sendPolicy": "Manual review/send only. Agent did not send WhatsApp or email."
+      }
+    },
+    {
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "phone": "+44 20 8099 8170",
+      "score": 53,
+      "target": "London plumbers",
+      "whatsapp": "Hi Plumb London, hope you’re well — I came across Plumb London while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+      "email": {
+        "subject": "Quick website idea for Plumb London",
+        "body": "Hi Plumb London,\n\nI came across Plumb London while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies"
+      },
+      "guardrails": {
+        "sent": false,
+        "sendPolicy": "Manual review/send only. Agent did not send WhatsApp or email."
+      }
+    }
+  ],
+  "approvalRecords": [
+    {
+      "id": "e7ecc9ca7964af91",
+      "batchId": "london-plumbers_20260610T175041Z",
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "phone": "+44 7424 542122",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T17:50:41.962Z",
+      "updatedAt": "2026-06-10T17:50:41.962Z",
+      "whatsapp": {
+        "approvalCode": "WA-YQ1F6C",
+        "status": "pending_review",
+        "draft": "Hi Kenley Plumbers, hope you’re well — I came across Kenley Plumbers while looking at plumbing businesses around London.\n\nYou’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-GVU5YC",
+        "status": "pending_review",
+        "subject": "Quick website idea for Kenley Plumbers",
+        "draft": "Hi Kenley Plumbers,\n\nI came across Kenley Plumbers while looking at plumbing businesses around London. You’ve already got some great reviews online (5 (6 reviews)), so I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T17:50:41.962Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    },
+    {
+      "id": "66c1dd3f89700937",
+      "batchId": "london-plumbers_20260610T175041Z",
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "phone": "+44 20 8099 8170",
+      "target": "London plumbers",
+      "status": "pending_review",
+      "createdAt": "2026-06-10T17:50:41.964Z",
+      "updatedAt": "2026-06-10T17:50:41.964Z",
+      "whatsapp": {
+        "approvalCode": "WA-PYUAHL",
+        "status": "pending_review",
+        "draft": "Hi Plumb London, hope you’re well — I came across Plumb London while looking at plumbing businesses around London.\n\nFrom what I could see, I noticed there wasn’t much of a website presence showing. I run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses that help turn Google searches into enquiries.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "email": {
+        "approvalCode": "EM-KZLGDQ",
+        "status": "pending_review",
+        "subject": "Quick website idea for Plumb London",
+        "draft": "Hi Plumb London,\n\nI came across Plumb London while looking at plumbing businesses around London. From what I could see, I noticed there wasn’t much of a website presence showing.\n\nI run Riden Technologies — we build clean, mobile-friendly websites for local trade businesses. The aim is simple: make the business look professional online and make it easier for people searching on Google to enquire.\n\nWould you be open to me sending over a quick example of what we could put together for you?\n\nThanks,\nRidley from Riden Technologies",
+        "sent": false,
+        "sentAt": null
+      },
+      "guardrails": {
+        "requiresHumanApproval": true,
+        "sendPolicy": "Approval only. This queue records intent; it does not send WhatsApp or email.",
+        "maxAutonomy": "draft_and_queue_only"
+      },
+      "auditTrail": [
+        {
+          "at": "2026-06-10T17:50:41.964Z",
+          "event": "created_pending_review",
+          "detail": "Draft added to approval queue; no message sent."
+        }
+      ]
+    }
+  ],
+  "approvalQueuePath": "/home/skids/Riden-Technologies-Website/agent_reports/outreach_approval_queue.json"
+}

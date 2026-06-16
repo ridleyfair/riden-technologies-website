@@ -1,0 +1,516 @@
+{
+  "target": "London plumbers",
+  "write": true,
+  "enriched": [
+    {
+      "leadId": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "businessName": "London City Plumbers",
+      "websiteSignals": {
+        "url": "http://londoncityplumbers.co.uk/",
+        "title": null,
+        "metaDescription": null,
+        "textLength": 85,
+        "hasWebsite": true,
+        "hasPhoneCta": false,
+        "hasQuoteCta": false,
+        "hasEmergencySignal": false,
+        "hasBeforeAfterSignal": false,
+        "hasReviewSignal": false,
+        "serviceSignals": [],
+        "status": 404,
+        "fetchOk": false
+      },
+      "quality": {
+        "grade": "weak",
+        "opportunityScore": 95,
+        "summary": "Website likely has conversion gaps that a niche-specific redesign could improve.",
+        "painPoints": [
+          "Thin website content",
+          "Weak phone call CTA",
+          "Weak quote/request CTA",
+          "No clear before/after or work gallery signal",
+          "Limited review/testimonial signal"
+        ],
+        "strengths": []
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "Current website has thin website content gaps for a plumber business.",
+        "suggestedWhatsAppHook": "I had a quick look at the site and noticed a few ways it could make enquiries easier, especially on mobile. Would you be open to seeing a quick example?",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They already have some useful social proof (4.7 stars from 185 reviews).",
+          "Website likely has conversion gaps that a niche-specific redesign could improve."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    },
+    {
+      "leadId": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "businessName": "AJD Plumbing Services Ltd - South East London & Kent",
+      "websiteSignals": {
+        "url": "https://ajdplumbingservices.co.uk/",
+        "title": "AJD Plumbing Services — Reliable Local Plumbers",
+        "metaDescription": "Professional, trustworthy, and local plumbing services. We offer emergency plumbing, bathroom installations, and general maintenance with fast response times.",
+        "textLength": 47,
+        "hasWebsite": true,
+        "hasPhoneCta": false,
+        "hasQuoteCta": false,
+        "hasEmergencySignal": false,
+        "hasBeforeAfterSignal": false,
+        "hasReviewSignal": false,
+        "serviceSignals": [],
+        "status": 200,
+        "fetchOk": true
+      },
+      "quality": {
+        "grade": "weak",
+        "opportunityScore": 95,
+        "summary": "Website likely has conversion gaps that a niche-specific redesign could improve.",
+        "painPoints": [
+          "Thin website content",
+          "Weak phone call CTA",
+          "Weak quote/request CTA",
+          "No clear before/after or work gallery signal",
+          "Limited review/testimonial signal"
+        ],
+        "strengths": []
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "Current website has thin website content gaps for a plumber business.",
+        "suggestedWhatsAppHook": "I had a quick look at the site and noticed a few ways it could make enquiries easier, especially on mobile. Would you be open to seeing a quick example?",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They already have some useful social proof (5 stars from 252 reviews).",
+          "Website likely has conversion gaps that a niche-specific redesign could improve."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    },
+    {
+      "leadId": "be7c1a19-30d4-4cae-9016-e529d63207e1",
+      "businessName": "Welling Plumbing & Heating Ltd.",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in London.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They have a small Google review footprint (3 stars from 2 reviews).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    },
+    {
+      "leadId": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "businessName": "LDD plumbing",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in London.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They have a small Google review footprint (5 stars from 3 reviews).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    },
+    {
+      "leadId": "62e481fc-833b-47e3-8479-13a842c804e9",
+      "businessName": "London Emergency Plumbers Ltd",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in London.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They already have some useful social proof (5 stars from 11 reviews).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    }
+  ]
+}

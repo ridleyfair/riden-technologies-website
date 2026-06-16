@@ -1,0 +1,171 @@
+{
+  "query": "plumbers London",
+  "location": "London, England, United Kingdom",
+  "leads": [
+    {
+      "name": "AJD Plumbing Services Ltd - South East London & Kent",
+      "category": "Plumber",
+      "address": "45 The Drive, Bexley DA5 3DF, United Kingdom",
+      "phone": "+44 7905 231110",
+      "website": "https://ajdplumbingservices.co.uk/",
+      "rating": 5,
+      "reviews": 252,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=AJD%20Plumbing%20Services%20Ltd%20-%20South%20East%20London%20%26%20Kent&query_place_id=ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+      "opportunity_score": 66,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "slow website response",
+        "strong reputation, worth premium pitch"
+      ]
+    },
+    {
+      "name": "London City Plumbers",
+      "category": "Plumber",
+      "address": "22 Fox Hollow Dr, Bexleyheath DA7 4UR, United Kingdom",
+      "phone": "+44 7546 185778",
+      "website": "http://londoncityplumbers.co.uk/",
+      "rating": 4.7,
+      "reviews": 185,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=London%20City%20Plumbers&query_place_id=ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+      "opportunity_score": 60,
+      "reasons": [
+        "website fetch issue (404)",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "London Emergency Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "phone": "+44 7778 486101",
+      "website": null,
+      "rating": 5,
+      "reviews": 11,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbers%20Ltd&query_place_id=ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+      "opportunity_score": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Dave Morrison Plumbing & Heating",
+      "category": "Plumber",
+      "address": "3, Stephenson House, Hurst Ln, Abbey Wood, London SE2 0QE, United Kingdom",
+      "phone": "+44 7931 727255",
+      "website": null,
+      "rating": 5,
+      "reviews": 2,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Dave%20Morrison%20Plumbing%20%26%20Heating&query_place_id=ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+      "opportunity_score": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "LDD plumbing",
+      "category": "Plumber",
+      "address": "Federation road,abbeywood, Abbey Wood, London SE2 0BB, United Kingdom",
+      "phone": "+44 7473 464477",
+      "website": null,
+      "rating": 5,
+      "reviews": 3,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=LDD%20plumbing&query_place_id=ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+      "opportunity_score": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "BWD Plumbing & Heating",
+      "category": "Plumber",
+      "address": null,
+      "phone": "+44 7415 119500",
+      "website": "http://bwdplumbingheating.co.uk/",
+      "rating": 5,
+      "reviews": 294,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=BWD%20Plumbing%20%26%20Heating&query_place_id=ChIJaVhPmLCv2EcRjhKnlzN8lmk",
+      "opportunity_score": 43,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Priority Plumbing & Heating Services LTD",
+      "category": "Plumber",
+      "address": "241 Broadway, Bexleyheath DA6 8DB, United Kingdom",
+      "phone": "+44 7568 700848",
+      "website": "https://www.priorityplumber.co.uk/?utm_source=local&utm_medium=organic&utm_campaign=gmb",
+      "rating": 4.9,
+      "reviews": 177,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Priority%20Plumbing%20%26%20Heating%20Services%20LTD&query_place_id=ChIJZeXmiZqv2EcR0GDsx2DbSb4",
+      "opportunity_score": 43,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "NUOVA Ltd. Plumbing Services",
+      "category": "Plumber",
+      "address": "Abbey Wood Rd, Abbey Wood, London SE2 9DZ, United Kingdom",
+      "phone": "+44 7940 560102",
+      "website": "https://www.nuovaplumbing.com/",
+      "rating": 5,
+      "reviews": 59,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=NUOVA%20Ltd.%20Plumbing%20Services&query_place_id=ChIJDUJ1MPDiN2QRKKdSYgdSegE",
+      "opportunity_score": 43,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Principal Prime Plumbing EIP",
+      "category": "Plumber",
+      "address": "14 Courtland Grove, London SE28 8PA, United Kingdom",
+      "phone": "+44 7706 249962",
+      "website": "https://www.bark.com/en/gb/b/plumbing-electrics-it-hardware-software/6No1n/#",
+      "rating": 5,
+      "reviews": 6,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Principal%20Prime%20Plumbing%20EIP&query_place_id=ChIJrbuR7p9sJ6wRI9KUAXl3GNk",
+      "opportunity_score": 31,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "GLK Plumbing",
+      "category": "Plumber",
+      "address": "40 Penerley Rd, Rainham RM13 9HD, United Kingdom",
+      "phone": "+44 7926 641289",
+      "website": "https://www.gklplumbing.co.uk/",
+      "rating": 4.9,
+      "reviews": 44,
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=GLK%20Plumbing&query_place_id=ChIJIxBEZlyx2EcR6DykY0Htlc4",
+      "opportunity_score": 11,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    }
+  ]
+}

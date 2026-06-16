@@ -1,0 +1,2204 @@
+{
+  "target": "London plumbers",
+  "options": {
+    "industry": "plumbers",
+    "location": "London",
+    "maxPlaces": 10,
+    "minScore": 45,
+    "limit": 5,
+    "import": true
+  },
+  "leads": [
+    {
+      "name": "London City Plumbers",
+      "category": "Plumber",
+      "address": "22 Fox Hollow Dr, Bexleyheath DA7 4UR, United Kingdom",
+      "city": "Bexleyheath",
+      "phone": "+44 7546 185778",
+      "normalizedPhone": "+447546185778",
+      "website": "http://londoncityplumbers.co.uk/",
+      "websiteHost": "londoncityplumbers.co.uk",
+      "rating": 4.7,
+      "reviews": 185,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=London%20City%20Plumbers&query_place_id=ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+      "raw": {
+        "title": "London City Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "22 Fox Hollow Dr, Bexleyheath DA7 4UR, United Kingdom",
+        "neighborhood": null,
+        "street": "22 Fox Hollow Dr",
+        "city": "Bexleyheath",
+        "postalCode": "DA7 4UR",
+        "state": null,
+        "countryCode": "GB",
+        "website": "http://londoncityplumbers.co.uk/",
+        "phone": "+44 7546 185778",
+        "phoneUnformatted": "+447546185778",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4635207,
+          "lng": 0.1270702
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.7,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Building firm",
+          "Electrician",
+          "Gasfitter",
+          "Heating contractor",
+          "Property maintenance"
+        ],
+        "fid": "0x47d8aa8d8d6c19f1:0x15e75a06304fdb5f",
+        "cid": "1578329177043491679",
+        "reviewsCount": 185,
+        "imagesCount": 10,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.446Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "additionalOpeningHours": {
+          "Breakfast": [
+            {
+              "day": "Monday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Tuesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Wednesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Thursday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Friday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Saturday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Sunday",
+              "hours": "Open 24 hours"
+            }
+          ],
+          "Senior hours": [
+            {
+              "day": "Monday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Tuesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Wednesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Thursday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Friday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Saturday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Sunday",
+              "hours": "Open 24 hours"
+            }
+          ]
+        },
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Accessibility": [
+            {
+              "Wheelchair accessible restroom": false
+            },
+            {
+              "Wheelchair accessible seating": false
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Amenities": [
+            {
+              "Gender-neutral restroom": true
+            }
+          ],
+          "Crowd": [
+            {
+              "LGBTQ+ friendly": true
+            },
+            {
+              "Transgender safespace": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=London%20City%20Plumbers&query_place_id=ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 1,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHbhPM5cEMrjCBZguAp6Ab0enxpqClMzP7ubeGSzJ5-YN7H_axG1-yGS0_gZjepFLzjlgwXnW3uw9vB0QBuYvLDcq7ji8IqTsHBAOev1UNL6xfn8khMssRBcVquxCUQlzA09GmO=w408-h306-k-no",
+        "kgmid": "/g/12lkqp12h"
+      },
+      "opportunityScore": 60,
+      "reasons": [
+        "website fetch issue (404)",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "AJD Plumbing Services Ltd - South East London & Kent",
+      "category": "Plumber",
+      "address": "45 The Drive, Bexley DA5 3DF, United Kingdom",
+      "city": "Bexley",
+      "phone": "+44 7905 231110",
+      "normalizedPhone": "+447905231110",
+      "website": "https://ajdplumbingservices.co.uk/",
+      "websiteHost": "ajdplumbingservices.co.uk",
+      "rating": 5,
+      "reviews": 253,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=AJD%20Plumbing%20Services%20Ltd%20-%20South%20East%20London%20%26%20Kent&query_place_id=ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+      "raw": {
+        "title": "AJD Plumbing Services Ltd - South East London & Kent",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "45 The Drive, Bexley DA5 3DF, United Kingdom",
+        "neighborhood": null,
+        "street": "45 The Drive",
+        "city": "Bexley",
+        "postalCode": "DA5 3DF",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://ajdplumbingservices.co.uk/",
+        "phone": "+44 7905 231110",
+        "phoneUnformatted": "+447905231110",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4458853,
+          "lng": 0.121377
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Drainage service",
+          "Heating contractor",
+          "Radiator repair service"
+        ],
+        "fid": "0x47d8af3cbc7597b9:0xb832f0835551ade1",
+        "cid": "13272935498677071329",
+        "reviewsCount": 253,
+        "imagesCount": 1495,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.449Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=AJD%20Plumbing%20Services%20Ltd%20-%20South%20East%20London%20%26%20Kent&query_place_id=ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 5,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAE2spBDdZH2WCqm1F7H2DTKegRHrlMknL3cuZhsVrByoIxyHMAn8e2_aR_8QIhZLstH2-g3tk97Qtl60FekuZS2FcvpKUYt3N4QkvYFcKfCYniJMtM9YziU5HiJkDe4CsMpMEh5Ug=w408-h544-k-no",
+        "kgmid": "/g/11qmy57ckd"
+      },
+      "opportunityScore": 58,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "London Emergency Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7778 486101",
+      "normalizedPhone": "+447778486101",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 11,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbers%20Ltd&query_place_id=ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+      "raw": {
+        "title": "London Emergency Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7778 486101",
+        "phoneUnformatted": "+447778486101",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4893164,
+          "lng": -0.0881552
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0x8d087648ad5c79ff:0xef7ff33aae60def8",
+        "cid": "17257779730466266872",
+        "reviewsCount": 11,
+        "imagesCount": 5,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.448Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbers%20Ltd&query_place_id=ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 2,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGcyLcv-yiEQM7m8LiU-DTtRhubZXd6pfqD8nUkJpBkEWsgyHA0iLmHsbYmLJ2jsTgDgeerde1Je7cTTL3iyaYrOPoAVMe5Uh6DJu9vr4nbgzVGbxGASJcZSseIrMba-6SVPhIbVzR-ifo=w408-h272-k-no",
+        "kgmid": "/g/11yzynbzhq"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Dave Morrison Plumbing & Heating",
+      "category": "Plumber",
+      "address": "3, Stephenson House, Hurst Ln, Abbey Wood, London SE2 0QE, United Kingdom",
+      "city": "London",
+      "phone": "+44 7931 727255",
+      "normalizedPhone": "+447931727255",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 2,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Dave%20Morrison%20Plumbing%20%26%20Heating&query_place_id=ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+      "raw": {
+        "title": "Dave Morrison Plumbing & Heating",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "3, Stephenson House, Hurst Ln, Abbey Wood, London SE2 0QE, United Kingdom",
+        "neighborhood": "Abbey Wood",
+        "street": "3, Stephenson House, Hurst Ln",
+        "city": "London",
+        "postalCode": "SE2 0QE",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 7931 727255",
+        "phoneUnformatted": "+447931727255",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4821318,
+          "lng": 0.124956
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x47d8af1a6a0fffff:0x279d7a0c5de01bc6",
+        "cid": "2854571932355926982",
+        "reviewsCount": 2,
+        "imagesCount": 1,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.451Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Dave%20Morrison%20Plumbing%20%26%20Heating&query_place_id=ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 10,
+        "isAdvertisement": false,
+        "imageUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wDVE0xuI0sphxUd4suLe8Q&cb_client=search.gws-prod.gps&w=408&h=240&yaw=255.02478&pitch=0&thumbfov=100",
+        "kgmid": "/g/11gmjkgdbx"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "LDD plumbing",
+      "category": "Plumber",
+      "address": "Federation road,abbeywood, Abbey Wood, London SE2 0BB, United Kingdom",
+      "city": "London",
+      "phone": "+44 7473 464477",
+      "normalizedPhone": "+447473464477",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 3,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=LDD%20plumbing&query_place_id=ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+      "raw": {
+        "title": "LDD plumbing",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Federation road,abbeywood, Abbey Wood, London SE2 0BB, United Kingdom",
+        "neighborhood": "Abbey Wood",
+        "street": "Federation road,abbeywood",
+        "city": "London",
+        "postalCode": "SE2 0BB",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 7473 464477",
+        "phoneUnformatted": "+447473464477",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4869633,
+          "lng": 0.1188733
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x47d8af0d87582883:0x68c571ccd0d37543",
+        "cid": "7549565474847290691",
+        "reviewsCount": 3,
+        "imagesCount": 12,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.451Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=LDD%20plumbing&query_place_id=ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 11,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHtz7C2o-ymXB72YVJgMLcChrwJTPtioqhuk2va9jATokQGresRXveX4UheT81W5IgY8h6FdI1esrN5QBQ1lTPvlJ4pyVch59tVu9VznYy_4BAYtMpm5z1pga8JTCN8lxQAQ6agTw=w408-h544-k-no",
+        "kgmid": "/g/11w__lfxsd"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Welling Plumbing & Heating Ltd.",
+      "category": "Heating contractor",
+      "address": null,
+      "city": "London",
+      "phone": "+44 20 8304 0586",
+      "normalizedPhone": "+442083040586",
+      "website": null,
+      "websiteHost": null,
+      "rating": 3,
+      "reviews": 2,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Welling%20Plumbing%20%26%20Heating%20Ltd.&query_place_id=ChIJEysnwcKu2EcRGxWFjh7EcXg",
+      "raw": {
+        "title": "Welling Plumbing & Heating Ltd.",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Heating contractor",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 20 8304 0586",
+        "phoneUnformatted": "+442083040586",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4893323,
+          "lng": -0.0881552
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 3,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJEysnwcKu2EcRGxWFjh7EcXg",
+        "categories": [
+          "Heating contractor",
+          "Service establishment",
+          "Contractor"
+        ],
+        "fid": "0x47d8aec2c1272b13:0x7871c41e8e85151b",
+        "cid": "8678933592438805787",
+        "reviewsCount": 2,
+        "imagesCount": 3,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.451Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "7:30 AM to 5 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "7:30 AM to 5 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "7:30 AM to 5 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "7:30 AM to 5 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "7:30 AM to 5 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "8 PM to 12 AM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "12 AM to 2 PM"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Welling%20Plumbing%20%26%20Heating%20Ltd.&query_place_id=ChIJEysnwcKu2EcRGxWFjh7EcXg",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 12,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAFbKgOrSq1dnBBazfUO8nenQ5qCFPfEFFbQFH6D_LCQCpqdakMjbJp1YRvGUC3LCp8hRO7C7o8L0JCYLa7WCoRLy05zvXOOVenFct-yd5ty1Mce5r2R4oZ606cLyJsttq_uGvLLKw=w408-h305-k-no",
+        "kgmid": "/g/1pxq7bgpg"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "NUOVA Ltd. Plumbing Services",
+      "category": "Plumber",
+      "address": "Abbey Wood Rd, Abbey Wood, London SE2 9DZ, United Kingdom",
+      "city": "London",
+      "phone": "+44 7940 560102",
+      "normalizedPhone": "+447940560102",
+      "website": "https://www.nuovaplumbing.com/",
+      "websiteHost": "nuovaplumbing.com",
+      "rating": 5,
+      "reviews": 59,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=NUOVA%20Ltd.%20Plumbing%20Services&query_place_id=ChIJDUJ1MPDiN2QRKKdSYgdSegE",
+      "raw": {
+        "title": "NUOVA Ltd. Plumbing Services",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Abbey Wood Rd, Abbey Wood, London SE2 9DZ, United Kingdom",
+        "neighborhood": "Abbey Wood",
+        "street": "Abbey Wood Rd",
+        "city": "London",
+        "postalCode": "SE2 9DZ",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.nuovaplumbing.com/",
+        "phone": "+44 7940 560102",
+        "phoneUnformatted": "+447940560102",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4899608,
+          "lng": 0.1208513
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJDUJ1MPDiN2QRKKdSYgdSegE",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Boiler manufacturer",
+          "Drainage service",
+          "Heating equipment supplier",
+          "Pipe supplier",
+          "Radiator repair service",
+          "Water pump supplier"
+        ],
+        "fid": "0x6437e2f03075420d:0x17a52076252a728",
+        "cid": "106487732864460584",
+        "reviewsCount": 59,
+        "imagesCount": 243,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.450Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "8 AM to 8 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "8 AM to 8 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "8 AM to 8 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "8 AM to 8 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "8 AM to 8 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Crowd": [
+            {
+              "LGBTQ+ friendly": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=NUOVA%20Ltd.%20Plumbing%20Services&query_place_id=ChIJDUJ1MPDiN2QRKKdSYgdSegE",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 8,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGlgoUl4lxYuLSglSXd_1aaOatys9MKrqOALlnZ5ofOHdS5240P5tfMTKXWo2u8l61cWs9mhY3qLpoT6OkTbgeJ6nSn-VaxkxYUGPBBowCLoLPwbG9IwgIIXPCcHzbG1QHbjv3TxA=w408-h544-k-no",
+        "kgmid": "/g/11vdxq3vvg"
+      },
+      "opportunityScore": 43,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "BWD Plumbing & Heating",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7415 119500",
+      "normalizedPhone": "+447415119500",
+      "website": "http://bwdplumbingheating.co.uk/",
+      "websiteHost": "bwdplumbingheating.co.uk",
+      "rating": 5,
+      "reviews": 297,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=BWD%20Plumbing%20%26%20Heating&query_place_id=ChIJaVhPmLCv2EcRjhKnlzN8lmk",
+      "raw": {
+        "title": "BWD Plumbing & Heating",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "http://bwdplumbingheating.co.uk/",
+        "phone": "+44 7415 119500",
+        "phoneUnformatted": "+447415119500",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4453662,
+          "lng": 0.1319694
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJaVhPmLCv2EcRjhKnlzN8lmk",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0x47d8afb0984f5869:0x69967c3397a7128e",
+        "cid": "7608405181518516878",
+        "reviewsCount": 297,
+        "imagesCount": 124,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.449Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "9 AM to 3 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "9 AM to 3 PM"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=BWD%20Plumbing%20%26%20Heating&query_place_id=ChIJaVhPmLCv2EcRjhKnlzN8lmk",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 3,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAF8RJfUBrVjm47KCweJJyt2Q18r7zFcTNuo0cKSB-dVuxaKPUEjLG2hR18Ol1M0_kNFk-kEUQDAKdwQx5-Ft0E4xXGiLGEk2iva43ATjv0jqgd40oCikDWxiSbGpuXTriVTXNo1=w408-h544-k-no",
+        "kgmid": "/g/11h84ln03q"
+      },
+      "opportunityScore": 37,
+      "reasons": [
+        "weak conversion CTA",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Priority Plumbing & Heating Services LTD",
+      "category": "Plumber",
+      "address": "241 Broadway, Bexleyheath DA6 8DB, United Kingdom",
+      "city": "Bexleyheath",
+      "phone": "+44 7568 700848",
+      "normalizedPhone": "+447568700848",
+      "website": "https://www.priorityplumber.co.uk/?utm_source=local&utm_medium=organic&utm_campaign=gmb",
+      "websiteHost": "priorityplumber.co.uk",
+      "rating": 4.9,
+      "reviews": 177,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Priority%20Plumbing%20%26%20Heating%20Services%20LTD&query_place_id=ChIJZeXmiZqv2EcR0GDsx2DbSb4",
+      "raw": {
+        "title": "Priority Plumbing & Heating Services LTD",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "241 Broadway, Bexleyheath DA6 8DB, United Kingdom",
+        "neighborhood": null,
+        "street": "241 Broadway",
+        "city": "Bexleyheath",
+        "postalCode": "DA6 8DB",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.priorityplumber.co.uk/?utm_source=local&utm_medium=organic&utm_campaign=gmb",
+        "phone": "+44 7568 700848",
+        "phoneUnformatted": "+447568700848",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4574067,
+          "lng": 0.1382483
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.9,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJZeXmiZqv2EcR0GDsx2DbSb4",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Boiler supplier",
+          "Gas engineer",
+          "Gas installation service",
+          "Gasfitter",
+          "Heating contractor",
+          "Hot water system supplier",
+          "Property maintenance",
+          "Radiator repair service"
+        ],
+        "fid": "0x47d8af9a89e6e565:0xbe49db60c7ec60d0",
+        "cid": "13711731749223686352",
+        "reviewsCount": 177,
+        "imagesCount": 684,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.449Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Priority%20Plumbing%20%26%20Heating%20Services%20LTD&query_place_id=ChIJZeXmiZqv2EcR0GDsx2DbSb4",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 6,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAF_gaHPTuIwq9gdC1qTuCrZPJqhz1k8Tyn7czbOxCM5QkxBMEpyrjvudYs81jFOpL4sILKqf0msbZWtXngp5y1DP__LXT11XR6C0Eu_rcyYEK1-s3KL8pcEbQHmS9WdqiDIzged=w408-h408-k-no",
+        "kgmid": "/g/11gxh_z4mr"
+      },
+      "opportunityScore": 37,
+      "reasons": [
+        "weak conversion CTA",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Principal Prime Plumbing EIP",
+      "category": "Plumber",
+      "address": "14 Courtland Grove, London SE28 8PA, United Kingdom",
+      "city": "London",
+      "phone": "+44 7706 249962",
+      "normalizedPhone": "+447706249962",
+      "website": "https://www.bark.com/en/gb/b/plumbing-electrics-it-hardware-software/6No1n/#",
+      "websiteHost": "bark.com",
+      "rating": 5,
+      "reviews": 6,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Principal%20Prime%20Plumbing%20EIP&query_place_id=ChIJrbuR7p9sJ6wRI9KUAXl3GNk",
+      "raw": {
+        "title": "Principal Prime Plumbing EIP",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "14 Courtland Grove, London SE28 8PA, United Kingdom",
+        "neighborhood": null,
+        "street": "14 Courtland Grove",
+        "city": "London",
+        "postalCode": "SE28 8PA",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.bark.com/en/gb/b/plumbing-electrics-it-hardware-software/6No1n/#",
+        "phone": "+44 7706 249962",
+        "phoneUnformatted": "+447706249962",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5080468,
+          "lng": 0.1303475
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJrbuR7p9sJ6wRI9KUAXl3GNk",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0xac276c9fee91bbad:0xd91877790194d223",
+        "cid": "15643384667272696355",
+        "reviewsCount": 6,
+        "imagesCount": 26,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.450Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Crowd": [
+            {
+              "LGBTQ+ friendly": true
+            },
+            {
+              "Transgender safespace": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Principal%20Prime%20Plumbing%20EIP&query_place_id=ChIJrbuR7p9sJ6wRI9KUAXl3GNk",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 9,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGoJhHlS-Q5kgkInV3agsxHPw0eGsIlLkELuwwdAdTMTwpG8tOUq771OVtX8zxhnb2-Xyb09OecwTur1vsxRdcnz62uRnB0nrbNMWzHk23Et6vauxdfF_uFv6ZkIcuwHQxA3PLzckA-Wiup=w408-h535-k-no",
+        "kgmid": "/g/11qbdt4zkj"
+      },
+      "opportunityScore": 31,
+      "reasons": [
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "low review volume",
+        "phone available"
+      ]
+    }
+  ],
+  "selected": [
+    {
+      "name": "London City Plumbers",
+      "category": "Plumber",
+      "address": "22 Fox Hollow Dr, Bexleyheath DA7 4UR, United Kingdom",
+      "city": "Bexleyheath",
+      "phone": "+44 7546 185778",
+      "normalizedPhone": "+447546185778",
+      "website": "http://londoncityplumbers.co.uk/",
+      "websiteHost": "londoncityplumbers.co.uk",
+      "rating": 4.7,
+      "reviews": 185,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=London%20City%20Plumbers&query_place_id=ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+      "raw": {
+        "title": "London City Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "22 Fox Hollow Dr, Bexleyheath DA7 4UR, United Kingdom",
+        "neighborhood": null,
+        "street": "22 Fox Hollow Dr",
+        "city": "Bexleyheath",
+        "postalCode": "DA7 4UR",
+        "state": null,
+        "countryCode": "GB",
+        "website": "http://londoncityplumbers.co.uk/",
+        "phone": "+44 7546 185778",
+        "phoneUnformatted": "+447546185778",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4635207,
+          "lng": 0.1270702
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.7,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Building firm",
+          "Electrician",
+          "Gasfitter",
+          "Heating contractor",
+          "Property maintenance"
+        ],
+        "fid": "0x47d8aa8d8d6c19f1:0x15e75a06304fdb5f",
+        "cid": "1578329177043491679",
+        "reviewsCount": 185,
+        "imagesCount": 10,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.446Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "additionalOpeningHours": {
+          "Breakfast": [
+            {
+              "day": "Monday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Tuesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Wednesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Thursday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Friday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Saturday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Sunday",
+              "hours": "Open 24 hours"
+            }
+          ],
+          "Senior hours": [
+            {
+              "day": "Monday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Tuesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Wednesday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Thursday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Friday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Saturday",
+              "hours": "Open 24 hours"
+            },
+            {
+              "day": "Sunday",
+              "hours": "Open 24 hours"
+            }
+          ]
+        },
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Accessibility": [
+            {
+              "Wheelchair accessible restroom": false
+            },
+            {
+              "Wheelchair accessible seating": false
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Amenities": [
+            {
+              "Gender-neutral restroom": true
+            }
+          ],
+          "Crowd": [
+            {
+              "LGBTQ+ friendly": true
+            },
+            {
+              "Transgender safespace": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=London%20City%20Plumbers&query_place_id=ChIJ8RlsjY2q2EcRX9tPMAZa5xU",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 1,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHbhPM5cEMrjCBZguAp6Ab0enxpqClMzP7ubeGSzJ5-YN7H_axG1-yGS0_gZjepFLzjlgwXnW3uw9vB0QBuYvLDcq7ji8IqTsHBAOev1UNL6xfn8khMssRBcVquxCUQlzA09GmO=w408-h306-k-no",
+        "kgmid": "/g/12lkqp12h"
+      },
+      "opportunityScore": 60,
+      "reasons": [
+        "website fetch issue (404)",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "AJD Plumbing Services Ltd - South East London & Kent",
+      "category": "Plumber",
+      "address": "45 The Drive, Bexley DA5 3DF, United Kingdom",
+      "city": "Bexley",
+      "phone": "+44 7905 231110",
+      "normalizedPhone": "+447905231110",
+      "website": "https://ajdplumbingservices.co.uk/",
+      "websiteHost": "ajdplumbingservices.co.uk",
+      "rating": 5,
+      "reviews": 253,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=AJD%20Plumbing%20Services%20Ltd%20-%20South%20East%20London%20%26%20Kent&query_place_id=ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+      "raw": {
+        "title": "AJD Plumbing Services Ltd - South East London & Kent",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "45 The Drive, Bexley DA5 3DF, United Kingdom",
+        "neighborhood": null,
+        "street": "45 The Drive",
+        "city": "Bexley",
+        "postalCode": "DA5 3DF",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://ajdplumbingservices.co.uk/",
+        "phone": "+44 7905 231110",
+        "phoneUnformatted": "+447905231110",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4458853,
+          "lng": 0.121377
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Drainage service",
+          "Heating contractor",
+          "Radiator repair service"
+        ],
+        "fid": "0x47d8af3cbc7597b9:0xb832f0835551ade1",
+        "cid": "13272935498677071329",
+        "reviewsCount": 253,
+        "imagesCount": 1495,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.449Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=AJD%20Plumbing%20Services%20Ltd%20-%20South%20East%20London%20%26%20Kent&query_place_id=ChIJuZd1vDyv2EcR4a1RVYPwMrg",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 5,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAE2spBDdZH2WCqm1F7H2DTKegRHrlMknL3cuZhsVrByoIxyHMAn8e2_aR_8QIhZLstH2-g3tk97Qtl60FekuZS2FcvpKUYt3N4QkvYFcKfCYniJMtM9YziU5HiJkDe4CsMpMEh5Ug=w408-h544-k-no",
+        "kgmid": "/g/11qmy57ckd"
+      },
+      "opportunityScore": 58,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "London Emergency Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7778 486101",
+      "normalizedPhone": "+447778486101",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 11,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbers%20Ltd&query_place_id=ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+      "raw": {
+        "title": "London Emergency Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7778 486101",
+        "phoneUnformatted": "+447778486101",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4893164,
+          "lng": -0.0881552
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0x8d087648ad5c79ff:0xef7ff33aae60def8",
+        "cid": "17257779730466266872",
+        "reviewsCount": 11,
+        "imagesCount": 5,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.448Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbers%20Ltd&query_place_id=ChIJ_3lcrUh2CI0R-N5grjrzf-8",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 2,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGcyLcv-yiEQM7m8LiU-DTtRhubZXd6pfqD8nUkJpBkEWsgyHA0iLmHsbYmLJ2jsTgDgeerde1Je7cTTL3iyaYrOPoAVMe5Uh6DJu9vr4nbgzVGbxGASJcZSseIrMba-6SVPhIbVzR-ifo=w408-h272-k-no",
+        "kgmid": "/g/11yzynbzhq"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Dave Morrison Plumbing & Heating",
+      "category": "Plumber",
+      "address": "3, Stephenson House, Hurst Ln, Abbey Wood, London SE2 0QE, United Kingdom",
+      "city": "London",
+      "phone": "+44 7931 727255",
+      "normalizedPhone": "+447931727255",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 2,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Dave%20Morrison%20Plumbing%20%26%20Heating&query_place_id=ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+      "raw": {
+        "title": "Dave Morrison Plumbing & Heating",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "3, Stephenson House, Hurst Ln, Abbey Wood, London SE2 0QE, United Kingdom",
+        "neighborhood": "Abbey Wood",
+        "street": "3, Stephenson House, Hurst Ln",
+        "city": "London",
+        "postalCode": "SE2 0QE",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 7931 727255",
+        "phoneUnformatted": "+447931727255",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4821318,
+          "lng": 0.124956
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x47d8af1a6a0fffff:0x279d7a0c5de01bc6",
+        "cid": "2854571932355926982",
+        "reviewsCount": 2,
+        "imagesCount": 1,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.451Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Dave%20Morrison%20Plumbing%20%26%20Heating&query_place_id=ChIJ__8Pahqv2EcRxhvgXQx6nSc",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 10,
+        "isAdvertisement": false,
+        "imageUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wDVE0xuI0sphxUd4suLe8Q&cb_client=search.gws-prod.gps&w=408&h=240&yaw=255.02478&pitch=0&thumbfov=100",
+        "kgmid": "/g/11gmjkgdbx"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "LDD plumbing",
+      "category": "Plumber",
+      "address": "Federation road,abbeywood, Abbey Wood, London SE2 0BB, United Kingdom",
+      "city": "London",
+      "phone": "+44 7473 464477",
+      "normalizedPhone": "+447473464477",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 3,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=LDD%20plumbing&query_place_id=ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+      "raw": {
+        "title": "LDD plumbing",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Federation road,abbeywood, Abbey Wood, London SE2 0BB, United Kingdom",
+        "neighborhood": "Abbey Wood",
+        "street": "Federation road,abbeywood",
+        "city": "London",
+        "postalCode": "SE2 0BB",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 7473 464477",
+        "phoneUnformatted": "+447473464477",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4869633,
+          "lng": 0.1188733
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x47d8af0d87582883:0x68c571ccd0d37543",
+        "cid": "7549565474847290691",
+        "reviewsCount": 3,
+        "imagesCount": 12,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-15T08:00:31.451Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=LDD%20plumbing&query_place_id=ChIJgyhYhw2v2EcRQ3XT0MxxxWg",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.489304,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 11,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHtz7C2o-ymXB72YVJgMLcChrwJTPtioqhuk2va9jATokQGresRXveX4UheT81W5IgY8h6FdI1esrN5QBQ1lTPvlJ4pyVch59tVu9VznYy_4BAYtMpm5z1pga8JTCN8lxQAQ6agTw=w408-h544-k-no",
+        "kgmid": "/g/11w__lfxsd"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    }
+  ],
+  "importResults": [
+    {
+      "status": "duplicate",
+      "id": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+      "duplicate": {
+        "id": "7c062f56-22a0-4e11-b93f-e7f08a52f533",
+        "name": "London City Plumbers",
+        "phone": "+44 7546 185778"
+      }
+    },
+    {
+      "status": "duplicate",
+      "id": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+      "duplicate": {
+        "id": "a608e0d4-f70b-49ad-a897-e4d180faed96",
+        "name": "AJD Plumbing Services Ltd - South East London & Kent",
+        "phone": "+44 7905 231110"
+      }
+    },
+    {
+      "status": "duplicate",
+      "id": "62e481fc-833b-47e3-8479-13a842c804e9",
+      "duplicate": {
+        "id": "62e481fc-833b-47e3-8479-13a842c804e9",
+        "name": "London Emergency Plumbers Ltd",
+        "phone": "+44 7778 486101"
+      }
+    },
+    {
+      "status": "imported",
+      "id": "38e35d7d-4a7a-4fb7-b681-f8273e41d4f7",
+      "row": {
+        "id": "38e35d7d-4a7a-4fb7-b681-f8273e41d4f7",
+        "name": "Dave Morrison Plumbing & Heating",
+        "phone": "+44 7931 727255",
+        "score": 53
+      }
+    },
+    {
+      "status": "duplicate",
+      "id": "638c833b-d847-430f-b75e-3abfb5a0e455",
+      "duplicate": {
+        "id": "638c833b-d847-430f-b75e-3abfb5a0e455",
+        "name": "LDD plumbing",
+        "phone": "+44 7473 464477"
+      }
+    }
+  ]
+}

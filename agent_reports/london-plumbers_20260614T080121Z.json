@@ -1,0 +1,1649 @@
+{
+  "target": "London plumbers",
+  "options": {
+    "industry": "plumbers",
+    "location": "London",
+    "maxPlaces": 10,
+    "minScore": 45,
+    "limit": 5,
+    "import": true
+  },
+  "leads": [
+    {
+      "name": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7955 014805",
+      "normalizedPhone": "+447955014805",
+      "website": "https://www.azasons.com/",
+      "websiteHost": "azasons.com",
+      "rating": 5,
+      "reviews": 396,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Aza%20%26%20Sons%20Services%20Domestic%20%26%20Commercial%20Plumber%2C%20Gas%20Engineer%20%26%20Ac%20Engineer%20In%20London%20Ltd&query_place_id=ChIJ__-vhTcddkgRGxi-eGMLxBE",
+      "raw": {
+        "title": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "https://www.azasons.com/",
+        "phone": "+44 7955 014805",
+        "phoneUnformatted": "+447955014805",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5286416,
+          "lng": -0.1015987
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ__-vhTcddkgRGxi-eGMLxBE",
+        "categories": [
+          "Plumber",
+          "Air conditioning contractor",
+          "Air conditioning repair service",
+          "Electrical engineer",
+          "Electrician",
+          "Service establishment",
+          "Gas engineer",
+          "Gas installation service",
+          "Gasfitter",
+          "Heating contractor",
+          "HVAC contractor"
+        ],
+        "fid": "0x48761d3785afffff:0x11c40b6378be181b",
+        "cid": "1280160715935455259",
+        "reviewsCount": 396,
+        "imagesCount": 400,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Arabic": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Aza%20%26%20Sons%20Services%20Domestic%20%26%20Commercial%20Plumber%2C%20Gas%20Engineer%20%26%20Ac%20Engineer%20In%20London%20Ltd&query_place_id=ChIJ__-vhTcddkgRGxi-eGMLxBE",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 11,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAH3p6HEr2Lv4d3I2Nm7EpWFLYH0OomUtL_IvV8IH3OGMu0vKZVoprSTNWb0ffW9-cpA69LuLlkJldJoYpiAZuKLBThvrwLT1EXt0_7ASiyAuT5xYjn3oxIFALMv5UrgZnhIWyzcsQ=w408-h306-k-no",
+        "kgmid": "/g/11hd56g5lm"
+      },
+      "opportunityScore": 58,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Peak Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7854 029809",
+      "normalizedPhone": "+447854029809",
+      "website": null,
+      "websiteHost": null,
+      "rating": null,
+      "reviews": 0,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Peak%20Plumbers%20Ltd&query_place_id=ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+      "raw": {
+        "title": "Peak Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7854 029809",
+        "phoneUnformatted": "+447854029809",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3985104,
+          "lng": 0.1430715
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": null,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Drainage service",
+          "Service establishment",
+          "Property maintenance",
+          "Repair service"
+        ],
+        "fid": "0x47d8acb064bac6e1:0xa90df17bc5458741",
+        "cid": "12181658080999999297",
+        "reviewsCount": null,
+        "imagesCount": 6,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Peak%20Plumbers%20Ltd&query_place_id=ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 10,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEIKmyP2PHk7wAtHudFybEurk428Pm7u3pyUg4x3LwUmwfYCpHbkhbCIOgmLHXhqZTcKR091FhduYEaWfHtbt6ksT92yrf7SZrMWHi-dTp9_-p0UDIaXXoRsUJq7COKNdOlw38=w408-h273-k-no",
+        "kgmid": "/g/11f2x009j1"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Piccadilly plumbers - London",
+      "category": "Plumber",
+      "address": "Fitzroy St, London W1T 6EB, United Kingdom",
+      "city": "London",
+      "phone": "+44 20 3051 0655",
+      "normalizedPhone": "+442030510655",
+      "website": "http://www.piccadillyplumbers.com/",
+      "websiteHost": "piccadillyplumbers.com",
+      "rating": 5,
+      "reviews": 34,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Piccadilly%20plumbers%20-%20London&query_place_id=ChIJ4eWhkVAbdkgRstodKP4AFdA",
+      "raw": {
+        "title": "Piccadilly plumbers - London",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Fitzroy St, London W1T 6EB, United Kingdom",
+        "neighborhood": null,
+        "street": "Fitzroy St",
+        "city": "London",
+        "postalCode": "W1T 6EB",
+        "state": null,
+        "countryCode": "GB",
+        "website": "http://www.piccadillyplumbers.com/",
+        "phone": "+44 20 3051 0655",
+        "phoneUnformatted": "+442030510655",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5240086,
+          "lng": -0.1406233
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ4eWhkVAbdkgRstodKP4AFdA",
+        "categories": [
+          "Plumber",
+          "House clearance service",
+          "Scrap metal dealer",
+          "Waste management service"
+        ],
+        "fid": "0x48761b5091a1e5e1:0xd01500fe281ddab2",
+        "cid": "14993891625994672818",
+        "reviewsCount": 34,
+        "imagesCount": 30,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.930Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Piccadilly%20plumbers%20-%20London&query_place_id=ChIJ4eWhkVAbdkgRstodKP4AFdA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 15,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHOcSa8QhzTtXGKBhNlQvSYxDBr7kvivOC5YUjr05WhdLbTkTUHshLB1FJPGGvJHaOZX0O2o0P7cXPzdK2cNc0t0p5iBC4bO7T3A6J7H0hBFtgHaKSgd1drmsqX-6wRGVpQ4uQBvQCM9Co_=w408-h882-k-no",
+        "kgmid": "/g/11zkltnhsn"
+      },
+      "opportunityScore": 38,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    },
+    {
+      "name": "My London Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7988 756241",
+      "normalizedPhone": "+447988756241",
+      "website": "http://www.mylondonplumbers.co.uk/",
+      "websiteHost": "mylondonplumbers.co.uk",
+      "rating": 5,
+      "reviews": 177,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=My%20London%20Plumbers%20Ltd&query_place_id=ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+      "raw": {
+        "title": "My London Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "http://www.mylondonplumbers.co.uk/",
+        "phone": "+44 7988 756241",
+        "phoneUnformatted": "+447988756241",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4137222,
+          "lng": -0.2205029
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+        "categories": [
+          "Plumber",
+          "Service establishment",
+          "Gasfitter"
+        ],
+        "fid": "0x4876077723598be5:0x647b6df84e26407a",
+        "cid": "7240501739158651002",
+        "reviewsCount": 177,
+        "imagesCount": 348,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Cash-only": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=My%20London%20Plumbers%20Ltd&query_place_id=ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 13,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAFILxqP5QYzLov2sKtNOKzif6UbAcZPuQObY0U5Jp8YvqRQwSLqgnq9vTcjiaqZX3QA4yoS1y0_0WeI-AG26hITElTFYDioJAw9ToIGez8rymrdnEcnbw3CFM9hlMUag2HDbL_P=w408-h272-k-no",
+        "kgmid": "/g/11j3qr3925"
+      },
+      "opportunityScore": 31,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "City Plumbers London",
+      "category": "Plumber",
+      "address": "City Plumbers, 27 Old Gloucester St, London WC1N 3AX, United Kingdom",
+      "city": "London",
+      "phone": "+44 20 3916 6168",
+      "normalizedPhone": "+442039166168",
+      "website": "https://cityplumberslondon.co.uk/",
+      "websiteHost": "cityplumberslondon.co.uk",
+      "rating": 5,
+      "reviews": 98,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=City%20Plumbers%20London&query_place_id=ChIJSR6PKPYbdkgRV0FMK9ENW1s",
+      "raw": {
+        "title": "City Plumbers London",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "City Plumbers, 27 Old Gloucester St, London WC1N 3AX, United Kingdom",
+        "neighborhood": null,
+        "street": "City Plumbers, 27 Old Gloucester St",
+        "city": "London",
+        "postalCode": "WC1N 3AX",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://cityplumberslondon.co.uk/",
+        "phone": "+44 20 3916 6168",
+        "phoneUnformatted": "+442039166168",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5213336,
+          "lng": -0.1519668
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJSR6PKPYbdkgRV0FMK9ENW1s",
+        "categories": [
+          "Plumber",
+          "Drainage service",
+          "Gas engineer",
+          "Heating contractor"
+        ],
+        "fid": "0x48761bf6288f1e49:0x5b5b0dd12b4c4157",
+        "cid": "6582870472357855575",
+        "reviewsCount": 98,
+        "imagesCount": 9,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=City%20Plumbers%20London&query_place_id=ChIJSR6PKPYbdkgRV0FMK9ENW1s",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 14,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAH2AiBnFS18SAqINWC25F7EtnczL6tL-FgguxW-SbUfwCiTnvFMFu6iIyV2gSxQzs2nUGpki6ZOq7JiOuVXxaeERdElw-CfGvHNu5QXVvTzwnUzt8BFTpn4F4ooJ7cIz-izzcfH8TpW-Aw=w408-h373-k-no",
+        "kgmid": "/g/11wnjx78xb"
+      },
+      "opportunityScore": 31,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "AA Cooper LTD",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 1689 485007",
+      "normalizedPhone": "+441689485007",
+      "website": "http://www.aacooperplumbingandheating.co.uk/",
+      "websiteHost": "aacooperplumbingandheating.co.uk",
+      "rating": 4.6,
+      "reviews": 105,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=AA%20Cooper%20LTD&query_place_id=ChIJdzgCQ5Wy2EcRqHcSeOh_qqM",
+      "raw": {
+        "title": "AA Cooper LTD",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "http://www.aacooperplumbingandheating.co.uk/",
+        "phone": "+44 1689 485007",
+        "phoneUnformatted": "+441689485007",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3680304,
+          "lng": 0.1066634
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.6,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJdzgCQ5Wy2EcRqHcSeOh_qqM",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Boiler manufacturer",
+          "Boiler supplier",
+          "Service establishment",
+          "Gas engineer",
+          "Heating contractor",
+          "Water testing service"
+        ],
+        "fid": "0x47d8b29543023877:0xa3aa7fe8781277a8",
+        "cid": "11793379210646681512",
+        "reviewsCount": 105,
+        "imagesCount": 39,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.928Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "8 AM to 6 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "9 AM to 5 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "9 AM to 5 PM"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=AA%20Cooper%20LTD&query_place_id=ChIJdzgCQ5Wy2EcRqHcSeOh_qqM",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 3,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEIdzMXRwOLlQYcGgd7TRR7NHF0ikSk5MlrukD3L2rxzn-UrsXDbOjSzFInMV5b6hlIgPCYC5EZAl4b1cFrQrxDPNC7Oq7K9nEPqSiQ5bjJ528qturkx4lH8iCCRlWXf7HZJX6D=w408-h304-k-no",
+        "kgmid": "/g/11dxbpxz1_"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "East London Plumbers",
+      "category": "Plumber",
+      "address": "28 Wellington Way, Bow, London E3 4XA, United Kingdom",
+      "city": "London",
+      "phone": "+44 7735 743440",
+      "normalizedPhone": "+447735743440",
+      "website": "https://eastlondonplumber.com/",
+      "websiteHost": "eastlondonplumber.com",
+      "rating": 4.9,
+      "reviews": 176,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=East%20London%20Plumbers&query_place_id=ChIJE1Z8xC0ddkgR3wO6s2ENSlA",
+      "raw": {
+        "title": "East London Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "28 Wellington Way, Bow, London E3 4XA, United Kingdom",
+        "neighborhood": "Bow",
+        "street": "28 Wellington Way",
+        "city": "London",
+        "postalCode": "E3 4XA",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://eastlondonplumber.com/",
+        "phone": "+44 7735 743440",
+        "phoneUnformatted": "+447735743440",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5248227,
+          "lng": -0.0248716
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.9,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJE1Z8xC0ddkgR3wO6s2ENSlA",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Boiler supplier",
+          "Drainage service",
+          "Gas installation service",
+          "Heating equipment supplier"
+        ],
+        "fid": "0x48761d2dc47c5613:0x504a0d61b3ba03df",
+        "cid": "5785451384589124575",
+        "reviewsCount": 176,
+        "imagesCount": 9,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            }
+          ],
+          "Accessibility": [
+            {
+              "Wheelchair accessible seating": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=East%20London%20Plumbers&query_place_id=ChIJE1Z8xC0ddkgR3wO6s2ENSlA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 12,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEEWQrik8JWiXOPPbu9uf1rwm-m91s15fWikezpx-TAnFWYjzv7iHWRd39E-BhgGgPvtx5Zy4AaebgwBZUqYR14dFMJDJSRpnLWdpGo3ZFwSAs14sNVCzloO5vfXXy6uw6-XTxZ=w408-h544-k-no",
+        "kgmid": "/g/11y5vh49ds"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Expert Plumbers",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 20 8166 9723",
+      "normalizedPhone": "+442081669723",
+      "website": "https://expert-plumbers.co.uk/",
+      "websiteHost": "expert-plumbers.co.uk",
+      "rating": 5,
+      "reviews": 217,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Expert%20Plumbers&query_place_id=ChIJj_l7xPkddkgRXRL19v_M9iw",
+      "raw": {
+        "title": "Expert Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "https://expert-plumbers.co.uk/",
+        "phone": "+44 20 8166 9723",
+        "phoneUnformatted": "+442081669723",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4893323,
+          "lng": -0.0881552
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJj_l7xPkddkgRXRL19v_M9iw",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0x48761df9c47bf98f:0x2cf6ccfff6f5125d",
+        "cid": "3240002381671633501",
+        "reviewsCount": 217,
+        "imagesCount": 15,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.930Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Expert%20Plumbers&query_place_id=ChIJj_l7xPkddkgRXRL19v_M9iw",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 16,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHnZWBo_RGJt6W59E8tCWm1rCGhV3f2pIfBvRLshhRsa6MkpJbw90kkHojBIFSUQTtwGJDnSvYSABSgfHj7bZGjWdvVRpKp42vY2vAyw6wlHz_SGFG8jDFvsS7DLLysxYGixEr3dhzPtcjw=w408-h544-k-no",
+        "kgmid": "/g/11tddcvybq"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "London Emergency Plumbing",
+      "category": "Plumber",
+      "address": "144 Ladbroke Grove, London W10 5NE, United Kingdom",
+      "city": "London",
+      "phone": "+44 20 8064 1046",
+      "normalizedPhone": "+442080641046",
+      "website": "https://londonemergencyplumbing.co.uk/",
+      "websiteHost": "londonemergencyplumbing.co.uk",
+      "rating": 4.7,
+      "reviews": 359,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbing&query_place_id=ChIJWfBTriayTGMRifImy50x3Wk",
+      "raw": {
+        "title": "London Emergency Plumbing",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "144 Ladbroke Grove, London W10 5NE, United Kingdom",
+        "neighborhood": null,
+        "street": "144 Ladbroke Grove",
+        "city": "London",
+        "postalCode": "W10 5NE",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://londonemergencyplumbing.co.uk/",
+        "phone": "+44 20 8064 1046",
+        "phoneUnformatted": "+442080641046",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5180222,
+          "lng": -0.2101671
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.7,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJWfBTriayTGMRifImy50x3Wk",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Drainage service",
+          "Electrical installation service",
+          "Heating contractor",
+          "Plumbing supply store",
+          "Radiator repair service",
+          "Sanitation service",
+          "Water damage restoration service"
+        ],
+        "fid": "0x634cb226ae53f059:0x69dd319dcb26f289",
+        "cid": "7628307897623442057",
+        "reviewsCount": 359,
+        "imagesCount": 69,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.930Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Accessibility": [
+            {
+              "Assistive hearing loop": false
+            },
+            {
+              "Wheelchair accessible entrance": false
+            },
+            {
+              "Wheelchair accessible parking lot": false
+            },
+            {
+              "Wheelchair accessible restroom": false
+            },
+            {
+              "Wheelchair accessible seating": false
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=London%20Emergency%20Plumbing&query_place_id=ChIJWfBTriayTGMRifImy50x3Wk",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 17,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHY49auyD-U6lbxf5qpRzvPiOXutbDyFek17ndluTSZFmwq74raq2IVjLOmO2cG9bxxxK-zoaiEeo3IioauZkwcoGltNcP29rXB23QYxxvI9SxoA4Z8LIi1iPxM3LcykQEvOc_3dg=w408-h395-k-no",
+        "kgmid": "/g/11pv6c_y2_"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Pimlico Plumbers",
+      "category": "Plumber",
+      "address": "Pimlico House, 1 Sail St, London SE11 6NQ, United Kingdom",
+      "city": "London",
+      "phone": "+44 20 8108 0808",
+      "normalizedPhone": "+442081080808",
+      "website": "https://www.pimlicoplumbers.com/",
+      "websiteHost": "pimlicoplumbers.com",
+      "rating": 4,
+      "reviews": 6071,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pimlico%20Plumbers&query_place_id=ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+      "raw": {
+        "title": "Pimlico Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Pimlico House, 1 Sail St, London SE11 6NQ, United Kingdom",
+        "neighborhood": null,
+        "street": "Pimlico House, 1 Sail St",
+        "city": "London",
+        "postalCode": "SE11 6NQ",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.pimlicoplumbers.com/",
+        "phone": "+44 20 8108 0808",
+        "phoneUnformatted": "+442081080808",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4946311,
+          "lng": -0.115964
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+        "categories": [
+          "Plumber",
+          "Appliance repair service",
+          "Carpenter",
+          "Contractor",
+          "Drainage service",
+          "Electrician",
+          "Heating contractor",
+          "Roofing contractor"
+        ],
+        "fid": "0x487604bfe981a7d5:0x5c52ea845400c21e",
+        "cid": "6652637453645562398",
+        "reviewsCount": 6071,
+        "imagesCount": 87,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Onsite services": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Pimlico%20Plumbers&query_place_id=ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 7,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAE-N_b-ugfYIZkL0sNHB4RU9YLVrsHggOWWdJzr9r6z5hQ11a5D3uzVQaxYMF5y67Y9pue1RXTbzTxFWQ3eGBHMHl6qbfU0kyXVqOCrQ654-SZV6eT9Ohv8otzKZfam3f4MvO_M=w408-h272-k-no",
+        "kgmid": "/g/1tr1711v"
+      },
+      "opportunityScore": 11,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    }
+  ],
+  "selected": [
+    {
+      "name": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7955 014805",
+      "normalizedPhone": "+447955014805",
+      "website": "https://www.azasons.com/",
+      "websiteHost": "azasons.com",
+      "rating": 5,
+      "reviews": 396,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Aza%20%26%20Sons%20Services%20Domestic%20%26%20Commercial%20Plumber%2C%20Gas%20Engineer%20%26%20Ac%20Engineer%20In%20London%20Ltd&query_place_id=ChIJ__-vhTcddkgRGxi-eGMLxBE",
+      "raw": {
+        "title": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "https://www.azasons.com/",
+        "phone": "+44 7955 014805",
+        "phoneUnformatted": "+447955014805",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.5286416,
+          "lng": -0.1015987
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ__-vhTcddkgRGxi-eGMLxBE",
+        "categories": [
+          "Plumber",
+          "Air conditioning contractor",
+          "Air conditioning repair service",
+          "Electrical engineer",
+          "Electrician",
+          "Service establishment",
+          "Gas engineer",
+          "Gas installation service",
+          "Gasfitter",
+          "Heating contractor",
+          "HVAC contractor"
+        ],
+        "fid": "0x48761d3785afffff:0x11c40b6378be181b",
+        "cid": "1280160715935455259",
+        "reviewsCount": 396,
+        "imagesCount": 400,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Arabic": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Aza%20%26%20Sons%20Services%20Domestic%20%26%20Commercial%20Plumber%2C%20Gas%20Engineer%20%26%20Ac%20Engineer%20In%20London%20Ltd&query_place_id=ChIJ__-vhTcddkgRGxi-eGMLxBE",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 11,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAH3p6HEr2Lv4d3I2Nm7EpWFLYH0OomUtL_IvV8IH3OGMu0vKZVoprSTNWb0ffW9-cpA69LuLlkJldJoYpiAZuKLBThvrwLT1EXt0_7ASiyAuT5xYjn3oxIFALMv5UrgZnhIWyzcsQ=w408-h306-k-no",
+        "kgmid": "/g/11hd56g5lm"
+      },
+      "opportunityScore": 58,
+      "reasons": [
+        "thin website content",
+        "weak conversion CTA",
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Peak Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7854 029809",
+      "normalizedPhone": "+447854029809",
+      "website": null,
+      "websiteHost": null,
+      "rating": null,
+      "reviews": 0,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Peak%20Plumbers%20Ltd&query_place_id=ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+      "raw": {
+        "title": "Peak Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7854 029809",
+        "phoneUnformatted": "+447854029809",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3985104,
+          "lng": 0.1430715
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": null,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+        "categories": [
+          "Plumber",
+          "Bathroom remodeler",
+          "Drainage service",
+          "Service establishment",
+          "Property maintenance",
+          "Repair service"
+        ],
+        "fid": "0x47d8acb064bac6e1:0xa90df17bc5458741",
+        "cid": "12181658080999999297",
+        "reviewsCount": null,
+        "imagesCount": 6,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-14T08:00:56.929Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Peak%20Plumbers%20Ltd&query_place_id=ChIJ4ca6ZLCs2EcRQYdFxXvxDak",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,0.184284196129347,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 10,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEIKmyP2PHk7wAtHudFybEurk428Pm7u3pyUg4x3LwUmwfYCpHbkhbCIOgmLHXhqZTcKR091FhduYEaWfHtbt6ksT92yrf7SZrMWHi-dTp9_-p0UDIaXXoRsUJq7COKNdOlw38=w408-h273-k-no",
+        "kgmid": "/g/11f2x009j1"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    }
+  ],
+  "importResults": [
+    {
+      "status": "imported",
+      "id": "7dbeba24-8cfd-4d06-a357-c98e066d0b31",
+      "row": {
+        "id": "7dbeba24-8cfd-4d06-a357-c98e066d0b31",
+        "name": "Aza & Sons Services Domestic & Commercial Plumber, Gas Engineer & Ac Engineer In London Ltd",
+        "phone": "+44 7955 014805",
+        "score": 58
+      }
+    },
+    {
+      "status": "imported",
+      "id": "922cb66c-61fa-40bf-aa02-35436abf26fc",
+      "row": {
+        "id": "922cb66c-61fa-40bf-aa02-35436abf26fc",
+        "name": "Peak Plumbers Ltd",
+        "phone": "+44 7854 029809",
+        "score": 53
+      }
+    }
+  ]
+}

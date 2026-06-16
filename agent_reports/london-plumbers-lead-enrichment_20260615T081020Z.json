@@ -1,0 +1,102 @@
+{
+  "target": "London plumbers",
+  "write": true,
+  "enriched": [
+    {
+      "leadId": "38e35d7d-4a7a-4fb7-b681-f8273e41d4f7",
+      "businessName": "Dave Morrison Plumbing & Heating",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "tradie-bold",
+        "recommendedTemplateName": "Tradie Bold",
+        "templateReason": "Trade/local service business detected; tradie-bold is the strongest existing template for direct calls, quote CTAs, reviews, FAQ, and before/after gallery proof.",
+        "templateRegistryVersion": "riden-template-registry-v1",
+        "variantPlan": {
+          "businessNiche": "plumber",
+          "primaryTemplateId": "tradie-bold",
+          "strategy": "Use existing templates first; later add AI-from-scratch generation for three tailored conversion variants per business after user approval.",
+          "variants": [
+            {
+              "variant": "A",
+              "templateId": "tradie-bold",
+              "templateName": "Tradie Bold",
+              "status": "active_existing_template",
+              "angle": "Emergency/local trade conversion angle"
+            },
+            {
+              "variant": "B",
+              "templateId": "modern-minimal",
+              "templateName": "Modern Minimal",
+              "status": "active_existing_template",
+              "angle": "Premium/trust-led alternate angle"
+            },
+            {
+              "variant": "C",
+              "templateId": "ai-generated-custom",
+              "templateName": "AI-generated custom niche template",
+              "status": "future_requires_approval",
+              "angle": "Future scratch-built specialist agent version; not generated until approved and connector is built."
+            }
+          ]
+        },
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in London.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a tradie-bold concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They have a small Google review footprint (5 stars from 2 reviews).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    }
+  ]
+}

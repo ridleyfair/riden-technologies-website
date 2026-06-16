@@ -1,0 +1,136 @@
+{
+  "target": "London plumbers",
+  "write": true,
+  "enriched": [
+    {
+      "leadId": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "businessName": "Kenley Plumbers",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "plumber-emergency-local",
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in London.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a plumber-emergency-local concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They already have some useful social proof (5 stars from 6 reviews).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    },
+    {
+      "leadId": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "businessName": "Plumb London",
+      "websiteSignals": {
+        "hasWebsite": false
+      },
+      "quality": {
+        "grade": "missing",
+        "opportunityScore": 90,
+        "summary": "No website found or listed. Strong opportunity for a mobile-friendly local trade site.",
+        "painPoints": [
+          "No website found",
+          "No owned online presence",
+          "Harder to convert Google searches into enquiries"
+        ]
+      },
+      "profile": {
+        "niche": "plumber",
+        "recommendedTemplate": "plumber-emergency-local",
+        "homepageSections": [
+          "Emergency plumbing hero with click-to-call CTA",
+          "Google reviews and local trust strip",
+          "Core services grid: leaks, boilers, drains, bathrooms, heating",
+          "Before/after job gallery",
+          "Service area coverage section",
+          "Fast quote/contact form"
+        ],
+        "servicePages": [
+          "Emergency plumbing",
+          "Boiler repair",
+          "Leak repair",
+          "Blocked drains",
+          "Bathroom fitting",
+          "Central heating"
+        ],
+        "galleryStrategy": [
+          "Use before/after repair photos where available",
+          "Group photos by job type: leaks, boilers, bathrooms, drainage",
+          "Prioritise real vans, team, tools, and completed work over generic stock photos"
+        ],
+        "trustSignals": [
+          "Google reviews",
+          "Local service areas",
+          "Emergency availability",
+          "Qualified/insured wording only if verified",
+          "Clear phone CTA"
+        ],
+        "ctaStrategy": "Primary CTA should be call/request quote, repeated above the fold and after services/gallery."
+      },
+      "angle": {
+        "primaryAngle": "No website presence found for a plumber business in Purley.",
+        "suggestedWhatsAppHook": "I noticed there wasn’t much of a website presence showing and thought a quick example of a local plumber site could be useful.",
+        "websiteFactoryBrief": "Create a plumber-emergency-local concept focused on Primary CTA should be call/request quote, repeated above the fold and after services/gallery.",
+        "evidence": [
+          "They have a small Google review footprint (1 stars from 1 review).",
+          "No website found or listed. Strong opportunity for a mobile-friendly local trade site."
+        ],
+        "claimsToAvoid": [
+          "Guaranteed enquiries",
+          "Verified qualifications unless source confirms it",
+          "Fake urgency",
+          "Claims about revenue uplift"
+        ]
+      }
+    }
+  ]
+}
