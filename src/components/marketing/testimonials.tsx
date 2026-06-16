@@ -1,247 +1,150 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Star, Quote, MessageSquareQuote } from "lucide-react";
+import { TESTIMONIALS, HAS_REAL_TESTIMONIALS, type Testimonial } from "@/lib/testimonials";
 
-const testimonials = [
-  {
-    name: "Marcus Chen",
-    role: "CEO",
-    company: "TechVenture Co.",
-    avatar: "MC",
-    avatarBg: "from-blue-500 to-cyan-500",
-    rating: 5,
-    text: "Riden Technologies completely transformed our digital presence. Our new AI-powered website generated 3x more leads in the first month alone. The CRM system they built has become the backbone of our entire sales operation.",
-  },
-  {
-    name: "Sarah Williams",
-    role: "Founder",
-    company: "Elevate Health",
-    avatar: "SW",
-    avatarBg: "from-violet-500 to-purple-500",
-    rating: 5,
-    text: "The automation system they built for us saves 40+ hours per week. From lead capture to client onboarding, everything runs automatically. It's like having a team of 10 working 24/7 without the overhead.",
-  },
-  {
-    name: "James Rodriguez",
-    role: "Director of Growth",
-    company: "Nexus Properties",
-    avatar: "JR",
-    avatarBg: "from-emerald-500 to-teal-500",
-    rating: 5,
-    text: "We went from struggling with spreadsheets to having a world-class CRM in under 2 weeks. The lead scoring AI alone increased our conversion rate by 67%. Riden Technologies delivers enterprise quality at a fraction of the cost.",
-  },
-  {
-    name: "Priya Patel",
-    role: "CMO",
-    company: "CloudScale SaaS",
-    avatar: "PP",
-    avatarBg: "from-rose-500 to-pink-500",
-    rating: 5,
-    text: "Honestly the best investment we've made in our business. The website they generated ranks on page 1 for our target keywords, and the integrated CRM has completely streamlined our sales process. ROI was immediate.",
-  },
-  {
-    name: "David Kim",
-    role: "Owner",
-    company: "Kim Law Group",
-    avatar: "DK",
-    avatarBg: "from-amber-500 to-orange-500",
-    rating: 5,
-    text: "As a law firm, we needed something professional and compliant. Riden delivered a stunning website with a client portal that our clients love. The booking system alone has eliminated all the back-and-forth scheduling.",
-  },
-  {
-    name: "Lisa Thompson",
-    role: "VP Operations",
-    company: "RetailEdge Inc.",
-    avatar: "LT",
-    avatarBg: "from-cyan-500 to-blue-500",
-    rating: 5,
-    text: "The analytics dashboard gives us insights we never had before. We can see exactly where our leads come from, which automations are working, and where revenue is growing. Decision-making has never been this data-driven.",
-  },
-];
-
-const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
+const accentMap: Record<Testimonial["accent"], string> = {
+  blue: "from-blue-500 to-cyan-500",
+  violet: "from-violet-500 to-purple-500",
+  cyan: "from-cyan-500 to-blue-500",
+  emerald: "from-emerald-500 to-teal-500",
+  amber: "from-amber-500 to-orange-500",
 };
 
-function TestimonialCard({ t }: { t: (typeof testimonials)[0] }) {
+function TestimonialCard({ t, index }: { t: Testimonial; index: number }) {
   return (
-    <div className="glass-card rounded-2xl p-5 border border-riden-border hover:border-white/10 transition-all duration-300 group">
-      <Quote size={22} className="text-blue-400/30 mb-3" />
-      <div className="flex items-center gap-1 mb-3">
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ delay: (index % 3) * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`relative rounded-2xl p-6 sm:p-7 ${
+        t.isPlaceholder
+          ? "bg-slate-50 border border-dashed border-slate-300"
+          : "card-light"
+      }`}
+    >
+      {t.isPlaceholder && (
+        <span className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-white border border-slate-200 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+          Sample
+        </span>
+      )}
+
+      <Quote
+        size={24}
+        className={`mb-4 ${t.isPlaceholder ? "text-slate-300" : "text-blue-200"}`}
+      />
+      <div className="flex items-center gap-1 mb-4">
         {Array.from({ length: t.rating }).map((_, j) => (
-          <Star key={j} size={13} className="text-amber-400 fill-current" />
+          <Star
+            key={j}
+            size={14}
+            className={`fill-current ${t.isPlaceholder ? "text-slate-300" : "text-amber-400"}`}
+          />
         ))}
       </div>
-      <p className="text-sm text-slate-300 leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
+      <p
+        className={`text-sm leading-relaxed mb-6 ${
+          t.isPlaceholder ? "text-slate-500" : "text-slate-600"
+        }`}
+      >
+        &ldquo;{t.quote}&rdquo;
+      </p>
       <div className="flex items-center gap-3">
         <div
-          className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-sm font-bold text-white shrink-0`}
+          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+            t.isPlaceholder
+              ? "bg-slate-200 text-slate-400"
+              : `bg-gradient-to-br ${accentMap[t.accent]} text-white`
+          }`}
         >
-          {t.avatar}
+          {t.initials}
         </div>
         <div>
-          <div className="text-sm font-semibold text-white">{t.name}</div>
-          <div className="text-xs text-slate-500">
-            {t.role} · {t.company}
+          <div
+            className={`text-sm font-semibold ${
+              t.isPlaceholder ? "text-slate-500" : "text-slate-900"
+            }`}
+          >
+            {t.name}
           </div>
+          <div className="text-xs text-slate-500">{t.business}</div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+};
+
 export default function Testimonials() {
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
-
-  const go = (index: number) => {
-    setDirection(index > current ? 1 : -1);
-    setCurrent(index);
-  };
-
-  const prev = () => go((current - 1 + testimonials.length) % testimonials.length);
-  const next = () => go((current + 1) % testimonials.length);
-
   return (
-    <section className="relative py-12 sm:py-20 lg:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-riden-dark via-riden-surface to-riden-dark" />
+    <section className="relative py-20 sm:py-28 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+      {/* soft brand wash */}
+      <div className="pointer-events-none absolute -top-24 left-0 h-72 w-72 rounded-full bg-amber-100/40 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-blue-100/40 blur-3xl" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-amber-500/20 text-sm text-amber-300 mb-6"
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <motion.span
+            {...fadeUp}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold tracking-wide ring-1 ring-blue-100"
           >
-            <Star size={14} className="fill-current" />
-            <span>Client Success Stories</span>
-          </motion.div>
+            <Star size={13} className="fill-current text-amber-500" />
+            What Our Clients Say
+          </motion.span>
 
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
+            {...fadeUp}
+            transition={{ delay: 0.05 }}
+            className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight text-slate-900"
           >
-            Trusted by <span className="gradient-text">500+ Businesses</span>
+            Loved by{" "}
+            <span className="gradient-text-brand">local businesses</span>
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto"
+            {...fadeUp}
+            transition={{ delay: 0.1 }}
+            className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed"
           >
-            From startups to enterprises, businesses across every industry trust
-            Riden Technologies to power their digital growth.
+            {HAS_REAL_TESTIMONIALS
+              ? "Real words from the trades and service businesses we've helped grow."
+              : "We're just getting started. These are sample cards, ready to fill with real reviews from our clients."}
           </motion.p>
         </div>
 
-        {/* Mobile / Tablet carousel — hidden on lg+ */}
-        <div className="lg:hidden">
-          <div className="relative overflow-hidden">
-            <AnimatePresence initial={false} custom={direction} mode="wait">
-              <motion.div
-                key={current}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.28, ease: "easeInOut" }}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.15}
-                onDragEnd={(_, info) => {
-                  if (info.offset.x < -50) next();
-                  else if (info.offset.x > 50) prev();
-                }}
-                className="flex justify-center cursor-grab active:cursor-grabbing select-none"
-              >
-                <div className="w-[92%]">
-                  <TestimonialCard t={testimonials[current]} />
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-center gap-4 mt-5">
-            <button
-              onClick={prev}
-              className="w-8 h-8 rounded-full glass border border-riden-border flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              aria-label="Previous review"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            <div className="flex items-center gap-2">
-              {testimonials.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => go(i)}
-                  className={`rounded-full transition-all duration-200 ${
-                    i === current
-                      ? "w-5 h-2 bg-blue-400"
-                      : "w-2 h-2 bg-slate-600 hover:bg-slate-400"
-                  }`}
-                  aria-label={`Go to review ${i + 1}`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={next}
-              className="w-8 h-8 rounded-full glass border border-riden-border flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              aria-label="Next review"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop grid — unchanged, hidden below lg */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.6 }}
-              className="glass-card rounded-2xl p-6 border border-riden-border hover:border-white/10 transition-all duration-300 group"
-            >
-              <Quote size={24} className="text-blue-400/30 mb-4" />
-              <div className="flex items-center gap-1 mb-4">
-                {Array.from({ length: t.rating }).map((_, j) => (
-                  <Star key={j} size={14} className="text-amber-400 fill-current" />
-                ))}
-              </div>
-              <p className="text-sm text-slate-300 leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.avatarBg} flex items-center justify-center text-sm font-bold text-white`}
-                >
-                  {t.avatar}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-white">{t.name}</div>
-                  <div className="text-xs text-slate-500">
-                    {t.role} · {t.company}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {TESTIMONIALS.map((t, i) => (
+            <TestimonialCard key={i} t={t} index={i} />
           ))}
         </div>
+
+        {!HAS_REAL_TESTIMONIALS && (
+          <motion.div
+            {...fadeUp}
+            transition={{ delay: 0.2 }}
+            className="flex items-center justify-center gap-2 mt-10 text-sm text-slate-500"
+          >
+            <MessageSquareQuote size={15} />
+            <span>
+              Worked with us?{" "}
+              <Link
+                href="/contact"
+                className="text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-colors"
+              >
+                We&apos;d love your review.
+              </Link>
+            </span>
+          </motion.div>
+        )}
       </div>
     </section>
   );

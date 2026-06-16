@@ -1,18 +1,39 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/marketing/navbar";
 import Footer from "@/components/marketing/footer";
+import MotionProvider from "@/components/marketing/motion-provider";
 import Hero from "@/components/marketing/hero";
-import CTASection from "@/components/marketing/cta-section";
-import TrustedBrands from "@/components/marketing/trusted-brands";
-import ProcessSection from "@/components/marketing/process-section";
+import ProcessScrollStory from "@/components/marketing/process-scroll-story";
+import WebsiteExamples from "@/components/marketing/website-examples";
+import Services from "@/components/marketing/services";
+import WhyChooseRiden from "@/components/marketing/why-choose-riden";
+import PricingSection from "@/components/marketing/pricing-section";
+import Testimonials from "@/components/marketing/testimonials";
 import FAQSection from "@/components/marketing/faq-section";
-import { AnimatedHero } from "@/components/ui/animated-hero";
+import CTASection from "@/components/marketing/cta-section";
 
 export const metadata: Metadata = {
-  title: "Riden Technologies | Web Design Agency London | Websites for Small Businesses",
+  title: "Riden Technologies | Websites for Trades & Small Businesses UK",
   description:
-    "London-based web design agency building professional websites for small businesses, tradespeople, and local companies across the UK. Get online in 2–5 business days from £299. No hidden fees.",
+    "Professional website design for UK trades and small businesses: plumbers, electricians, builders, carpenters and local services. We design, build, host and manage your website with SEO included. One simple plan: £199 build + £29.99/month. Get a free website preview.",
+  keywords: [
+    "websites for trades",
+    "websites for small businesses UK",
+    "website design for trades",
+    "websites for plumbers",
+    "websites for builders",
+    "website design for electricians",
+    "small business website design UK",
+    "local business website",
+  ],
   alternates: { canonical: "https://ridentechnologies.com" },
+  openGraph: {
+    title: "Websites Built To Bring Local Businesses More Enquiries",
+    description:
+      "We design, build and manage professional websites for UK trades and service businesses, with hosting, updates and SEO handled for you.",
+    url: "https://ridentechnologies.com",
+    type: "website",
+  },
 };
 
 const jsonLd = {
@@ -53,7 +74,7 @@ const jsonLd = {
       "@id": "https://ridentechnologies.com/#localbusiness",
       name: "Riden Technologies",
       description:
-        "London-based web design agency building professional websites for small businesses, tradespeople, and local companies across the UK.",
+        "UK web design agency building professional websites for trades, local service businesses and small companies. Website design, SEO, hosting and ongoing support managed for you.",
       url: "https://ridentechnologies.com",
       telephone: "",
       email: "inquiries@ridentechnologies.com",
@@ -79,16 +100,29 @@ const jsonLd = {
     {
       "@type": "Service",
       "@id": "https://ridentechnologies.com/#service-website",
-      name: "Website Design & Build",
+      serviceType: "Website design, SEO, hosting and support for small businesses",
+      name: "Website Design for Trades & Small Businesses",
       provider: { "@id": "https://ridentechnologies.com/#organization" },
       description:
-        "Professional website design and development for small businesses, tradespeople, and local companies across the UK. Live in 2–5 business days.",
-      areaServed: "GB",
+        "Professional website design, local SEO, fast hosting and ongoing support for UK trades and local service businesses including plumbers, electricians, builders, carpenters, roofers, landscapers and beauty professionals.",
+      areaServed: { "@type": "Country", name: "United Kingdom" },
+      audience: {
+        "@type": "Audience",
+        audienceType:
+          "Plumbers, electricians, builders, carpenters, roofers, landscapers, beauty therapists, fitness coaches and local service businesses",
+      },
       offers: {
         "@type": "Offer",
-        price: "299",
         priceCurrency: "GBP",
-        description: "Setup fee from £299. Monthly plans from £49/month.",
+        price: "29.99",
+        description:
+          "One simple plan: £199 one-time build fee plus £29.99/month covering website design, hosting, SSL, local SEO, unlimited updates and UK support. No long-term contract.",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "29.99",
+          priceCurrency: "GBP",
+          unitText: "MONTH",
+        },
       },
     },
     {
@@ -96,42 +130,66 @@ const jsonLd = {
       mainEntity: [
         {
           "@type": "Question",
-          name: "How quickly can you build and launch my website?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Most websites are fully designed, built, and launched within 2–5 business days. For larger projects we'll give you a precise timeline during your discovery call.",
-          },
-        },
-        {
-          "@type": "Question",
           name: "How much does a website cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Our Pro plan starts at £299 setup + £49/month. Pro+ is £499 setup + £99/month. Enterprise is £999 setup + £199/month. All plans include hosting, SSL, and unlimited updates.",
+            text: "We keep it simple with one plan: a £199 one-time build fee plus £29.99/month. That covers your website design, hosting, SSL, local SEO, unlimited updates and UK support. There are no hidden fees and no long-term contracts.",
           },
         },
         {
           "@type": "Question",
-          name: "Do you build websites for tradespeople?",
+          name: "Do you manage updates for me?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes, we specialise in websites for tradespeople and local service businesses including plumbers, electricians, builders, landscapers, and more.",
+            text: "Yes. We handle all the updates for you. Need new photos, a price change or a new service added? Just send it over and we'll make the changes, usually the same day. You never have to log in or touch any code.",
           },
         },
         {
           "@type": "Question",
-          name: "Is there a money-back guarantee?",
+          name: "Can I preview the website first?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. We offer a 14-day money-back guarantee on all plans. If you're not satisfied with your website, we'll refund your setup fee in full.",
+            text: "Absolutely. We build a live preview of your website around your business so you can see exactly what it will look like before anything goes live. You review it and request any changes until you're happy.",
           },
         },
         {
           "@type": "Question",
-          name: "Do I need any technical knowledge?",
+          name: "Do you help with SEO?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Not at all. We handle everything from design to launch. You just tell us about your business and we do the rest.",
+            text: "Yes. Every website is set up to be found on Google for the services you offer in the areas you work. Higher plans include advanced local SEO, service-specific pages and Google Business optimisation.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can you redesign my old website?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Of course. Got an old or tired website that isn't winning you work? We rebuild it into something modern and easy to use, keeping the bits that work and refreshing the rest, so it brings in more enquiries.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can I use my own domain?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Of course. If you already have a domain we'll connect it for you, and if you don't have one yet we'll help you choose and set one up. We handle all the technical bits.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How quickly can my website go live?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Most websites are designed, built and launched within days, not months. You'll usually see your preview within a few working days, and once you're happy we publish it live and handle the rest.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Do I need to do anything technical?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Not at all. We take care of the design, hosting, domain, updates and SEO for you. There's nothing to install and nothing to log into. Just tell us what you need and we make it happen.",
           },
         },
       ],
@@ -146,16 +204,23 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Navbar />
-      <main>
-        <Hero />
-        <TrustedBrands />
-        <ProcessSection />
-        <AnimatedHero />
-        <FAQSection />
-        <CTASection />
-      </main>
-      <Footer />
+      <MotionProvider>
+        <div className="public-site">
+          <Navbar />
+          <main>
+            <Hero />
+            <ProcessScrollStory />
+            <WebsiteExamples />
+            <Services />
+            <WhyChooseRiden />
+            <PricingSection />
+            <Testimonials />
+            <FAQSection />
+            <CTASection />
+          </main>
+          <Footer />
+        </div>
+      </MotionProvider>
     </>
   );
 }

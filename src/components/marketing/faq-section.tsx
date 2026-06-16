@@ -6,36 +6,36 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 
 const faqs = [
   {
-    q: "How quickly can you build and launch my website?",
-    a: "Most websites are fully designed, built, and launched within 2–5 business days. For larger projects with more pages or custom features, we'll give you a precise timeline during your discovery call.",
+    q: "How much does a website cost?",
+    a: "We keep it simple with one plan: a £199 one-time build fee plus £29.99/month. That covers your website design, hosting, SSL, local SEO, unlimited updates and friendly UK support. There are no hidden fees and no long-term contracts.",
   },
   {
-    q: "Is the website built from scratch or from a template?",
-    a: "Every website we build is crafted from scratch, tailored specifically to your business. We don't reuse templates across clients. Your site will be unique to you.",
+    q: "Do you manage updates for me?",
+    a: "Yes. We handle all the updates for you. Need new photos, a price change or a new service added? Just send it over and we'll make the changes, usually the same day. You never have to log in or touch any code.",
   },
   {
-    q: "Do I need any technical knowledge to use the CRM?",
-    a: "Not at all. Our CRM is designed to be simple and intuitive. If you can use a smartphone, you can use it. We also provide full onboarding and training when we hand over.",
+    q: "Can I preview the website first?",
+    a: "Absolutely. We build a live preview of your website around your business so you can see exactly what it will look like before anything goes live. You review it and request any changes, and we refine it until you're happy.",
   },
   {
-    q: "Can you work with the tools I already use?",
-    a: "Yes. We can integrate with most popular tools including Stripe, Google Workspace, Mailchimp, Zapier, and many more. Just let us know what you use and we'll make it work.",
+    q: "Do you help with SEO?",
+    a: "Yes. Every website is set up to be found on Google for the services you offer in the areas you work. Higher plans include advanced local SEO, service-specific pages and Google Business optimisation to help you rank higher and get more enquiries.",
   },
   {
-    q: "What support do I get after launch?",
-    a: "All plans include ongoing maintenance and support. We handle updates, security monitoring, and content changes so your site stays fast, secure, and up to date.",
+    q: "Can you redesign my old website?",
+    a: "Of course. Got an old or tired website that isn't winning you work? We rebuild it into something modern and easy to use, keeping the bits that work and refreshing the rest, so it brings in more enquiries.",
   },
   {
-    q: "Is there a long-term contract?",
-    a: "No. Our maintenance plans are month-to-month with no long-term commitment required. Annual plans come with a discount. Cancel anytime with 30 days notice.",
+    q: "Can I use my own domain?",
+    a: "Of course. If you already have a domain we'll connect it for you, and if you don't have one yet we'll help you choose and set one up. Either way, we handle all the technical bits.",
   },
   {
-    q: "Do you handle hosting?",
-    a: "Yes, all websites include managed hosting, an SSL certificate, and security monitoring. We take care of everything technical so you can focus on running your business.",
+    q: "How quickly can my website go live?",
+    a: "Most websites are designed, built and launched within days, not months. You'll usually see your preview within a few working days, and once you're happy we publish it live and handle the rest.",
   },
   {
-    q: "Can you migrate my existing website?",
-    a: "Absolutely. We handle full migrations from WordPress, Wix, Squarespace, or any other platform, with zero downtime and all your content preserved.",
+    q: "Do I need to do anything technical?",
+    a: "Not at all. We take care of the design, hosting, domain, updates and SEO for you. There's nothing to install and nothing to log into. Just tell us what you need and we make it happen.",
   },
 ];
 
@@ -50,19 +50,18 @@ function FAQItem({ faq, index, openIndex, setOpenIndex }: {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.04 }}
-      className="rounded-xl overflow-hidden h-fit"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ delay: index * 0.04, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-xl overflow-hidden h-fit bg-white ring-1 ring-slate-200 shadow-sm transition-shadow hover:shadow-md"
     >
       <button
         onClick={() => setOpenIndex(isOpen ? null : index)}
-        className="w-full flex items-start justify-between p-4 sm:p-5 text-left gap-3 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-start justify-between p-4 sm:p-5 text-left gap-3 hover:bg-slate-50 transition-colors"
       >
-        <span className="text-sm font-medium text-white leading-snug">{faq.q}</span>
+        <span className="text-sm font-semibold text-slate-900 leading-snug">{faq.q}</span>
         <ChevronDown
           size={16}
-          className={`text-slate-400 flex-shrink-0 mt-0.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+          className={`text-slate-400 flex-shrink-0 mt-0.5 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-600" : ""}`}
         />
       </button>
 
@@ -75,8 +74,8 @@ function FAQItem({ faq, index, openIndex, setOpenIndex }: {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <p className="text-sm text-slate-400 leading-relaxed">{faq.a}</p>
+            <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 border-t border-slate-100">
+              <p className="text-sm text-slate-600 leading-relaxed">{faq.a}</p>
             </div>
           </motion.div>
         )}
@@ -85,49 +84,48 @@ function FAQItem({ faq, index, openIndex, setOpenIndex }: {
   );
 }
 
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+};
+
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="relative py-16 sm:py-24 overflow-hidden" style={{ background: "rgba(10,13,26,0.5)" }}>
+    <section id="faq" className="relative py-20 sm:py-28 bg-white overflow-hidden">
+      {/* soft brand wash */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-72 w-[40rem] rounded-full bg-blue-100/30 blur-3xl" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10 sm:mb-14">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/20 bg-blue-500/5 text-sm text-blue-300 mb-6"
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <motion.span
+            {...fadeUp}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold tracking-wide ring-1 ring-blue-100"
           >
-            <HelpCircle size={14} />
-            <span>Common Questions</span>
-          </motion.div>
+            <HelpCircle size={13} />
+            Common Questions
+          </motion.span>
 
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4"
+            {...fadeUp}
+            transition={{ delay: 0.05 }}
+            className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight text-slate-900"
           >
-            Got{" "}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #60a5fa, #a78bfa)" }}>
-              Questions?
-            </span>
+            Got <span className="gradient-text-brand">questions?</span>
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-base sm:text-lg text-slate-400"
+            {...fadeUp}
+            transition={{ delay: 0.1 }}
+            className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed"
           >
             Everything you need to know before getting started.
           </motion.p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {faqs.map((faq, i) => (
             <FAQItem key={i} faq={faq} index={i} openIndex={openIndex} setOpenIndex={setOpenIndex} />
           ))}
