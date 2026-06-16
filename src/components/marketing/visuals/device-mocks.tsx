@@ -186,11 +186,15 @@ export function TabletMock({
       <div className="absolute -right-[6px] top-[4.5rem] h-6 w-[3px] rounded-full bg-slate-700" />
       {/* Screen */}
       <div className="overflow-hidden rounded-[1.1rem] bg-white">
-        {/* Camera dot */}
+        {/* Front camera (centered like iPad) */}
         <div className="flex justify-center bg-white pb-0.5 pt-2">
           <div className="h-[5px] w-[5px] rounded-full bg-slate-700" />
         </div>
         {children}
+        {/* iPad home indicator */}
+        <div className="flex justify-center bg-white pb-1.5 pt-0.5">
+          <div className="h-[3px] w-10 rounded-full bg-slate-300" />
+        </div>
       </div>
     </div>
   );

@@ -410,54 +410,79 @@ function DesignScene() {
 }
 
 // Purpose-built content for the tablet mock (166 px inner width).
+// Designed to produce iPad portrait proportions (~3:4 height:width ratio).
 // Uses inline styles so Tailwind responsive breakpoints never fire inside.
 function TinyTabletContent() {
   const grad = `linear-gradient(135deg, ${SCENE_THEME.accent} 0%, ${SCENE_THEME.accent2} 100%)`;
+  const a = SCENE_THEME.accent;
+  const a2 = SCENE_THEME.accent2;
   return (
     <div style={{ background: "#fff", fontFamily: "system-ui, sans-serif" }}>
       {/* nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", borderBottom: "1px solid #f1f5f9" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <div style={{ width: 10, height: 10, borderRadius: 3, background: grad, flexShrink: 0 }} />
           <span style={{ fontWeight: 700, fontSize: 7, color: "#1e293b" }}>Harper Plumbing</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 6, color: "#94a3b8", fontWeight: 600 }}>
           <span>Services</span>
           <span>About</span>
-          <div style={{ background: SCENE_THEME.accent, color: "#fff", padding: "2px 6px", borderRadius: 10, fontSize: 5.5, fontWeight: 700 }}>Quote</div>
+          <div style={{ background: a, color: "#fff", padding: "2px 6px", borderRadius: 10, fontSize: 5.5, fontWeight: 700 }}>Quote</div>
         </div>
       </div>
-      {/* hero */}
-      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 8, padding: "8px 8px 6px" }}>
-        <div>
-          <div style={{ fontSize: 6, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: SCENE_THEME.accent }}>Emergency Call-Out</div>
-          <div style={{ fontSize: 9, fontWeight: 800, color: "#0f172a", lineHeight: 1.3, marginTop: 3 }}>Local plumbing &amp; heating you can rely on</div>
-          <div style={{ marginTop: 4, height: 2.5, background: "#f1f5f9", borderRadius: 1 }} />
-          <div style={{ marginTop: 2, height: 2.5, background: "#f1f5f9", borderRadius: 1, width: "75%" }} />
-          <div style={{ marginTop: 6, background: grad, color: "#fff", padding: "3px 8px", borderRadius: 4, fontSize: 6, fontWeight: 700, display: "inline-block" }}>Get a Quote</div>
+      {/* hero — full-width gradient image with overlay text */}
+      <div style={{ position: "relative", height: 82, background: grad, overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.22)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 8px 7px" }}>
+          <div style={{ fontSize: 5.5, fontWeight: 700, color: "rgba(255,255,255,0.8)", textTransform: "uppercase", letterSpacing: "0.12em" }}>Emergency Call-Out</div>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", lineHeight: 1.25, marginTop: 2 }}>Local plumbing &amp; heating you can rely on</div>
         </div>
-        <div style={{ background: grad, borderRadius: 6, opacity: 0.9, minHeight: 42 }} />
       </div>
-      {/* service cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, padding: "0 8px 7px" }}>
-        {([["Boilers", SCENE_THEME.accent], ["Bathrooms", SCENE_THEME.accent2], ["Call-Out", SCENE_THEME.accent]] as [string, string][]).map(([s, c]) => (
-          <div key={s} style={{ background: "#f8fafc", border: "1px solid #f1f5f9", borderRadius: 4, padding: 4 }}>
-            <div style={{ width: 8, height: 8, borderRadius: 2, background: c, opacity: 0.85, marginBottom: 2 }} />
-            <div style={{ fontSize: 5.5, fontWeight: 600, color: "#475569" }}>{s}</div>
+      {/* CTA row */}
+      <div style={{ display: "flex", gap: 5, padding: "7px 8px 5px" }}>
+        <div style={{ flex: 1, background: grad, borderRadius: 4, padding: "4px 0", textAlign: "center", color: "#fff", fontSize: 6, fontWeight: 700 }}>Get a Free Quote</div>
+        <div style={{ flex: 1, border: "1px solid #e2e8f0", borderRadius: 4, padding: "4px 0", textAlign: "center", color: "#64748b", fontSize: 6, fontWeight: 600 }}>Call Now</div>
+      </div>
+      {/* 2-col service grid — 3 rows to add height */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, padding: "0 8px 6px" }}>
+        {([
+          ["Boilers & Heating", a],
+          ["Bathroom Fitting", a2],
+          ["Emergency Call-Out", a],
+          ["Pipe Repairs", a2],
+          ["Radiator Systems", a],
+          ["Annual Servicing", a2],
+        ] as [string, string][]).map(([s, c]) => (
+          <div key={s} style={{ background: "#f8fafc", border: "1px solid #f1f5f9", borderRadius: 4, padding: "5px 5px 4px" }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: c, opacity: 0.85, marginBottom: 3 }} />
+            <div style={{ fontSize: 5.5, fontWeight: 600, color: "#334155", lineHeight: 1.3 }}>{s}</div>
           </div>
         ))}
       </div>
-      {/* trust strip */}
-      <div style={{ background: grad, padding: "4px 8px", fontSize: 5.5, fontWeight: 700, color: "#fff", textAlign: "center" }}>
-        &#9733;&#9733;&#9733;&#9733;&#9733; Trusted locally · Free quotes
+      {/* reviews bar */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 8px 5px", borderTop: "1px solid #f1f5f9" }}>
+        <div style={{ fontSize: 7, color: "#f59e0b", letterSpacing: 1 }}>★★★★★</div>
+        <div style={{ fontSize: 5.5, color: "#64748b", fontWeight: 600 }}>4.9 · 48 reviews</div>
+        <div style={{ display: "flex", gap: 2 }}>
+          {[a, a2, a].map((c, i) => (
+            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: 0.3 + i * 0.2 }} />
+          ))}
+        </div>
+      </div>
+      {/* trust footer */}
+      <div style={{ background: grad, padding: "5px 8px", fontSize: 5.5, fontWeight: 700, color: "#fff", textAlign: "center" }}>
+        &#9733;&#9733;&#9733;&#9733;&#9733; Trusted locally · Fully insured · Free quotes
       </div>
     </div>
   );
 }
 
 // Purpose-built content for the phone mock (86 px inner width).
+// Shorter gradient image keeps total height at iPhone portrait proportions.
 function TinyPhoneContent() {
   const grad = `linear-gradient(135deg, ${SCENE_THEME.accent} 0%, ${SCENE_THEME.accent2} 100%)`;
+  const a = SCENE_THEME.accent;
+  const a2 = SCENE_THEME.accent2;
   return (
     <div style={{ background: "#fff", fontFamily: "system-ui, sans-serif" }}>
       {/* nav */}
@@ -473,22 +498,27 @@ function TinyPhoneContent() {
         </div>
       </div>
       {/* hero */}
-      <div style={{ padding: "5px 6px" }}>
-        <div style={{ fontSize: 5, fontWeight: 700, textTransform: "uppercase", color: SCENE_THEME.accent, letterSpacing: "0.1em" }}>Emergency Call-Out</div>
+      <div style={{ padding: "5px 6px 4px" }}>
+        <div style={{ fontSize: 5, fontWeight: 700, textTransform: "uppercase", color: a, letterSpacing: "0.1em" }}>Emergency Call-Out</div>
         <div style={{ fontSize: 8, fontWeight: 800, color: "#0f172a", lineHeight: 1.3, marginTop: 2 }}>Local plumbing you can rely on</div>
         <div style={{ marginTop: 4, height: 2, background: "#f1f5f9", borderRadius: 1 }} />
         <div style={{ marginTop: 2, height: 2, background: "#f1f5f9", borderRadius: 1, width: "75%" }} />
         <div style={{ marginTop: 5, background: grad, borderRadius: 3, padding: "3px 0", textAlign: "center", color: "#fff", fontWeight: 600, fontSize: 5.5 }}>Get a Quote</div>
-        <div style={{ marginTop: 4, height: 30, borderRadius: 4, background: grad, opacity: 0.9 }} />
+        {/* Hero image — fixed height to keep iPhone proportions */}
+        <div style={{ marginTop: 4, height: 38, borderRadius: 4, background: grad, opacity: 0.9 }} />
       </div>
       {/* service rows */}
-      <div style={{ padding: "0 6px 6px" }}>
-        {([["Boilers & Heating", SCENE_THEME.accent], ["Bathrooms", SCENE_THEME.accent2], ["Emergency", SCENE_THEME.accent]] as [string, string][]).map(([s, c]) => (
+      <div style={{ padding: "0 6px 5px" }}>
+        {([["Boilers & Heating", a], ["Bathrooms", a2], ["Emergency", a]] as [string, string][]).map(([s, c]) => (
           <div key={s} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 4px", marginBottom: 2, background: "#f8fafc", borderRadius: 3, border: "1px solid #f1f5f9" }}>
             <div style={{ width: 6, height: 6, borderRadius: 2, background: c, opacity: 0.85, flexShrink: 0 }} />
             <div style={{ fontSize: 5, fontWeight: 600, color: "#475569" }}>{s}</div>
           </div>
         ))}
+      </div>
+      {/* mini trust strip */}
+      <div style={{ background: grad, padding: "3px 6px", fontSize: 5, fontWeight: 700, color: "#fff", textAlign: "center" }}>
+        ★★★★★ 4.9 · Free quotes
       </div>
     </div>
   );
@@ -506,14 +536,16 @@ function ResponsiveScene() {
         </ScaledFrame>
       </BrowserMock>
 
-      {/* Tablet + Phone row — in-flow, never overflows */}
-      <div className="mt-3 flex items-end justify-center gap-3">
-        <div className="w-44 -rotate-2 drop-shadow-xl">
+      {/* iPad + iPhone — overlapping composition */}
+      <div className="relative mx-auto mt-3 w-56" style={{ height: 290 }}>
+        {/* iPad — behind, tilted left */}
+        <div className="absolute left-0 top-0 w-44 -rotate-[4deg] drop-shadow-xl">
           <TabletMock>
             <TinyTabletContent />
           </TabletMock>
         </div>
-        <div className="w-24 rotate-1 drop-shadow-xl">
+        {/* iPhone — in front, tilted right, overlapping iPad */}
+        <div className="absolute bottom-0 right-0 w-24 rotate-[5deg] drop-shadow-2xl" style={{ zIndex: 10 }}>
           <PhoneMock>
             <TinyPhoneContent />
           </PhoneMock>
