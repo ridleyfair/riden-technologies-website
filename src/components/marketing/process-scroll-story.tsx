@@ -227,8 +227,8 @@ export default function ProcessScrollStory() {
               ))}
             </div>
 
-            {/* stage rail */}
-            <ol className="mt-6 flex flex-wrap gap-2 lg:mt-8">
+            {/* stage rail — desktop only */}
+            <ol className="mt-6 hidden flex-wrap gap-2 lg:mt-8 lg:flex">
               {stages.map((s, i) => (
                 <li
                   key={s.n}
@@ -245,7 +245,7 @@ export default function ProcessScrollStory() {
               ))}
             </ol>
 
-            {/* Mobile-only scene — below the rail, zoom-scaled to fit */}
+            {/* Mobile-only scene — zoom-scaled to fit */}
             <div className="mt-5 lg:hidden" style={{ zoom: 0.68 }}>
               {stages.map((s, i) => {
                 const Scene = s.Scene;
@@ -255,6 +255,17 @@ export default function ProcessScrollStory() {
                   </div>
                 );
               })}
+            </div>
+
+            {/* Mobile step counter — below the scene */}
+            <div className="mt-4 flex items-center justify-center gap-2 lg:hidden">
+              <span className="text-sm font-bold tabular-nums text-slate-900">
+                {String(active + 1).padStart(2, "0")}
+              </span>
+              <span className="text-slate-300">/</span>
+              <span className="text-sm font-medium tabular-nums text-slate-400">
+                {String(stages.length).padStart(2, "0")}
+              </span>
             </div>
           </div>
 
