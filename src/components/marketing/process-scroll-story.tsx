@@ -29,7 +29,6 @@ import {
   TabletMock,
   PhoneMock,
   MiniSite,
-  MiniSiteMobile,
   ScaledFrame,
   type SiteTheme,
 } from "@/components/marketing/visuals/device-mocks";
@@ -198,7 +197,7 @@ export default function ProcessScrollStory() {
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
           {/* left: copy + stage rail */}
           <div className="relative">
-            <div className="mb-5 lg:mb-8">
+            <div className="mb-5 text-center lg:mb-8 lg:text-left">
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-blue-700 ring-1 ring-blue-100">
                 How it works
               </span>
@@ -318,8 +317,8 @@ function StoryHeader() {
 function StageCopy({ stage, large = false }: { stage: Stage; large?: boolean }) {
   const Icon = stage.icon;
   return (
-    <div>
-      <div className="flex items-center gap-3">
+    <div className={large ? "text-center lg:text-left" : ""}>
+      <div className={`flex items-center gap-3 ${large ? "justify-center lg:justify-start" : ""}`}>
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-600/25">
           <Icon className="h-5 w-5" />
         </span>
@@ -334,7 +333,7 @@ function StageCopy({ stage, large = false }: { stage: Stage; large?: boolean }) 
       >
         {stage.title}
       </h3>
-      <p className="mt-3 max-w-md text-base leading-relaxed text-slate-600">{stage.message}</p>
+      <p className={`mt-3 text-base leading-relaxed text-slate-600 ${large ? "mx-auto max-w-md lg:mx-0" : "max-w-md"}`}>{stage.message}</p>
     </div>
   );
 }
@@ -410,6 +409,91 @@ function DesignScene() {
   );
 }
 
+// Purpose-built content for the tablet mock (166 px inner width).
+// Uses inline styles so Tailwind responsive breakpoints never fire inside.
+function TinyTabletContent() {
+  const grad = `linear-gradient(135deg, ${SCENE_THEME.accent} 0%, ${SCENE_THEME.accent2} 100%)`;
+  return (
+    <div style={{ background: "#fff", fontFamily: "system-ui, sans-serif" }}>
+      {/* nav */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: grad, flexShrink: 0 }} />
+          <span style={{ fontWeight: 700, fontSize: 7, color: "#1e293b" }}>Harper Plumbing</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 6, color: "#94a3b8", fontWeight: 600 }}>
+          <span>Services</span>
+          <span>About</span>
+          <div style={{ background: SCENE_THEME.accent, color: "#fff", padding: "2px 6px", borderRadius: 10, fontSize: 5.5, fontWeight: 700 }}>Quote</div>
+        </div>
+      </div>
+      {/* hero */}
+      <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 8, padding: "8px 8px 6px" }}>
+        <div>
+          <div style={{ fontSize: 6, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: SCENE_THEME.accent }}>Emergency Call-Out</div>
+          <div style={{ fontSize: 9, fontWeight: 800, color: "#0f172a", lineHeight: 1.3, marginTop: 3 }}>Local plumbing &amp; heating you can rely on</div>
+          <div style={{ marginTop: 4, height: 2.5, background: "#f1f5f9", borderRadius: 1 }} />
+          <div style={{ marginTop: 2, height: 2.5, background: "#f1f5f9", borderRadius: 1, width: "75%" }} />
+          <div style={{ marginTop: 6, background: grad, color: "#fff", padding: "3px 8px", borderRadius: 4, fontSize: 6, fontWeight: 700, display: "inline-block" }}>Get a Quote</div>
+        </div>
+        <div style={{ background: grad, borderRadius: 6, opacity: 0.9, minHeight: 42 }} />
+      </div>
+      {/* service cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4, padding: "0 8px 7px" }}>
+        {([["Boilers", SCENE_THEME.accent], ["Bathrooms", SCENE_THEME.accent2], ["Call-Out", SCENE_THEME.accent]] as [string, string][]).map(([s, c]) => (
+          <div key={s} style={{ background: "#f8fafc", border: "1px solid #f1f5f9", borderRadius: 4, padding: 4 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: c, opacity: 0.85, marginBottom: 2 }} />
+            <div style={{ fontSize: 5.5, fontWeight: 600, color: "#475569" }}>{s}</div>
+          </div>
+        ))}
+      </div>
+      {/* trust strip */}
+      <div style={{ background: grad, padding: "4px 8px", fontSize: 5.5, fontWeight: 700, color: "#fff", textAlign: "center" }}>
+        &#9733;&#9733;&#9733;&#9733;&#9733; Trusted locally · Free quotes
+      </div>
+    </div>
+  );
+}
+
+// Purpose-built content for the phone mock (86 px inner width).
+function TinyPhoneContent() {
+  const grad = `linear-gradient(135deg, ${SCENE_THEME.accent} 0%, ${SCENE_THEME.accent2} 100%)`;
+  return (
+    <div style={{ background: "#fff", fontFamily: "system-ui, sans-serif" }}>
+      {/* nav */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 6px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 2, background: grad, flexShrink: 0 }} />
+          <span style={{ fontWeight: 700, fontSize: 6, color: "#1e293b" }}>Harper</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, justifyContent: "center" }}>
+          <div style={{ width: 10, height: 1.5, background: "#94a3b8", borderRadius: 1 }} />
+          <div style={{ width: 10, height: 1.5, background: "#94a3b8", borderRadius: 1 }} />
+          <div style={{ width: 10, height: 1.5, background: "#94a3b8", borderRadius: 1 }} />
+        </div>
+      </div>
+      {/* hero */}
+      <div style={{ padding: "5px 6px" }}>
+        <div style={{ fontSize: 5, fontWeight: 700, textTransform: "uppercase", color: SCENE_THEME.accent, letterSpacing: "0.1em" }}>Emergency Call-Out</div>
+        <div style={{ fontSize: 8, fontWeight: 800, color: "#0f172a", lineHeight: 1.3, marginTop: 2 }}>Local plumbing you can rely on</div>
+        <div style={{ marginTop: 4, height: 2, background: "#f1f5f9", borderRadius: 1 }} />
+        <div style={{ marginTop: 2, height: 2, background: "#f1f5f9", borderRadius: 1, width: "75%" }} />
+        <div style={{ marginTop: 5, background: grad, borderRadius: 3, padding: "3px 0", textAlign: "center", color: "#fff", fontWeight: 600, fontSize: 5.5 }}>Get a Quote</div>
+        <div style={{ marginTop: 4, height: 30, borderRadius: 4, background: grad, opacity: 0.9 }} />
+      </div>
+      {/* service rows */}
+      <div style={{ padding: "0 6px 6px" }}>
+        {([["Boilers & Heating", SCENE_THEME.accent], ["Bathrooms", SCENE_THEME.accent2], ["Emergency", SCENE_THEME.accent]] as [string, string][]).map(([s, c]) => (
+          <div key={s} style={{ display: "flex", alignItems: "center", gap: 4, padding: "3px 4px", marginBottom: 2, background: "#f8fafc", borderRadius: 3, border: "1px solid #f1f5f9" }}>
+            <div style={{ width: 6, height: 6, borderRadius: 2, background: c, opacity: 0.85, flexShrink: 0 }} />
+            <div style={{ fontSize: 5, fontWeight: 600, color: "#475569" }}>{s}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ResponsiveScene() {
   return (
     <div className="relative w-full max-w-md" aria-hidden="true">
@@ -426,16 +510,12 @@ function ResponsiveScene() {
       <div className="mt-3 flex items-end justify-center gap-3">
         <div className="w-44 -rotate-2 drop-shadow-xl">
           <TabletMock>
-            <ScaledFrame width={380}>
-              <MiniSite theme={SCENE_THEME} compact />
-            </ScaledFrame>
+            <TinyTabletContent />
           </TabletMock>
         </div>
         <div className="w-24 rotate-1 drop-shadow-xl">
           <PhoneMock>
-            <ScaledFrame width={240}>
-              <MiniSiteMobile theme={SCENE_THEME} />
-            </ScaledFrame>
+            <TinyPhoneContent />
           </PhoneMock>
         </div>
       </div>
