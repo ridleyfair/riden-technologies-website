@@ -1048,6 +1048,29 @@ export async function POST(req: NextRequest) {
       if (body.brandColours.tertiary)  { pal.background = body.brandColours.tertiary;  pal.surface   = body.brandColours.tertiary  }
     }
 
+    // Enforce dark palette for templates that require it.
+    // Claude sometimes generates light/grey palettes for dark-themed templates — detect
+    // by checking if background is light (hex starts with #f, #e, #d, #c, #b, #a)
+    // and override with a sensible dark default derived from the generated accent.
+    const DARK_REQUIRED_TEMPLATES = ["outdoor-transform", "emergency-trade"];
+    if (DARK_REQUIRED_TEMPLATES.includes(resolvedTemplateId) && !body.brandColours) {
+      const pal = (spec.brand as Record<string, unknown>).palette as Record<string, unknown>;
+      const bg = String(pal.background ?? "");
+      const isLight = /^#[a-fA-F]|^#[89]/i.test(bg) || bg === "#ffffff" || bg === "#fff";
+      if (isLight) {
+        // Keep accent if it looks like a usable green; otherwise default to mid-green
+        const rawAccent = String(pal.accent ?? "");
+        const accent = /^#[0-9a-fA-F]{6}$/.test(rawAccent) ? rawAccent : "#4ade80";
+        pal.primary    = "#0c1f0e";
+        pal.secondary  = "#163019";
+        pal.accent     = accent;
+        pal.background = "#0c1f0e";
+        pal.surface    = "#152b17";
+        pal.text       = "#f0faf1";
+        pal.textMuted  = "#8ab88c";
+      }
+    }
+
     // Inject logo URL into brand config
     if (body.logoUrl) {
       const brand = spec.brand as Record<string, unknown>;
