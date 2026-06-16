@@ -122,14 +122,11 @@ export default function ProcessScrollStory() {
 
   useEffect(() => {
     const mqMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const mqWide = window.matchMedia("(min-width: 1024px)");
-    const apply = () => setEnhanced(!mqMotion.matches && mqWide.matches);
+    const apply = () => setEnhanced(!mqMotion.matches);
     apply();
     mqMotion.addEventListener("change", apply);
-    mqWide.addEventListener("change", apply);
     return () => {
       mqMotion.removeEventListener("change", apply);
-      mqWide.removeEventListener("change", apply);
     };
   }, []);
 
@@ -139,7 +136,7 @@ export default function ProcessScrollStory() {
     setActive(i);
   });
 
-  // ── Stacked layout (mobile + reduced-motion): no pin, every stage visible ──
+  // ── Stacked layout (reduced-motion only): no pin, every stage visible ──
   if (!enhanced) {
     return (
       <section
@@ -150,7 +147,7 @@ export default function ProcessScrollStory() {
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <StoryHeader />
-          <div className="mt-14 space-y-16 sm:space-y-24">
+          <div className="mt-14 space-y-10 sm:space-y-16 md:space-y-24">
             {stages.map((s, i) => {
               const Scene = s.Scene;
               const flip = i % 2 === 1;
@@ -166,7 +163,7 @@ export default function ProcessScrollStory() {
                   <div className={flip ? "md:order-2" : ""}>
                     <StageCopy stage={s} />
                   </div>
-                  <div className={`flex justify-center ${flip ? "md:order-1" : ""}`}>
+                  <div className={`hidden justify-center md:flex ${flip ? "md:order-1" : ""}`}>
                     <Scene />
                   </div>
                 </motion.div>
@@ -198,21 +195,21 @@ export default function ProcessScrollStory() {
           />
         </div>
 
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
           {/* left: copy + stage rail */}
           <div className="relative">
-            <div className="mb-8">
+            <div className="mb-5 lg:mb-8">
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-blue-700 ring-1 ring-blue-100">
                 How it works
               </span>
-              <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl">
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:mt-4 lg:text-4xl">
                 From first chat to{" "}
                 <span className="gradient-text-brand">more enquiries</span>
               </h2>
             </div>
 
             {/* crossfading stage copy */}
-            <div className="relative min-h-[13rem]">
+            <div className="relative min-h-[15rem] sm:min-h-[13rem]">
               {stages.map((s, i) => (
                 <div
                   key={s.n}
@@ -231,7 +228,7 @@ export default function ProcessScrollStory() {
             </div>
 
             {/* stage rail */}
-            <ol className="mt-8 flex flex-wrap gap-2">
+            <ol className="mt-6 flex flex-wrap gap-2 lg:mt-8">
               {stages.map((s, i) => (
                 <li
                   key={s.n}
@@ -249,8 +246,8 @@ export default function ProcessScrollStory() {
             </ol>
           </div>
 
-          {/* right: crossfading scene */}
-          <div className="relative h-[26rem]">
+          {/* right: crossfading scene — hidden on mobile/tablet, shown on desktop */}
+          <div className="relative hidden h-[26rem] lg:block">
             {stages.map((s, i) => {
               const Scene = s.Scene;
               return (
@@ -309,7 +306,7 @@ function StageCopy({ stage, large = false }: { stage: Stage; large?: boolean }) 
       </div>
       <h3
         className={`mt-4 font-bold tracking-tight text-slate-900 ${
-          large ? "text-3xl lg:text-[2.4rem]" : "text-2xl"
+          large ? "text-2xl sm:text-3xl lg:text-[2.4rem]" : "text-xl sm:text-2xl"
         }`}
       >
         {stage.title}
