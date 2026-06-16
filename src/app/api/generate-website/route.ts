@@ -1229,27 +1229,32 @@ export async function POST(req: NextRequest) {
           origin: crmOrigin,
         });
 
-        if (galleryItems.length > 0) {
+        if (galleryItems.length > 0 || normalizedAlbums.length > 0) {
           const galleryPageSlug = templateDef.pages.find((p) => p.sections.includes("gallery"))?.slug;
           const isDesignatedGalleryPage = (page.slug as string) === galleryPageSlug;
+          const isHomePage = (page.slug as string) === "/";
           const gallerySection = sections.find((s) => s.type === "gallery") as Record<string, unknown> | undefined;
 
           if (gallerySection) {
             const gContent = gallerySection.content as Record<string, unknown>;
-            // Flat items are required by Tradie Bold and generic gallery templates.
-            gContent.items = galleryItems;
-            // Album structure is required by Modern Minimal / Beauty Pro album layouts.
+            // Home page: flat items grid (template caps display count itself).
+            // Other pages (e.g. /transformations, /projects): album cards only — no flat items.
+            if (isHomePage && galleryItems.length > 0) {
+              gContent.items = galleryItems;
+            } else {
+              gContent.items = [];
+            }
             if (normalizedAlbums.length > 0) {
               gContent.projectAlbums = normalizedAlbums;
             }
-          } else if (isDesignatedGalleryPage) {
+          } else if (isDesignatedGalleryPage && galleryItems.length > 0) {
             // Inject gallery section if Claude omitted it on the designated gallery page
             const insertBefore = sections.findIndex((s) => s.type === "cta" || s.type === "footer");
             const idx = insertBefore >= 0 ? insertBefore : sections.length - 1;
             const injectedContent: Record<string, unknown> = {
               headline: "Our Work",
               subHeadline: "A selection of recent projects",
-              items: galleryItems,
+              items: isHomePage ? galleryItems : [],
             };
             if (normalizedAlbums.length > 0) {
               injectedContent.projectAlbums = normalizedAlbums;

@@ -33,6 +33,24 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     accent: "amber",
   },
   {
+    name: "Hartley Home Renovations",
+    industry: "Kitchens & Bathrooms",
+    location: "Sheffield, UK",
+    url: "https://hartleyrenovations.co.uk",
+    image: "/images/portfolio/hartley-renovations.jpg",
+    blurb: "Showroom-quality renovation site with a full project gallery, before/after sliders and consultation booking.",
+    accent: "emerald",
+  },
+  {
+    name: "Elmcroft Landscapes",
+    industry: "Landscaping & Garden Design",
+    location: "Surrey, UK",
+    url: "https://elmcroftlandscapes.co.uk",
+    image: "/images/portfolio/greenfield-landscapes.jpg",
+    blurb: "Garden transformation specialist with a stunning before/after portfolio and instant quote requests.",
+    accent: "cyan",
+  },
+  {
     name: "Plumbing & Heating Co.",
     industry: "Plumbing & Heating",
     location: "Manchester, UK",
@@ -52,12 +70,5 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     location: "Leeds, UK",
     blurb: "Trust-focused site with certifications, service areas and instant contact.",
     accent: "cyan",
-  },
-  {
-    name: "Builder & Renovations",
-    industry: "Building & Construction",
-    location: "Bristol, UK",
-    blurb: "Project showcase with before/after gallery and quote request forms.",
-    accent: "emerald",
   },
 ];

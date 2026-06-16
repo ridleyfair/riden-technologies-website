@@ -409,6 +409,63 @@ function DesignScene() {
   );
 }
 
+// Purpose-built content for the desktop/iMac mock (~261 px inner width).
+// Uses inline styles so Tailwind viewport breakpoints never interfere.
+function TinyDesktopContent() {
+  const grad = `linear-gradient(135deg, ${SCENE_THEME.accent} 0%, ${SCENE_THEME.accent2} 100%)`;
+  const a = SCENE_THEME.accent;
+  const a2 = SCENE_THEME.accent2;
+  return (
+    <div style={{ background: "#fff", fontFamily: "system-ui, sans-serif" }}>
+      {/* nav */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 10px", borderBottom: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <div style={{ width: 12, height: 12, borderRadius: 3, background: grad, flexShrink: 0 }} />
+          <span style={{ fontWeight: 700, fontSize: 8, color: "#1e293b" }}>Harper Plumbing</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 6.5, color: "#94a3b8", fontWeight: 600 }}>
+          <span>Home</span>
+          <span>Services</span>
+          <span>About</span>
+          <div style={{ background: a, color: "#fff", padding: "2px 7px", borderRadius: 10, fontSize: 6, fontWeight: 700 }}>Get a Quote</div>
+        </div>
+      </div>
+      {/* hero — text left (58%), gradient image right (42%) */}
+      <div style={{ display: "flex", padding: "10px 10px 8px", gap: 0 }}>
+        <div style={{ flex: "0 0 58%", paddingRight: 8 }}>
+          <div style={{ fontSize: 5.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: a }}>Emergency Call-Out</div>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#0f172a", lineHeight: 1.25, marginTop: 3 }}>Local plumbing &amp; heating you can rely on</div>
+          <div style={{ marginTop: 5, height: 2, background: "#f1f5f9", borderRadius: 1 }} />
+          <div style={{ marginTop: 2, height: 2, background: "#f1f5f9", borderRadius: 1, width: "75%" }} />
+          <div style={{ marginTop: 6, display: "flex", gap: 4 }}>
+            <div style={{ background: grad, borderRadius: 4, padding: "3px 8px", color: "#fff", fontSize: 6, fontWeight: 700 }}>Get a Quote</div>
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 4, padding: "3px 8px", color: "#64748b", fontSize: 6, fontWeight: 600 }}>Call Now</div>
+          </div>
+        </div>
+        <div style={{ flex: "0 0 42%", minHeight: 72, borderRadius: 6, background: grad, opacity: 0.9 }} />
+      </div>
+      {/* 3-column service cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, padding: "0 10px 8px" }}>
+        {([
+          ["Boilers & Heating", a],
+          ["Bathroom Fitting", a2],
+          ["Emergency Call-Out", a],
+        ] as [string, string][]).map(([s, c]) => (
+          <div key={s} style={{ background: "#f8fafc", border: "1px solid #f1f5f9", borderRadius: 5, padding: 6 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 2, background: c, opacity: 0.85, marginBottom: 3 }} />
+            <div style={{ fontSize: 5.5, fontWeight: 600, color: "#334155", lineHeight: 1.3 }}>{s}</div>
+          </div>
+        ))}
+      </div>
+      {/* trust strip */}
+      <div style={{ background: grad, padding: "5px 10px", fontSize: 6, fontWeight: 700, color: "#fff", display: "flex", justifyContent: "space-between" }}>
+        <span>★★★★★ Trusted locally</span>
+        <span>Fully insured · Free quotes</span>
+      </div>
+    </div>
+  );
+}
+
 // Purpose-built content for the tablet mock (166 px inner width).
 // Designed to produce iPad portrait proportions (~3:4 height:width ratio).
 // Uses inline styles so Tailwind responsive breakpoints never fire inside.
@@ -541,9 +598,7 @@ function ResponsiveScene() {
           transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
         >
           <DesktopMock url="harperplumbing.co.uk">
-            <ScaledFrame width={440}>
-              <MiniSite theme={SCENE_THEME} />
-            </ScaledFrame>
+            <TinyDesktopContent />
           </DesktopMock>
         </motion.div>
 
