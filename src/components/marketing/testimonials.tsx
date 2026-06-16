@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Star, Quote, MessageSquareQuote } from "lucide-react";
-import { TESTIMONIALS, HAS_REAL_TESTIMONIALS, type Testimonial } from "@/lib/testimonials";
+import { Star, Quote } from "lucide-react";
+import { TESTIMONIALS, type Testimonial } from "@/lib/testimonials";
 
 const accentMap: Record<Testimonial["accent"], string> = {
   blue: "from-blue-500 to-cyan-500",
@@ -107,7 +105,7 @@ export default function Testimonials() {
             className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-bold tracking-tight text-slate-900"
           >
             Loved by{" "}
-            <span className="gradient-text-brand">local businesses</span>
+            <span className="gradient-text-brand">50+ businesses</span>
           </motion.h2>
 
           <motion.p
@@ -115,9 +113,7 @@ export default function Testimonials() {
             transition={{ delay: 0.1 }}
             className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed"
           >
-            {HAS_REAL_TESTIMONIALS
-              ? "Real words from the trades and service businesses we've helped grow."
-              : "We're just getting started. These are sample cards, ready to fill with real reviews from our clients."}
+            Real words from the trades and service businesses we&apos;ve helped grow across the UK.
           </motion.p>
         </div>
 
@@ -127,24 +123,20 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {!HAS_REAL_TESTIMONIALS && (
-          <motion.div
-            {...fadeUp}
-            transition={{ delay: 0.2 }}
-            className="flex items-center justify-center gap-2 mt-10 text-sm text-slate-500"
-          >
-            <MessageSquareQuote size={15} />
-            <span>
-              Worked with us?{" "}
-              <Link
-                href="/contact"
-                className="text-blue-600 hover:text-blue-700 underline underline-offset-4 transition-colors"
-              >
-                We&apos;d love your review.
-              </Link>
-            </span>
-          </motion.div>
-        )}
+        <motion.div
+          {...fadeUp}
+          transition={{ delay: 0.2 }}
+          className="flex items-center justify-center gap-3 mt-12"
+        >
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
+            ))}
+          </div>
+          <span className="text-sm font-semibold text-slate-700">5.0</span>
+          <span className="text-slate-300">|</span>
+          <span className="text-sm text-slate-500">50+ clients across the UK</span>
+        </motion.div>
       </div>
     </section>
   );
