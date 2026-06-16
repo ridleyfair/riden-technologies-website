@@ -41,7 +41,7 @@ const portfolioItems: PortfolioItem[] = [
     businessName: "Elmcroft Landscapes",
     industry: "Landscaping & Garden Design",
     location: "Surrey",
-    url: "https://elmcroftlandscapes.co.uk",
+    url: "https://elmcroftlandscapes.uk",
     image: "/images/portfolio/greenfield-landscapes.jpg",
     tags: ["Garden design", "Outdoor transformations"],
   },
