@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 
 export default function Solutions() {
   return (
-    <div className="pt-20">
-      <div className="py-12 sm:py-16 text-center bg-hero-gradient border-b border-riden-border px-4 sm:px-6">
-        <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4">
-          Our <span className="gradient-text">Solutions</span>
+    <div className="pt-20 bg-white">
+      <div className="py-14 sm:py-20 text-center bg-gradient-to-b from-blue-50/60 to-white border-b border-slate-100 px-4 sm:px-6">
+        <h1 className="text-3xl sm:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
+          Our <span className="gradient-text-brand">Services</span>
         </h1>
-        <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto">
+        <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto">
           Everything your business needs online. Built, managed, and supported by our team.
         </p>
       </div>

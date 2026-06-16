@@ -108,6 +108,14 @@ export async function POST(_req: NextRequest) {
   `);
   await step("Project.notes", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS notes TEXT`);
   await step("Project.completedAt", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMPTZ`);
+  await step("Project.leadId", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "leadId" TEXT`);
+  await step("Project.possibleClientId", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "possibleClientId" TEXT`);
+  await step("Project.source", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS source TEXT`);
+  await step("Project.recommendedTemplate", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "recommendedTemplate" TEXT`);
+  await step("Project.websiteFactoryPlanJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "websiteFactoryPlanJson" TEXT`);
+  await step("idx Project.possibleClientId", () => sql`
+    CREATE INDEX IF NOT EXISTS "Project_possibleClientId_idx" ON "Project"("possibleClientId") WHERE "possibleClientId" IS NOT NULL
+  `);
   await step("idx Project.createdAt", () => sql`
     CREATE INDEX IF NOT EXISTS "Project_createdAt_idx" ON "Project"("createdAt")
   `);

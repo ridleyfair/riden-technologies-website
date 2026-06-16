@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 import { getDb } from "@/lib/db";
+import { buildProjectBriefFromPossibleClient, mergeProjectBriefPreservingEdits } from "@/lib/lead-project-brief";
+import { importGoogleBusinessIntoProject } from "@/lib/google-business-import";
 
 const SCRAPER_URL = process.env.SCRAPER_API_URL ?? "http://localhost:8000";
 
@@ -53,6 +55,125 @@ async function scrapeWebsiteData(websiteUrl: string): Promise<WebsiteData> {
   } catch {
     return empty;
   }
+}
+
+type SqlClient = ReturnType<typeof getDb>;
+
+async function ensureProjectImportColumns(sql: SqlClient) {
+  try {
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS phone TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS email TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS city TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS postcode TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS industry TEXT DEFAULT 'trades'`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS services TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS about TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS accreditations TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "photosJson" TEXT DEFAULT '[]'`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "openingHours" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "socialFacebook" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "socialInstagram" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "leadId" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "possibleClientId" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS source TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "recommendedTemplate" TEXT`;
+    await sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "websiteFactoryPlanJson" TEXT`;
+    await sql`CREATE INDEX IF NOT EXISTS "Project_possibleClientId_idx" ON "Project"("possibleClientId") WHERE "possibleClientId" IS NOT NULL`;
+  } catch (err) {
+    console.warn("Project import column migration skipped:", err);
+  }
+}
+
+async function createProjectForImportedLead({
+  sql,
+  business,
+  leadId,
+  phone,
+  description,
+  photos,
+  openingHours,
+  socialFacebook,
+  socialInstagram,
+}: {
+  sql: SqlClient;
+  business: Record<string, unknown>;
+  leadId: string;
+  phone: string | null;
+  description: string | null;
+  photos: string[];
+  openingHours: { day: string; hours: string }[];
+  socialFacebook: string | null;
+  socialInstagram: string | null;
+}) {
+  await ensureProjectImportColumns(sql);
+  const brief = buildProjectBriefFromPossibleClient({
+    possibleClient: business,
+    leadId,
+    phone,
+    description,
+    photos,
+    openingHours,
+    socialFacebook,
+    socialInstagram,
+  });
+  const now = new Date();
+
+  const [existing] = await sql`
+    SELECT * FROM "Project"
+    WHERE "possibleClientId" = ${brief.possibleClientId}
+       OR (LOWER("clientName") = LOWER(${brief.clientName}) AND source = 'possible_client_import')
+    ORDER BY "createdAt" DESC
+    LIMIT 1
+  `;
+
+  if (existing) {
+    const merged = mergeProjectBriefPreservingEdits({ existing: existing as Record<string, unknown>, generated: brief });
+    const [project] = await sql`
+      UPDATE "Project" SET
+        "leadId"                 = ${String(existing.leadId ?? brief.leadId)},
+        "possibleClientId"       = ${String(existing.possibleClientId ?? brief.possibleClientId ?? "") || null},
+        source                   = ${String(existing.source ?? brief.source)},
+        phone                    = ${merged.phone as string | null},
+        email                    = ${merged.email as string | null},
+        city                     = ${merged.city as string | null},
+        postcode                 = ${merged.postcode as string | null},
+        industry                 = ${merged.industry as string | null},
+        services                 = ${merged.services as string | null},
+        about                    = ${merged.about as string | null},
+        accreditations           = ${merged.accreditations as string | null},
+        "photosJson"            = ${merged.photosJson as string | null},
+        "openingHours"          = ${merged.openingHours as string | null},
+        "socialFacebook"        = ${merged.socialFacebook as string | null},
+        "socialInstagram"       = ${merged.socialInstagram as string | null},
+        "recommendedTemplate"   = ${merged.recommendedTemplate as string | null},
+        "websiteFactoryPlanJson" = ${merged.websiteFactoryPlanJson as string | null},
+        "updatedAt"             = ${now}
+      WHERE id = ${existing.id as string}
+      RETURNING *
+    `;
+    return { project, created: false };
+  }
+
+  const projectId = crypto.randomUUID();
+  const [project] = await sql`
+    INSERT INTO "Project" (
+      id, name, "clientName", status, budget, spent, progress, notes,
+      phone, email, city, postcode, industry, services, about, accreditations,
+      "photosJson", "openingHours", "socialFacebook", "socialInstagram",
+      "leadId", "possibleClientId", source, "recommendedTemplate", "websiteFactoryPlanJson",
+      "createdAt", "updatedAt"
+    ) VALUES (
+      ${projectId}, ${brief.name}, ${brief.clientName}, ${brief.status},
+      ${brief.budget}, ${brief.spent}, ${brief.progress}, ${brief.notes},
+      ${brief.phone}, ${brief.email}, ${brief.city}, ${brief.postcode}, ${brief.industry},
+      ${brief.services}, ${brief.about}, ${brief.accreditations},
+      ${brief.photosJson}, ${brief.openingHours}, ${brief.socialFacebook}, ${brief.socialInstagram},
+      ${brief.leadId}, ${brief.possibleClientId}, ${brief.source}, ${brief.recommendedTemplate}, ${brief.websiteFactoryPlanJson},
+      ${now}, ${now}
+    )
+    RETURNING *
+  `;
+  return { project, created: true };
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -187,7 +308,55 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       `;
     }
 
-    return NextResponse.json(lead, { status: 201 });
+    let projectResult: { project: unknown; created: boolean } | null = null;
+    let googleBusinessImport: { imported: boolean; runId?: string; placeUrl?: string; error?: string } | null = null;
+    try {
+      projectResult = await createProjectForImportedLead({
+        sql,
+        business: { ...(b as Record<string, unknown>), id },
+        leadId,
+        phone,
+        description,
+        photos,
+        openingHours,
+        socialFacebook,
+        socialInstagram,
+      });
+    } catch (projectErr) {
+      console.error("Project auto-create error:", projectErr);
+    }
+
+    const projectId = projectResult?.project && typeof projectResult.project === "object"
+      ? String((projectResult.project as Record<string, unknown>).id ?? "")
+      : "";
+    const googleMapsUrl = typeof b.maps_url === "string" ? b.maps_url : null;
+    if (projectId && googleMapsUrl?.includes("google")) {
+      try {
+        const result = await importGoogleBusinessIntoProject({
+          sql,
+          projectId,
+          placeUrl: googleMapsUrl,
+          scraperUrl: SCRAPER_URL,
+          preserveMachinePrefill: false,
+        });
+        projectResult = { project: result.project, created: projectResult?.created ?? false };
+        googleBusinessImport = { imported: true, runId: result.runId, placeUrl: result.placeUrl };
+      } catch (googleErr) {
+        console.error("Google Business auto-fill error:", googleErr);
+        googleBusinessImport = {
+          imported: false,
+          placeUrl: googleMapsUrl,
+          error: googleErr instanceof Error ? googleErr.message : "Google Business auto-fill failed",
+        };
+      }
+    }
+
+    return NextResponse.json({
+      lead,
+      project: projectResult?.project ?? null,
+      projectCreated: projectResult?.created ?? false,
+      googleBusinessImport,
+    }, { status: 201 });
   } catch (err) {
     console.error("Import error:", err);
     return NextResponse.json({ error: "Import failed" }, { status: 500 });

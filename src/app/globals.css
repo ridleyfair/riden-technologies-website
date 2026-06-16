@@ -32,7 +32,9 @@
 
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    /* `clip` (not `hidden`) prevents horizontal overflow WITHOUT creating a
+       scroll container — required for the hero's position:sticky to work. */
+    overflow-x: clip;
   }
 
   body {
@@ -41,7 +43,7 @@
     font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -176,6 +178,92 @@
   .dot-pattern {
     background-image: radial-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+
+  /* ── Public LIGHT-mode helpers ─────────────────────────────────────────
+     Used only by the public marketing site (white, premium agency look).
+     Scoped via .public-site so the dark portal is never affected.        */
+  .public-site {
+    background-color: #ffffff;
+    color: #0f172a;
+    min-height: 100vh;
+  }
+
+  .dot-pattern-light {
+    background-image: radial-gradient(rgba(37, 99, 235, 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .grid-pattern-light {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  /* Brand text gradient on light backgrounds */
+  .gradient-text-brand {
+    background: linear-gradient(100deg, #2563eb 0%, #0ea5e9 55%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Premium light card */
+  .card-light {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.08);
+    transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  }
+  .card-light:hover {
+    border-color: rgba(191, 219, 254, 0.9);
+    box-shadow: 0 18px 48px -16px rgba(37, 99, 235, 0.22);
+    transform: translateY(-3px);
+  }
+
+  /* Frosted glass panel (premium glassmorphism accent) */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      0 1px 1px rgba(15, 23, 42, 0.04),
+      0 24px 60px -24px rgba(37, 99, 235, 0.28);
+  }
+
+  /* Soft, expensive floating-card shadow */
+  .shadow-float {
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.04),
+      0 24px 64px -20px rgba(37, 99, 235, 0.22);
+  }
+
+  /* Ambient float (neutralised under prefers-reduced-motion below) */
+  @keyframes riden-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  .animate-float-slow { animation: riden-float 7s ease-in-out infinite; }
+  .animate-float-mid  { animation: riden-float 5.5s ease-in-out infinite; }
+}
+
+/* Respect reduced-motion: neutralise CSS animations/transitions site-wide.
+   Framer Motion JS animations are handled via <MotionConfig reducedMotion="user">. */
+/* Make the page/overscroll background white on public marketing pages only
+   (scoped via :has so the dark portal/login/legal pages are unaffected). */
+html:has(.public-site),
+html:has(.public-site) body {
+  background-color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

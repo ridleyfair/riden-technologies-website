@@ -767,8 +767,16 @@ export default function PossibleClientsView() {
     try {
       const res = await fetch(`/api/possible-clients/${business.id}/import`, { method: "POST" });
       if (!res.ok) { showToast("Failed to import — try again.", "error"); return; }
+      const result = await res.json().catch(() => null) as { project?: unknown; googleBusinessImport?: { imported?: boolean; error?: string } | null } | null;
       setImportedIds((prev) => new Set(prev).add(business.id));
-      showToast(`${business.name} added to CRM Leads`, "success");
+      showToast(
+        result?.googleBusinessImport?.imported
+          ? `${business.name} added to Leads and Projects; Google reviews/photos imported into brief`
+          : result?.project
+            ? `${business.name} added to Leads and Projects with website brief`
+            : `${business.name} added to CRM Leads`,
+        "success"
+      );
     } catch {
       showToast("Import failed.", "error");
     } finally {

@@ -17,22 +17,23 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ridentechnologies.com"),
   title: {
-    default: "Riden Technologies — Web Design Agency London | Websites for Small Businesses",
+    default: "Riden Technologies — Websites for Trades & Small Businesses UK",
     template: "%s | Riden Technologies",
   },
   description:
-    "Riden Technologies is a London-based web design agency building professional websites for small businesses, tradespeople, and local companies across the UK. Get online in 2–5 business days.",
+    "Riden Technologies designs, builds and manages professional websites for UK trades and small businesses — plumbers, electricians, builders, carpenters and local services. Hosting, SEO and updates handled for you. Free website preview from £299.",
   keywords: [
-    "web design agency London",
-    "website design small business UK",
-    "website designer London",
-    "affordable website design UK",
-    "professional website for small business",
-    "website design for tradespeople",
-    "web design agency UK",
-    "small business website builder UK",
-    "get a website for my business",
+    "websites for trades",
+    "websites for small businesses UK",
+    "website design for trades",
+    "websites for plumbers",
+    "websites for builders",
+    "website design for electricians",
+    "websites for carpenters",
+    "small business website design UK",
     "local business website design",
+    "website design for tradespeople",
+    "managed website hosting UK",
     "Riden Technologies",
   ],
   authors: [{ name: "Riden Technologies", url: "https://ridentechnologies.com" }],
@@ -44,23 +45,23 @@ export const metadata: Metadata = {
     locale: "en_GB",
     url: "https://ridentechnologies.com",
     siteName: "Riden Technologies",
-    title: "Riden Technologies — Web Design Agency London",
+    title: "Websites Built To Bring Local Businesses More Enquiries",
     description:
-      "Professional websites for small businesses, tradespeople, and local companies across the UK. Live in 2–5 business days. From £299.",
+      "We design, build and manage professional websites for UK trades and service businesses — with hosting, updates and SEO handled for you. From £299.",
     images: [
       {
         url: "/images/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Riden Technologies — Web Design Agency London",
+        alt: "Riden Technologies — Websites for UK trades and small businesses",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Riden Technologies — Web Design Agency London",
+    title: "Websites for Trades & Small Businesses UK | Riden Technologies",
     description:
-      "Professional websites for small businesses across the UK. Live in 2–5 business days. From £299.",
+      "Professional websites for UK trades and local businesses. Hosting, SEO and updates handled for you. From £299.",
     images: ["/images/og-image.png"],
   },
   icons: {

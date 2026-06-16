@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { PRICING_TIERS, getTier, type PricingTier } from "@/lib/pricing";
+import { runWebsiteBriefQaAgent, type WebsiteBriefQaPhotosJson, type WebsiteBriefQaResult } from "@/lib/website-brief-qa-agent";
 
 type Project = {
   id: string;
@@ -680,7 +681,7 @@ function ProjectDetailModal({
     }
     try {
       const raw = JSON.parse(initialProject.photosJson ?? "{}");
-      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: legacyAlbum(raw as string[]), beforeAfterPairs: [] as BriefBeforeAfterPair[] };
+      if (Array.isArray(raw)) return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: raw as string[], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: legacyAlbum(raw as string[]), beforeAfterPairs: [] as BriefBeforeAfterPair[], qa: {} as WebsiteBriefQaPhotosJson };
       const rc = raw.colours && typeof raw.colours === "object" ? raw.colours as Record<string, unknown> : {};
       const heroImages: string[] = Array.isArray(raw.heroImages) ? raw.heroImages as string[] : raw.hero ? [String(raw.hero)] : [];
       const gallery: string[] = Array.isArray(raw.gallery) ? raw.gallery as string[] : [];
@@ -698,8 +699,21 @@ function ProjectDetailModal({
         reviewSettings:  raw.reviewSettings && typeof raw.reviewSettings === "object" ? raw.reviewSettings as ReviewSettings : DEFAULT_REVIEW_SETTINGS,
         projectAlbums,
         beforeAfterPairs: Array.isArray(raw.beforeAfterPairs) ? raw.beforeAfterPairs as BriefBeforeAfterPair[] : [],
+        qa: {
+          qaStatus: raw.qaStatus,
+          qaScore: raw.qaScore,
+          qaLastRunAt: raw.qaLastRunAt,
+          qaWarnings: Array.isArray(raw.qaWarnings) ? raw.qaWarnings : [],
+          qaSuggestions: Array.isArray(raw.qaSuggestions) ? raw.qaSuggestions : [],
+          qaChanges: Array.isArray(raw.qaChanges) ? raw.qaChanges : [],
+          generatedLogo: raw.generatedLogo,
+          logoSource: raw.logoSource,
+          suggestedBrandColours: raw.suggestedBrandColours,
+          photoCategories: Array.isArray(raw.photoCategories) ? raw.photoCategories : [],
+          primaryHeroImage: raw.primaryHeroImage,
+        } as WebsiteBriefQaPhotosJson,
       };
-    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: empty, beforeAfterPairs: [] as BriefBeforeAfterPair[] }; }
+    } catch { return { logo: "", heroImages: [] as string[], heroMobile: "", gallery: [], heroHotspots: [] as HeroHotspot[], colours: emptyColours, trustCards: DEFAULT_TRUST_CARDS, aboutProofCards: DEFAULT_ABOUT_PROOF_CARDS, reviewSettings: DEFAULT_REVIEW_SETTINGS, projectAlbums: empty, beforeAfterPairs: [] as BriefBeforeAfterPair[], qa: {} as WebsiteBriefQaPhotosJson }; }
   })();
 
   const [logoUrl, setLogoUrl]                   = useState<string>(parsedPhotos.logo);
@@ -717,6 +731,11 @@ function ProjectDetailModal({
   const [reviewSettings,  setReviewSettings]    = useState<ReviewSettings>(parsedPhotos.reviewSettings ?? DEFAULT_REVIEW_SETTINGS);
   const [projectAlbums,   setProjectAlbums]     = useState<ProjectAlbum[]>(parsedPhotos.projectAlbums ?? []);
   const [beforeAfterPairs, setBeforeAfterPairs] = useState<BriefBeforeAfterPair[]>(parsedPhotos.beforeAfterPairs ?? []);
+  const [qaMeta, setQaMeta]                     = useState<WebsiteBriefQaPhotosJson>(parsedPhotos.qa ?? {});
+  const [qaReview, setQaReview]                 = useState<WebsiteBriefQaResult | null>(null);
+  const [qaRunning, setQaRunning]               = useState(false);
+  const [showQaModal, setShowQaModal]           = useState(false);
+  const [qaAfterGoogleImportPending, setQaAfterGoogleImportPending] = useState(false);
   const [expandedAlbumId, setExpandedAlbumId]   = useState<string | null>(null);
   const [albumUrlInputs,  setAlbumUrlInputs]    = useState<Record<string, string>>({});
   const [albumImportingMap, setAlbumImportingMap] = useState<Record<string, boolean>>({});
@@ -1112,6 +1131,120 @@ function ProjectDetailModal({
     return () => clearInterval(interval);
   }, [googleMaps.runId, googleMaps.polling]);
 
+  function buildPhotosPayload(extraQa: WebsiteBriefQaPhotosJson = qaMeta) {
+    return {
+      ...extraQa,
+      logo: logoUrl,
+      heroImages,
+      hero: heroImages[0] ?? "",
+      primaryHeroImage: extraQa.primaryHeroImage ?? heroImages[0] ?? "",
+      heroMobile: heroMobilePhoto,
+      gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)),
+      projectAlbums,
+      heroHotspots,
+      colours: brandColours,
+      trustCards,
+      aboutProofCards,
+      reviewSettings,
+      beforeAfterPairs: beforeAfterPairs.map((pair, i) => ({
+        id: pair.id,
+        title: pair.title ?? `Before & After ${i + 1}`,
+        beforeImage: pair.beforeUrl,
+        afterImage: pair.afterUrl,
+        beforeUrl: pair.beforeUrl,
+        afterUrl: pair.afterUrl,
+        serviceCategory: pair.category ?? "General Work",
+        category: pair.category,
+        description: pair.caption ?? "Before and after comparison.",
+        caption: pair.caption,
+        displayOrder: pair.displayOrder,
+        enabled: pair.enabled,
+      })),
+    };
+  }
+
+  function applyQaResult(result: WebsiteBriefQaResult) {
+    setBrief((b) => ({
+      ...b,
+      phone: String(result.brief.phone ?? b.phone ?? ""),
+      email: String(result.brief.email ?? b.email ?? ""),
+      city: String(result.brief.city ?? b.city ?? ""),
+      postcode: String(result.brief.postcode ?? b.postcode ?? ""),
+      industry: String(result.brief.industry ?? b.industry ?? "trades"),
+      services: String(result.brief.services ?? b.services ?? ""),
+      about: String(result.brief.about ?? b.about ?? ""),
+      accreditations: String(result.brief.accreditations ?? b.accreditations ?? ""),
+      socialFacebook: String(result.brief.socialFacebook ?? b.socialFacebook ?? ""),
+      socialInstagram: String(result.brief.socialInstagram ?? b.socialInstagram ?? ""),
+      openingHours: String(result.brief.openingHours ?? b.openingHours ?? ""),
+      pricingTier: (String(result.brief.pricingTier ?? b.pricingTier ?? "pro") as PricingTier),
+    }));
+    setHeroImages(result.photosJson.heroImages ?? []);
+    setProjectAlbums((result.photosJson.projectAlbums ?? []) as ProjectAlbum[]);
+    setBeforeAfterPairs((result.photosJson.beforeAfterPairs ?? []).map((pair, i) => ({
+      id: pair.id,
+      beforeUrl: pair.beforeUrl ?? pair.beforeImage,
+      afterUrl: pair.afterUrl ?? pair.afterImage,
+      title: pair.title,
+      caption: pair.caption ?? pair.description,
+      category: pair.category ?? pair.serviceCategory,
+      displayOrder: pair.displayOrder ?? i,
+      enabled: pair.enabled !== false,
+    })));
+    if (!brandColours.primary && !brandColours.secondary && !brandColours.tertiary && result.photosJson.suggestedBrandColours) {
+      setBrandColours({
+        primary: result.photosJson.suggestedBrandColours.primary,
+        secondary: result.photosJson.suggestedBrandColours.secondary,
+        tertiary: result.photosJson.suggestedBrandColours.background,
+      });
+    }
+    setQaMeta({
+      qaStatus: result.photosJson.qaStatus,
+      qaScore: result.photosJson.qaScore,
+      qaLastRunAt: result.photosJson.qaLastRunAt,
+      qaWarnings: result.photosJson.qaWarnings,
+      qaSuggestions: result.photosJson.qaSuggestions,
+      qaChanges: result.photosJson.qaChanges,
+      generatedLogo: result.photosJson.generatedLogo,
+      logoSource: result.photosJson.logoSource,
+      suggestedBrandColours: result.photosJson.suggestedBrandColours,
+      photoCategories: result.photosJson.photoCategories,
+      primaryHeroImage: result.photosJson.primaryHeroImage,
+    });
+  }
+
+  async function saveQaResult(result: WebsiteBriefQaResult) {
+    await fetch(`/api/projects/${project.id}`, {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...result.brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify(result.photosJson) }),
+    });
+  }
+
+  function runBriefQaAgent({ showReview = true, applyImmediately = false } = {}) {
+    setQaRunning(true);
+    const result = runWebsiteBriefQaAgent({
+      businessName: project.name,
+      brief,
+      reviews,
+      photosJson: buildPhotosPayload(),
+    });
+    if (applyImmediately) applyQaResult(result);
+    setQaReview(result);
+    if (showReview) setShowQaModal(true);
+    setQaRunning(false);
+    return result;
+  }
+
+  useEffect(() => {
+    if (!qaAfterGoogleImportPending) return;
+    setQaAfterGoogleImportPending(false);
+    runBriefQaAgent({ showReview: true });
+    // Intentionally run once when Google import marks QA pending; runBriefQaAgent
+    // reads the latest committed brief/photo/review state after the import.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qaAfterGoogleImportPending]);
+
   // ── Overview save ─────────────────────────────────────────────────────────
   async function saveChanges() {
     setSaving(true);
@@ -1127,7 +1260,7 @@ function ProjectDetailModal({
           // also persist brief fields
           ...brief,
           reviewsJson: JSON.stringify(reviews),
-          photosJson:  JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings, beforeAfterPairs }),
+          photosJson:  JSON.stringify(buildPhotosPayload()),
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -1147,7 +1280,7 @@ function ProjectDetailModal({
     await fetch(`/api/projects/${project.id}`, {
       method:  "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify({ logo: logoUrl, heroImages, hero: heroImages[0] ?? "", heroMobile: heroMobilePhoto, gallery: projectAlbums.flatMap(a => a.photos.map(p => p.url)), projectAlbums, heroHotspots, colours: brandColours, trustCards, aboutProofCards, reviewSettings, beforeAfterPairs }) }),
+      body: JSON.stringify({ ...brief, reviewsJson: JSON.stringify(reviews), photosJson: JSON.stringify(buildPhotosPayload()) }),
     });
   }
 
@@ -1376,6 +1509,21 @@ function ProjectDetailModal({
           if (raw.reviewSettings && typeof raw.reviewSettings === "object") setReviewSettings(raw.reviewSettings as ReviewSettings);
           if (Array.isArray(raw.trustCards)) setTrustCards(raw.trustCards as TrustCard[]);
           if (Array.isArray(raw.aboutProofCards)) setAboutProofCards(raw.aboutProofCards as AboutProofCard[]);
+          if (raw.qaLastRunAt || raw.qaScore != null || raw.qaStatus) {
+            setQaMeta({
+              qaStatus: raw.qaStatus as WebsiteBriefQaPhotosJson["qaStatus"],
+              qaScore: typeof raw.qaScore === "number" ? raw.qaScore : undefined,
+              qaLastRunAt: typeof raw.qaLastRunAt === "string" ? raw.qaLastRunAt : undefined,
+              qaWarnings: Array.isArray(raw.qaWarnings) ? raw.qaWarnings.map(String) : [],
+              qaSuggestions: Array.isArray(raw.qaSuggestions) ? raw.qaSuggestions.map(String) : [],
+              qaChanges: Array.isArray(raw.qaChanges) ? raw.qaChanges as WebsiteBriefQaPhotosJson["qaChanges"] : [],
+              generatedLogo: raw.generatedLogo as WebsiteBriefQaPhotosJson["generatedLogo"],
+              logoSource: raw.logoSource as WebsiteBriefQaPhotosJson["logoSource"],
+              suggestedBrandColours: raw.suggestedBrandColours as WebsiteBriefQaPhotosJson["suggestedBrandColours"],
+              photoCategories: Array.isArray(raw.photoCategories) ? raw.photoCategories as WebsiteBriefQaPhotosJson["photoCategories"] : [],
+              primaryHeroImage: typeof raw.primaryHeroImage === "string" ? raw.primaryHeroImage : undefined,
+            });
+          }
         }
       } catch {}
       setGoogleMaps((s) => ({ ...s, query: data.placeUrl ?? s.query, error: "" }));
@@ -1534,13 +1682,20 @@ function ProjectDetailModal({
         }];
       });
     }
+
+    setQaAfterGoogleImportPending(true);
   }
 
   // ── Generate website ──────────────────────────────────────────────────────
   async function generateWebsite() {
+    setError("");
+    if (!qaMeta.qaLastRunAt || qaMeta.qaStatus === "critical_issues") {
+      runBriefQaAgent({ showReview: true });
+      setError("Website Brief QA has run first. Review the QA changes, save the brief, then generate the website.");
+      return;
+    }
     setGenerating(true);
     setGeneratedUrl(null);
-    setError("");
     await saveBrief();
     try {
       const res = await fetch("/api/generate-website", {
@@ -1908,6 +2063,87 @@ function ProjectDetailModal({
                   )}
                 </div>
               </div>
+
+              {/* Website Brief QA Agent Panel */}
+              <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-white flex items-center gap-1.5"><Sparkles size={12} /> Website Brief QA Agent</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+                      Cleans and validates the brief before website generation, without deleting photos or silently replacing important content.
+                    </p>
+                  </div>
+                  {qaMeta.qaScore != null && (
+                    <span className="px-2 py-1 rounded-lg bg-riden-muted border border-riden-border text-xs font-semibold text-violet-300">
+                      QA Score {qaMeta.qaScore}/100
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => runBriefQaAgent({ showReview: true })}
+                    disabled={qaRunning}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                  >
+                    {qaRunning ? <RefreshCw size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                    {qaRunning ? "Running QA..." : "Run Website Brief QA"}
+                  </button>
+                  <span className="text-[11px] text-slate-500">
+                    Last Run: {qaMeta.qaLastRunAt ? new Date(String(qaMeta.qaLastRunAt)).toLocaleString() : "Not run yet"}
+                  </span>
+                </div>
+                {(qaMeta.qaWarnings?.length ?? 0) > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-amber-400 uppercase">Warnings</p>
+                    {qaMeta.qaWarnings?.slice(0, 3).map((warning, i) => <p key={i} className="text-[11px] text-slate-400">• {warning}</p>)}
+                  </div>
+                )}
+                {(qaMeta.qaSuggestions?.length ?? 0) > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-semibold text-blue-400 uppercase">Suggestions</p>
+                    {qaMeta.qaSuggestions?.slice(0, 3).map((suggestion, i) => <p key={i} className="text-[11px] text-slate-400">• {suggestion}</p>)}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-400">
+                  <div className="rounded-lg bg-riden-muted/70 border border-riden-border p-2">Photo labels: Hero Candidate · Before · After · Project Album · Needs Review · Low Quality</div>
+                  <div className="rounded-lg bg-riden-muted/70 border border-riden-border p-2">Photo organisation: {qaMeta.photoCategories?.length ?? 0} photos categorised</div>
+                </div>
+              </div>
+
+              {showQaModal && qaReview && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                  <div className="w-full max-w-lg rounded-2xl border border-riden-border bg-riden-surface p-5 shadow-2xl space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-semibold text-white">Review QA Changes</h3>
+                        <p className="text-[11px] text-slate-400 mt-1">Score {qaReview.score.total}/100 — changes are editable and reversible. User-entered About text is preserved in aboutOriginal when cleaned.</p>
+                      </div>
+                      <button onClick={() => setShowQaModal(false)} className="text-slate-500 hover:text-white"><X size={16} /></button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto space-y-3 pr-1">
+                      <div>
+                        <p className="text-[10px] font-semibold text-emerald-400 uppercase mb-1">What changed</p>
+                        {qaReview.changes.map((change, i) => <p key={i} className="text-[11px] text-slate-300">• {change.summary}</p>)}
+                      </div>
+                      {(qaReview.score.warnings.length > 0) && <div>
+                        <p className="text-[10px] font-semibold text-amber-400 uppercase mb-1">Needs review</p>
+                        {qaReview.score.warnings.map((warning, i) => <p key={i} className="text-[11px] text-slate-300">• {warning}</p>)}
+                      </div>}
+                      {(qaReview.score.criticalIssues.length > 0) && <div>
+                        <p className="text-[10px] font-semibold text-rose-400 uppercase mb-1">Critical issues</p>
+                        {qaReview.score.criticalIssues.map((issue, i) => <p key={i} className="text-[11px] text-slate-300">• {issue}</p>)}
+                      </div>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button onClick={() => { applyQaResult(qaReview); saveQaResult(qaReview); setShowQaModal(false); }} className="px-3 py-2 rounded-lg bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium">Accept All</button>
+                      <button onClick={() => { applyQaResult(qaReview); setShowQaModal(false); }} className="px-3 py-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-300 text-xs font-medium">Review Individually</button>
+                      <button onClick={() => { setQaReview(null); setShowQaModal(false); }} className="px-3 py-2 rounded-lg bg-riden-muted border border-riden-border text-slate-400 text-xs font-medium">Reject Changes</button>
+                      <button onClick={() => { applyQaResult(qaReview); saveQaResult(qaReview); setShowQaModal(false); }} className="px-3 py-2 rounded-lg bg-riden-muted border border-riden-border text-slate-300 text-xs font-medium">Save as Draft</button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Template Selector — top of brief */}
               <div className="space-y-2">
@@ -2934,6 +3170,22 @@ function ProjectDetailModal({
                                   <div key={photo.id} className="relative group aspect-square rounded-lg overflow-hidden border border-riden-border">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={photo.url} alt={photo.alt || ""} className="w-full h-full object-cover" />
+                                    {(() => {
+                                      const qaPhoto = photo as typeof photo & { category?: string; isHeroCandidate?: boolean; isBeforePhoto?: boolean; isAfterPhoto?: boolean; qualityScore?: number };
+                                      const labels = [
+                                        qaPhoto.isHeroCandidate ? "Hero Candidate" : "",
+                                        qaPhoto.isBeforePhoto ? "Before" : "",
+                                        qaPhoto.isAfterPhoto ? "After" : "",
+                                        qaPhoto.category === "Project Album" ? "Project Album" : "",
+                                        qaPhoto.category === "Poor Quality / Needs Review" ? "Needs Review" : "",
+                                        (qaPhoto.qualityScore ?? 100) < 35 ? "Low Quality" : "",
+                                      ].filter(Boolean);
+                                      return labels.length > 0 ? (
+                                        <div className="absolute top-1 left-1 flex flex-col gap-0.5 items-start">
+                                          {labels.slice(0, 2).map(label => <span key={label} className="text-[8px] bg-black/70 text-white px-1 py-0.5 rounded">{label}</span>)}
+                                        </div>
+                                      ) : null;
+                                    })()}
                                     {album.coverImageUrl === photo.url && (
                                       <div className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5">Cover</div>
                                     )}

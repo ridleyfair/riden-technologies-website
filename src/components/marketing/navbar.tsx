@@ -4,14 +4,15 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { label: "Solutions", href: "/solutions" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "About", href: "/about" },
+  { label: "Home", href: "/" },
+  { label: "Examples", href: "/#examples" },
+  { label: "Services", href: "/#services" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -22,6 +23,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -34,7 +36,7 @@ export default function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "glass border-b border-white/5 py-3"
+          ? "bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_24px_-12px_rgba(15,23,42,0.12)] py-3"
           : "bg-transparent py-5"
       )}
     >
@@ -43,10 +45,10 @@ export default function Navbar() {
         <Link href="/" className="flex items-center group flex-shrink-0">
           <div
             style={{
-              width: "min(220px, 52vw)",
-              height: "54px",
-              backgroundImage: "url(/images/RidenLogo.png)",
-              backgroundSize: "200% auto",
+              width: "min(210px, 50vw)",
+              height: "50px",
+              backgroundImage: "url(/images/blackridenlogo.png)",
+              backgroundSize: "contain",
               backgroundPosition: "left center",
               backgroundRepeat: "no-repeat",
             }}
@@ -61,10 +63,10 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                "px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                 pathname === link.href
-                  ? "text-white bg-riden-muted"
-                  : "text-slate-400 hover:text-white hover:bg-riden-muted/50"
+                  ? "text-slate-900 bg-slate-100"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
               )}
             >
               {link.label}
@@ -74,17 +76,20 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/contact">
-            <Button variant="gradient" size="sm">
-              Book a Strategy Call
-            </Button>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-600/30"
+          >
+            Get My Website Preview
+            <ArrowRight size={15} />
           </Link>
         </div>
 
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-riden-muted transition-colors"
+          aria-label="Toggle menu"
+          className="md:hidden p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
         >
           {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -98,9 +103,9 @@ export default function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden glass border-t border-white/5 overflow-hidden"
+            className="md:hidden bg-white/95 backdrop-blur-xl border-t border-slate-200 overflow-hidden"
           >
-            <div className="px-4 py-4 flex flex-col gap-2">
+            <div className="px-4 py-4 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -109,18 +114,21 @@ export default function Navbar() {
                   className={cn(
                     "px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                     pathname === link.href
-                      ? "text-white bg-riden-muted"
-                      : "text-slate-400 hover:text-white hover:bg-riden-muted/50"
+                      ? "text-slate-900 bg-slate-100"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
                   )}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-riden-border">
-                <Link href="/contact" onClick={() => setIsMobileOpen(false)}>
-                  <Button variant="gradient" size="sm" className="w-full">Book a Strategy Call</Button>
-                </Link>
-              </div>
+              <Link
+                href="/contact"
+                onClick={() => setIsMobileOpen(false)}
+                className="mt-3 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/25"
+              >
+                Get My Website Preview
+                <ArrowRight size={15} />
+              </Link>
             </div>
           </motion.div>
         )}

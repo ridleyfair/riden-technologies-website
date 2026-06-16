@@ -28,6 +28,14 @@ export async function GET() {
   await step("Project.openingHours", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "openingHours" TEXT`);
   await step("Project.reviewsJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "reviewsJson" TEXT DEFAULT '[]'`);
   await step("Project.photosJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "photosJson" TEXT DEFAULT '[]'`);
+  await step("Project.leadId", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "leadId" TEXT`);
+  await step("Project.possibleClientId", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "possibleClientId" TEXT`);
+  await step("Project.source", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS source TEXT`);
+  await step("Project.recommendedTemplate", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "recommendedTemplate" TEXT`);
+  await step("Project.websiteFactoryPlanJson", () => sql`ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "websiteFactoryPlanJson" TEXT`);
+  await step("idx Project.possibleClientId", () => sql`
+    CREATE INDEX IF NOT EXISTS "Project_possibleClientId_idx" ON "Project"("possibleClientId") WHERE "possibleClientId" IS NOT NULL
+  `);
 
   return NextResponse.json({
     ok: true,

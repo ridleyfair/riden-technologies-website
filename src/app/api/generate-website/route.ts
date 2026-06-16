@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "@/lib/db";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
+import {
+  buildGalleryItemsFromAlbums,
+  normalizeGeneratedSiteImageUrl,
+  normalizeProjectAlbumsForGeneratedSite,
+} from "@/lib/generated-site-image-mapping";
 
 // ── Cloudflare-compatible env accessor ────────────────────────────────────────
 
@@ -1161,8 +1166,7 @@ export async function POST(req: NextRequest) {
 
         const isHome = (page.slug as string) === "/";
 
-        const toAbsUrl = (url: string) =>
-          url.startsWith("/") ? `${crmOrigin}${url}` : url;
+        const toGeneratedImageUrl = (url: string) => normalizeGeneratedSiteImageUrl(url, crmOrigin);
 
         // Inject hero image(s) into home page hero section only.
         // heroImages[] takes priority over legacy heroImage string.
@@ -1174,7 +1178,7 @@ export async function POST(req: NextRequest) {
           const heroSection = sections.find((s) => s.type === "hero") as Record<string, unknown> | undefined;
           if (heroSection) {
             const heroContent = heroSection.content as Record<string, unknown>;
-            const absImages   = rawHeroImages.map(toAbsUrl);
+            const absImages   = rawHeroImages.map(toGeneratedImageUrl);
 
             heroContent.backgroundImage = absImages[0];
 
@@ -1187,7 +1191,7 @@ export async function POST(req: NextRequest) {
             // defaults from the CTA labels Claude generated.
             const isWebpHero = absImages[0].split("?")[0].toLowerCase().endsWith(".webp");
             if (isWebpHero && body.heroMobileImage) {
-              heroContent.mobileBackgroundImage = toAbsUrl(body.heroMobileImage);
+              heroContent.mobileBackgroundImage = toGeneratedImageUrl(body.heroMobileImage);
             }
             if (isWebpHero) {
               if (body.heroHotspots && body.heroHotspots.length > 0) {
@@ -1210,36 +1214,33 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // Inject real photos into whichever page the template designates for gallery
-        const activeAlbums = (body.projectAlbums ?? []).filter(a => a.enabled);
-        const effectivePhotos = activeAlbums.length > 0
-          ? activeAlbums.flatMap(a => a.photos.map(p => p.url))
-          : (body.photos ?? []);
+        // Inject real photos into every gallery section for every template.
+        // All templates need flat items; album-aware templates also receive projectAlbums.
+        const activeAlbums = (body.projectAlbums ?? []).filter(a => a.enabled && a.photos.length > 0);
+        const galleryItems = buildGalleryItemsFromAlbums({
+          albums: activeAlbums,
+          fallbackPhotos: body.photos ?? [],
+          businessName: body.businessName,
+          origin: crmOrigin,
+        });
+        const normalizedAlbums = normalizeProjectAlbumsForGeneratedSite({
+          albums: activeAlbums,
+          businessName: body.businessName,
+          origin: crmOrigin,
+        });
 
-        if (effectivePhotos.length > 0) {
+        if (galleryItems.length > 0) {
           const galleryPageSlug = templateDef.pages.find((p) => p.sections.includes("gallery"))?.slug;
           const isDesignatedGalleryPage = (page.slug as string) === galleryPageSlug;
           const gallerySection = sections.find((s) => s.type === "gallery") as Record<string, unknown> | undefined;
 
           if (gallerySection) {
             const gContent = gallerySection.content as Record<string, unknown>;
-            // Inject flat items (backward compat)
-            gContent.items = effectivePhotos.map((src, i) => ({
-              src: toAbsUrl(src),
-              alt: `${body.businessName} work photo ${i + 1}`,
-              caption: "",
-            }));
-            // Also inject album structure for templates that support it
-            if (activeAlbums.length > 0) {
-              gContent.projectAlbums = activeAlbums.map(a => ({
-                ...a,
-                coverImageUrl: a.coverImageUrl ? toAbsUrl(a.coverImageUrl) : undefined,
-                photos: a.photos.map(p => ({
-                  ...p,
-                  url: toAbsUrl(p.url),
-                  alt: p.alt || `${body.businessName} ${a.title}`,
-                })),
-              }));
+            // Flat items are required by Tradie Bold and generic gallery templates.
+            gContent.items = galleryItems;
+            // Album structure is required by Modern Minimal / Beauty Pro album layouts.
+            if (normalizedAlbums.length > 0) {
+              gContent.projectAlbums = normalizedAlbums;
             }
           } else if (isDesignatedGalleryPage) {
             // Inject gallery section if Claude omitted it on the designated gallery page
@@ -1248,25 +1249,17 @@ export async function POST(req: NextRequest) {
             const injectedContent: Record<string, unknown> = {
               headline: "Our Work",
               subHeadline: "A selection of recent projects",
-              items: effectivePhotos.map((src, i) => ({
-                src: toAbsUrl(src),
-                alt: `${body.businessName} work photo ${i + 1}`,
-                caption: "",
-              })),
+              items: galleryItems,
             };
-            if (activeAlbums.length > 0) {
-              injectedContent.projectAlbums = activeAlbums.map(a => ({
-                ...a,
-                coverImageUrl: a.coverImageUrl ? toAbsUrl(a.coverImageUrl) : undefined,
-                photos: a.photos.map(p => ({ ...p, url: toAbsUrl(p.url), alt: p.alt || `${body.businessName} ${a.title}` })),
-              }));
+            if (normalizedAlbums.length > 0) {
+              injectedContent.projectAlbums = normalizedAlbums;
             }
             sections.splice(idx, 0, { type: "gallery", content: injectedContent });
           }
         }
 
         // ── Before/After injection ────────────────────────────────────────────
-        // Inject the brief's enabled pairs (absolute URLs, ordered) into every
+        // Inject the brief's enabled pairs (absolute/proxied URLs, ordered) into every
         // before-after section; drop the section entirely if no pairs remain.
         const activePairs = (body.beforeAfterPairs ?? [])
           .filter((p) => p.enabled && p.beforeUrl && p.afterUrl)
@@ -1276,8 +1269,8 @@ export async function POST(req: NextRequest) {
           if ((section.type as string) !== "before-after") continue;
           (section.content as Record<string, unknown>).pairs = activePairs.map((p) => ({
             id:        p.id,
-            beforeUrl: toAbsUrl(p.beforeUrl),
-            afterUrl:  toAbsUrl(p.afterUrl),
+            beforeUrl: toGeneratedImageUrl(p.beforeUrl),
+            afterUrl:  toGeneratedImageUrl(p.afterUrl),
             title:     p.title || "",
             caption:   p.caption || "",
             category:  p.category || "",

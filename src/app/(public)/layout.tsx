@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Navbar from "@/components/marketing/navbar";
 import Footer from "@/components/marketing/footer";
+import MotionProvider from "@/components/marketing/motion-provider";
 import Tracker from "@/components/tracking/tracker";
 
 export const metadata: Metadata = {
@@ -27,13 +28,15 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Navbar />
-      <main>{children}</main>
-      <Footer />
+    <MotionProvider>
+      <div className="public-site">
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+      </div>
       <Suspense fallback={null}>
         <Tracker />
       </Suspense>
-    </>
+    </MotionProvider>
   );
 }
