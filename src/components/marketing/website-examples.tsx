@@ -139,7 +139,7 @@ export default function WebsiteExamples() {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      setCardW(w < 640 ? Math.min(CARD_W, w - 32) : CARD_W);
+      setCardW(w < 640 ? Math.round(w * 0.78) : CARD_W);
     };
     update();
     window.addEventListener("resize", update);
@@ -175,19 +175,19 @@ export default function WebsiteExamples() {
       boxShadow: "0 40px 100px -24px rgba(15,23,42,0.38), 0 0 0 1px rgba(15,23,42,0.06)",
     },
     left: {
-      x: isMobile ? 0 : -cardW * 0.56, y: isMobile ? 0 : 28,
-      scale: isMobile ? 1 : 0.83,
-      rotateY: isMobile ? 0 : 18,
-      opacity: isMobile ? 0 : 0.78,
+      x: -cardW * 0.56, y: isMobile ? 16 : 28,
+      scale: isMobile ? 0.88 : 0.83,
+      rotateY: isMobile ? 10 : 18,
+      opacity: 0.78,
       zIndex: 15,
       filter: "brightness(0.88)",
       boxShadow: "0 20px 50px -16px rgba(15,23,42,0.22)",
     },
     right: {
-      x: isMobile ? 0 : cardW * 0.56, y: isMobile ? 0 : 28,
-      scale: isMobile ? 1 : 0.83,
-      rotateY: isMobile ? 0 : -18,
-      opacity: isMobile ? 0 : 0.78,
+      x: cardW * 0.56, y: isMobile ? 16 : 28,
+      scale: isMobile ? 0.88 : 0.83,
+      rotateY: isMobile ? -10 : -18,
+      opacity: 0.78,
       zIndex: 15,
       filter: "brightness(0.88)",
       boxShadow: "0 20px 50px -16px rgba(15,23,42,0.22)",
