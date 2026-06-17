@@ -49,6 +49,7 @@ const portfolioItems: PortfolioItem[] = [
 
 const CARD_W = 520;
 const CARD_H = 400;
+const CARD_RATIO = CARD_H / CARD_W;
 
 function PortfolioCard({ item, isCenter }: { item: PortfolioItem; isCenter: boolean }) {
   if (item.comingSoon) {
@@ -87,7 +88,7 @@ function PortfolioCard({ item, isCenter }: { item: PortfolioItem; isCenter: bool
             src={item.image}
             alt={`${item.businessName} website`}
             fill
-            sizes="520px"
+            sizes="(max-width: 640px) calc(100vw - 32px), 520px"
             className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
             priority
           />
@@ -130,7 +131,20 @@ function PortfolioCard({ item, isCenter }: { item: PortfolioItem; isCenter: bool
 export default function WebsiteExamples() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [cardW, setCardW] = useState(CARD_W);
   const count = portfolioItems.length;
+  const isMobile = cardW < CARD_W;
+  const cardH = Math.round(cardW * CARD_RATIO);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setCardW(w < 640 ? Math.min(CARD_W, w - 32) : CARD_W);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   const prev = useCallback(() => setActive((a) => (a - 1 + count) % count), [count]);
   const next = useCallback(() => setActive((a) => (a + 1) % count), [count]);
@@ -161,19 +175,19 @@ export default function WebsiteExamples() {
       boxShadow: "0 40px 100px -24px rgba(15,23,42,0.38), 0 0 0 1px rgba(15,23,42,0.06)",
     },
     left: {
-      x: -CARD_W * 0.56, y: 28,
-      scale: 0.83,
-      rotateY: 18,
-      opacity: 0.78,
+      x: isMobile ? 0 : -cardW * 0.56, y: isMobile ? 0 : 28,
+      scale: isMobile ? 1 : 0.83,
+      rotateY: isMobile ? 0 : 18,
+      opacity: isMobile ? 0 : 0.78,
       zIndex: 15,
       filter: "brightness(0.88)",
       boxShadow: "0 20px 50px -16px rgba(15,23,42,0.22)",
     },
     right: {
-      x: CARD_W * 0.56, y: 28,
-      scale: 0.83,
-      rotateY: -18,
-      opacity: 0.78,
+      x: isMobile ? 0 : cardW * 0.56, y: isMobile ? 0 : 28,
+      scale: isMobile ? 1 : 0.83,
+      rotateY: isMobile ? 0 : -18,
+      opacity: isMobile ? 0 : 0.78,
       zIndex: 15,
       filter: "brightness(0.88)",
       boxShadow: "0 20px 50px -16px rgba(15,23,42,0.22)",
@@ -215,7 +229,7 @@ export default function WebsiteExamples() {
         {/* Stacked card carousel */}
         <div
           className="relative mx-auto mt-16 flex items-center justify-center"
-          style={{ height: CARD_H + 60, perspective: "1400px" }}
+          style={{ height: cardH + 60, perspective: "1400px" }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -229,7 +243,7 @@ export default function WebsiteExamples() {
               <motion.div
                 key={i}
                 className="absolute cursor-pointer"
-                style={{ width: CARD_W, height: CARD_H, transformStyle: "preserve-3d" }}
+                style={{ width: cardW, height: cardH, transformStyle: "preserve-3d" }}
                 animate={variants[pos]}
                 transition={{ type: "spring", stiffness: 260, damping: 28 }}
                 onClick={() => {
