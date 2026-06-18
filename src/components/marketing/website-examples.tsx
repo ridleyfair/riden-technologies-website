@@ -100,7 +100,7 @@ function PortfolioCard({ item, isCenter }: { item: PortfolioItem; isCenter: bool
       </div>
 
       {/* Info strip */}
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex flex-shrink-0 items-center justify-between bg-white px-6 py-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600">
             {item.industry}
