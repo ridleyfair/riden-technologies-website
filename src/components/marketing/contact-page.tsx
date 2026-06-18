@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const contactInfo = [
-  { icon: Mail, label: "Email Us", value: "inquiries@ridentechnologies.com" },
+  { icon: Mail, label: "Email Us", value: "enquiries@ridentechnologies.com" },
   { icon: MapPin, label: "Location", value: "London, UK" },
 ];
 
@@ -173,7 +173,7 @@ export default function ContactPage() {
       setSubmitted(true);
     } catch {
       setError(
-        "Something went wrong. Please email us at inquiries@ridentechnologies.com",
+        "Something went wrong. Please email us at enquiries@ridentechnologies.com",
       );
     } finally {
       setLoading(false);

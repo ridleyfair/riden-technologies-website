@@ -122,7 +122,7 @@ export default function AcceptableUsePage() {
           title: "Reporting Violations",
           content: (
             <p>
-              If you become aware of any use of our services that violates this AUP, please report it immediately to <strong className="text-white">inquiries@ridentechnologies.com</strong>. We investigate all credible reports and take appropriate action.
+              If you become aware of any use of our services that violates this AUP, please report it immediately to <strong className="text-white">enquiries@ridentechnologies.com</strong>. We investigate all credible reports and take appropriate action.
             </p>
           ),
         },

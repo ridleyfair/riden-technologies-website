@@ -51,11 +51,11 @@ export default function Footer() {
               and local service businesses, helping you win more enquiries.
             </p>
             <a
-              href="mailto:inquiries@ridentechnologies.com"
+              href="mailto:enquiries@ridentechnologies.com"
               className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
             >
               <Mail size={16} className="text-blue-600" />
-              inquiries@ridentechnologies.com
+              enquiries@ridentechnologies.com
             </a>
           </div>
 

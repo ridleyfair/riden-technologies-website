@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
                 If you are not satisfied with the website we deliver, you may request a full refund of your setup fee within 14 days of your website going live, provided that all of the following conditions are met:
               </p>
               <ul className="list-disc list-outside pl-5 space-y-2 mt-2">
-                <li>You submit your refund request in writing to <strong className="text-white">inquiries@ridentechnologies.com</strong> within 14 days of the website launch date.</li>
+                <li>You submit your refund request in writing to <strong className="text-white">enquiries@ridentechnologies.com</strong> within 14 days of the website launch date.</li>
                 <li>You provide a clear written explanation of why you are unsatisfied, allowing us the opportunity to resolve the issue first.</li>
                 <li>You have not yet used the website to generate commercial transactions, bookings, or leads at scale.</li>
                 <li>The dissatisfaction relates to our work and not to factors outside our control (e.g. your business circumstances changing, you deciding you no longer need a website, or feedback from third parties).</li>
@@ -80,7 +80,7 @@ export default function RefundPolicyPage() {
             <>
               <p>To cancel your subscription or request a refund:</p>
               <ol className="list-decimal list-outside pl-5 space-y-2 mt-2">
-                <li>Email <strong className="text-white">inquiries@ridentechnologies.com</strong> with the subject line &ldquo;Cancellation Request&rdquo; or &ldquo;Refund Request&rdquo;.</li>
+                <li>Email <strong className="text-white">enquiries@ridentechnologies.com</strong> with the subject line &ldquo;Cancellation Request&rdquo; or &ldquo;Refund Request&rdquo;.</li>
                 <li>Include your full name, business name, and the email address associated with your account.</li>
                 <li>For refund requests, include the reason for your request.</li>
                 <li>We will acknowledge your request within 2 business days and confirm the outcome within 5 business days.</li>
@@ -100,7 +100,7 @@ export default function RefundPolicyPage() {
           title: "Disputes",
           content: (
             <p>
-              If you are unhappy with our handling of a refund request, please escalate your complaint in writing to <strong className="text-white">inquiries@ridentechnologies.com</strong>. We will endeavour to resolve all complaints fairly and within 14 days. If we are unable to reach an agreement, you may seek independent resolution through the courts of England and Wales.
+              If you are unhappy with our handling of a refund request, please escalate your complaint in writing to <strong className="text-white">enquiries@ridentechnologies.com</strong>. We will endeavour to resolve all complaints fairly and within 14 days. If we are unable to reach an agreement, you may seek independent resolution through the courts of England and Wales.
             </p>
           ),
         },
@@ -110,7 +110,7 @@ export default function RefundPolicyPage() {
             <>
               <p>For refund and cancellation requests:</p>
               <ul className="list-none space-y-1 mt-2">
-                <li><strong className="text-white">Email:</strong> inquiries@ridentechnologies.com</li>
+                <li><strong className="text-white">Email:</strong> enquiries@ridentechnologies.com</li>
                 <li><strong className="text-white">Response time:</strong> Within 2 business days</li>
               </ul>
             </>

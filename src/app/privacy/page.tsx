@@ -25,7 +25,7 @@ export default function PrivacyPage() {
                 For the purposes of UK data protection law (UK GDPR and the Data Protection Act 2018), Riden Technologies is the data controller of personal information collected through this website and our platforms.
               </p>
               <p>
-                Contact us at: <strong className="text-white">inquiries@ridentechnologies.com</strong>
+                Contact us at: <strong className="text-white">enquiries@ridentechnologies.com</strong>
               </p>
             </>
           ),
@@ -127,7 +127,7 @@ export default function PrivacyPage() {
                 <li><strong className="text-white">Withdraw consent:</strong> Where we rely on consent, you may withdraw it at any time.</li>
               </ul>
               <p className="mt-3">
-                To exercise any of these rights, contact us at <strong className="text-white">inquiries@ridentechnologies.com</strong>. We will respond within 30 days. You also have the right to lodge a complaint with the Information Commissioner&apos;s Office (ICO) at <strong className="text-white">ico.org.uk</strong>.
+                To exercise any of these rights, contact us at <strong className="text-white">enquiries@ridentechnologies.com</strong>. We will respond within 30 days. You also have the right to lodge a complaint with the Information Commissioner&apos;s Office (ICO) at <strong className="text-white">ico.org.uk</strong>.
               </p>
             </>
           ),
@@ -162,7 +162,7 @@ export default function PrivacyPage() {
             <>
               <p>For any privacy-related queries or to exercise your rights, contact us:</p>
               <ul className="list-none space-y-1 mt-2">
-                <li><strong className="text-white">Email:</strong> inquiries@ridentechnologies.com</li>
+                <li><strong className="text-white">Email:</strong> enquiries@ridentechnologies.com</li>
                 <li><strong className="text-white">Address:</strong> Riden Technologies, London, UK</li>
               </ul>
             </>

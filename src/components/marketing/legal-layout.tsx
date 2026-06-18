@@ -100,7 +100,7 @@ export default function LegalLayout({ title, subtitle, lastUpdated, effectiveDat
               {/* Footer note */}
               <div className="pt-8 border-t border-riden-border">
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Riden Technologies · London, UK · inquiries@ridentechnologies.com
+                  Riden Technologies · London, UK · enquiries@ridentechnologies.com
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 text-xs">
                   {[

@@ -215,7 +215,7 @@ export default function TermsPage() {
             <>
               <p>For any queries regarding these Terms, contact us:</p>
               <ul className="list-none space-y-1 mt-2">
-                <li><strong className="text-white">Email:</strong> inquiries@ridentechnologies.com</li>
+                <li><strong className="text-white">Email:</strong> enquiries@ridentechnologies.com</li>
                 <li><strong className="text-white">Address:</strong> Riden Technologies, London, UK</li>
               </ul>
             </>

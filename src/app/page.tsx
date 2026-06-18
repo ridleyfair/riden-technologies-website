@@ -50,7 +50,7 @@ const jsonLd = {
       },
       contactPoint: {
         "@type": "ContactPoint",
-        email: "inquiries@ridentechnologies.com",
+        email: "enquiries@ridentechnologies.com",
         contactType: "customer service",
         areaServed: "GB",
         availableLanguage: "English",
@@ -77,7 +77,7 @@ const jsonLd = {
         "UK web design agency building professional websites for trades, local service businesses and small companies. Website design, SEO, hosting and ongoing support managed for you.",
       url: "https://ridentechnologies.com",
       telephone: "",
-      email: "inquiries@ridentechnologies.com",
+      email: "enquiries@ridentechnologies.com",
       address: {
         "@type": "PostalAddress",
         addressLocality: "London",
