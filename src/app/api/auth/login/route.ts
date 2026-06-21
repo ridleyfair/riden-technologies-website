@@ -45,12 +45,15 @@ async function clearAttempts(ip: string) {
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
 
-  if (!(await checkRateLimit(ip))) {
-    return NextResponse.json(
-      { error: "Too many login attempts. Try again in 15 minutes." },
-      { status: 429 }
-    );
-  }
+  try {
+    const limited = await checkRateLimit(ip).then(ok => !ok).catch(() => false);
+    if (limited) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Try again in 15 minutes." },
+        { status: 429 }
+      );
+    }
+  } catch { /* fail open — don't block login if rate limit check fails */ }
 
   try {
     const { email, password } = await req.json();
