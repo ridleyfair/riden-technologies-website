@@ -47,11 +47,11 @@ function ReviewCard({ t }: { t: Testimonial }) {
               alt={t.name}
               fill
               sizes="48px"
-              className="rounded-full object-cover object-top"
+              className="rounded-xl object-contain p-0.5 bg-white border border-slate-100"
             />
           ) : (
             <div
-              className={`h-12 w-12 rounded-full bg-gradient-to-br ${accentGradient[t.accent]} flex items-center justify-center text-sm font-bold text-white`}
+              className={`h-12 w-12 rounded-xl bg-gradient-to-br ${accentGradient[t.accent]} flex items-center justify-center text-sm font-bold text-white`}
             >
               {t.initials}
             </div>
