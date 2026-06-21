@@ -72,7 +72,7 @@ export default function WhyChooseRiden() {
           </p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {reasons.map((r, i) => {
             const Icon = r.icon;
             return (
@@ -83,7 +83,7 @@ export default function WhyChooseRiden() {
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ delay: (i % 3) * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ y: -6 }}
-                className={`glass-panel rounded-3xl p-6 sm:p-7 ${
+                className={`glass-panel rounded-3xl p-4 sm:p-7 ${
                   i % 3 === 1 ? "lg:translate-y-6" : ""
                 }`}
               >
