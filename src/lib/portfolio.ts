@@ -35,8 +35,8 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
   {
     name: "Hartley Home Renovations",
     industry: "Kitchens & Bathrooms",
-    location: "Sheffield, UK",
-    url: "https://hartleyrenovations.co.uk",
+    location: "Birmingham, UK",
+    url: "https://hartleyhomerenovations.uk",
     image: "/images/portfolio/hartley-renovations.jpg",
     blurb: "Showroom-quality renovation site with a full project gallery, before/after sliders and consultation booking.",
     accent: "emerald",

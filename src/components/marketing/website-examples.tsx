@@ -32,8 +32,8 @@ const portfolioItems: PortfolioItem[] = [
   {
     businessName: "Hartley Home Renovations",
     industry: "Kitchens & Bathrooms",
-    location: "Sheffield",
-    url: "https://hartleyrenovations.co.uk",
+    location: "Birmingham",
+    url: "https://hartleyhomerenovations.uk",
     image: "/images/portfolio/hartley-renovations.jpg",
     tags: ["Kitchen renovations", "Bathroom fitting"],
   },
