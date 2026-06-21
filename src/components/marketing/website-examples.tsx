@@ -26,7 +26,7 @@ const portfolioItems: PortfolioItem[] = [
     industry: "Carpentry & Joinery",
     location: "Chigwell / London",
     url: "https://begucarpentry.com",
-    image: "/images/portfolio/begu-carpentry.png",
+    image: "/images/portfolio/begu.jpg",
     tags: ["Bespoke carpentry", "Quote focused"],
   },
   {
@@ -34,7 +34,7 @@ const portfolioItems: PortfolioItem[] = [
     industry: "Kitchens & Bathrooms",
     location: "Birmingham",
     url: "https://hartleyhomerenovations.uk",
-    image: "/images/portfolio/hartley-renovations.jpg",
+    image: "/images/portfolio/hartley.jpg",
     tags: ["Kitchen renovations", "Bathroom fitting"],
   },
   {
@@ -42,7 +42,7 @@ const portfolioItems: PortfolioItem[] = [
     industry: "Landscaping & Garden Design",
     location: "Surrey",
     url: "https://elmcroftlandscapes.uk",
-    image: "/images/portfolio/elmcroft-landscapes.jpg",
+    image: "/images/portfolio/elmcroft.jpg",
     tags: ["Garden design", "Outdoor transformations"],
   },
 ];
