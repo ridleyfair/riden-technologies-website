@@ -530,9 +530,9 @@ export default function WebsitesPage() {
         description: `Take ${site.businessName} offline? The preview link will still work. DNS records are not removed automatically.`,
         confirmLabel: "Unpublish",
         action: async () => {
-          await fetch(`/api/generated-sites/${site.id}`, {
-            method: "PATCH", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ deploymentStatus: "preview_ready" }),
+          await fetch("/api/deploy/unpublish", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ siteId: site.id }),
           });
           await fetchSites();
         },

@@ -71,12 +71,15 @@ export async function GET(req: NextRequest) {
   const dnsStatus = allDnsActive ? "active" : "pending";
   const sslStatus = sslActive    ? "active" : sslCertStatus;
 
-  // Persist updated status
+  // When both DNS and SSL are active, ensure deployment status is live
+  const deploymentStatus = allDnsActive && sslActive ? "live" : site.deploymentStatus;
+
   await sql`
     UPDATE "GeneratedSite" SET
-      "dnsStatus" = ${dnsStatus},
-      "sslStatus" = ${sslStatus},
-      "updatedAt" = NOW()
+      "dnsStatus"         = ${dnsStatus},
+      "sslStatus"         = ${sslStatus},
+      "deploymentStatus"  = ${deploymentStatus as string},
+      "updatedAt"         = NOW()
     WHERE id = ${siteId}
   `;
 
