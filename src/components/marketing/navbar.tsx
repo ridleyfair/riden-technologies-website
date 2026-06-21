@@ -45,8 +45,8 @@ export default function Navbar() {
         <Link href="/" className="flex items-center group flex-shrink-0">
           <div
             style={{
-              width: "min(210px, 50vw)",
-              height: "50px",
+              width: "min(240px, 55vw)",
+              height: "60px",
               backgroundImage: "url(/images/blackridenlogo.png)",
               backgroundSize: "contain",
               backgroundPosition: "left center",

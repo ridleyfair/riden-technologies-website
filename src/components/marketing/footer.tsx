@@ -36,8 +36,8 @@ export default function Footer() {
             <Link href="/" className="flex items-center mb-4">
               <div
                 style={{
-                  width: "min(230px, 55vw)",
-                  height: "56px",
+                  width: "min(260px, 60vw)",
+                  height: "65px",
                   backgroundImage: "url(/images/blackridenlogo.png)",
                   backgroundSize: "contain",
                   backgroundPosition: "left center",
