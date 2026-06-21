@@ -97,12 +97,12 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.26 }}
             className="mt-8 flex items-center gap-4"
           >
-            <div className="flex -space-x-2.5">
+            <div className="flex -space-x-1.5">
               {[
-                "/images/testimonials/mark-collins.jpg",
-                "/images/testimonials/dave-turner.jpg",
-                "/images/testimonials/sarah-booth.jpg",
-                "/images/testimonials/jamie-renshaw.jpg",
+                "/images/testimonials/collins-plumbing-logo.png",
+                "/images/testimonials/turner-electrical-logo.png",
+                "/images/testimonials/booth-beauty-logo.png",
+                "/images/testimonials/renshaw-groundworks-logo.png",
               ].map((src) => (
                 <Image
                   key={src}
@@ -110,7 +110,7 @@ export default function Hero() {
                   alt=""
                   width={32}
                   height={32}
-                  className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                  className="h-8 w-8 rounded-lg border-2 border-white object-contain bg-white"
                 />
               ))}
             </div>
