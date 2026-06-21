@@ -32,7 +32,19 @@ function isValidEmail(email: string): boolean {
   return true;
 }
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
+    const host = parsed.hostname.toLowerCase();
+    // Block RFC-1918, loopback, link-local, and metadata endpoints
+    if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1|0\.0\.0\.0)/.test(host)) return false;
+    return true;
+  } catch { return false; }
+}
+
 async function findEmailOnWebsite(website: string): Promise<string | null> {
+  if (!isSafeUrl(website)) return null;
   const base = website.replace(/\/$/, "");
   const urls = [base, `${base}/contact`, `${base}/contact-us`, `${base}/about`];
 

@@ -11,7 +11,13 @@ export async function GET(req: NextRequest) {
   }
 
   const sql = getDb();
-  const rows = await sql`SELECT id, "bookingStatus", "microsoftEventId" FROM "Lead" WHERE "responseToken" = ${token} LIMIT 1`;
+  const tokenExpiry = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const rows = await sql`
+    SELECT id, "bookingStatus", "microsoftEventId" FROM "Lead"
+    WHERE "responseToken" = ${token}
+      AND "createdAt" > ${tokenExpiry}
+    LIMIT 1
+  `;
   const lead = rows[0];
 
   if (!lead) {

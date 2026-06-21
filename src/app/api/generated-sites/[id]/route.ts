@@ -11,7 +11,7 @@ export async function GET(
 
   const { id } = await params;
   const sql = getDb();
-  const rows = await sql`SELECT * FROM "GeneratedSite" WHERE id = ${id} LIMIT 1`;
+  const rows = await sql`SELECT id, "projectId", "templateId", "liveDomain", "wwwDomain", "apexDomain", "publishTarget", "deploymentStatus", "dnsStatus", "sslStatus", "cloudflareZoneId", "vercelDomainId", "deploymentError", "lastPublishedAt", "specJson", "draftSpecJson", "publishedSpecJson", "status", "createdAt", "updatedAt" FROM "GeneratedSite" WHERE id = ${id} LIMIT 1`;
 
   if (!rows.length) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(rows[0]);
@@ -42,7 +42,7 @@ export async function PATCH(
     }
   }
 
-  const [row] = await sql`SELECT * FROM "GeneratedSite" WHERE id = ${id} LIMIT 1`;
+  const [row] = await sql`SELECT id, "projectId", "templateId", "liveDomain", "wwwDomain", "apexDomain", "publishTarget", "deploymentStatus", "dnsStatus", "sslStatus", "cloudflareZoneId", "vercelDomainId", "deploymentError", "lastPublishedAt", "specJson", "draftSpecJson", "publishedSpecJson", "status", "createdAt", "updatedAt" FROM "GeneratedSite" WHERE id = ${id} LIMIT 1`;
   return NextResponse.json(row);
 }
 

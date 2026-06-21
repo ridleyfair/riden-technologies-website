@@ -647,7 +647,7 @@ function StatusScreen({ title, body }: { title: string; body: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-        <p className="text-xl font-bold text-slate-800 mb-3" dangerouslySetInnerHTML={{ __html: title }} />
+        <p className="text-xl font-bold text-slate-800 mb-3">{title}</p>
         <p className="text-slate-500 leading-relaxed">{body}</p>
         <p className="mt-4 text-sm text-slate-400">
           <a href="https://ridentechnologies.com" className="text-cyan-600 hover:underline">ridentechnologies.com</a>

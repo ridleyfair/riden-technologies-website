@@ -11,8 +11,6 @@ type UserRow = {
   passwordHash: string;
 };
 
-// In-memory rate limiter: max 5 attempts per IP per 15 minutes
-const attempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
@@ -24,32 +22,30 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
-function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
-  const now = Date.now();
-  const entry = attempts.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    attempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return { allowed: true, remaining: MAX_ATTEMPTS - 1 };
-  }
-
-  if (entry.count >= MAX_ATTEMPTS) {
-    return { allowed: false, remaining: 0 };
-  }
-
-  entry.count++;
-  return { allowed: true, remaining: MAX_ATTEMPTS - entry.count };
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const sql = getDb();
+  const windowStart = new Date(Date.now() - WINDOW_MS);
+  const rows = await sql`
+    SELECT COUNT(*) AS count FROM "LoginAttempt"
+    WHERE ip = ${ip} AND "createdAt" > ${windowStart}
+  `;
+  return Number(rows[0]?.count ?? 0) < MAX_ATTEMPTS;
 }
 
-function clearRateLimit(ip: string) {
-  attempts.delete(ip);
+async function recordAttempt(ip: string) {
+  const sql = getDb();
+  await sql`INSERT INTO "LoginAttempt" (ip, "createdAt") VALUES (${ip}, NOW())`;
+}
+
+async function clearAttempts(ip: string) {
+  const sql = getDb();
+  await sql`DELETE FROM "LoginAttempt" WHERE ip = ${ip}`;
 }
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const { allowed } = checkRateLimit(ip);
 
-  if (!allowed) {
+  if (!(await checkRateLimit(ip))) {
     return NextResponse.json(
       { error: "Too many login attempts. Try again in 15 minutes." },
       { status: 429 }
@@ -64,20 +60,22 @@ export async function POST(req: NextRequest) {
     }
 
     const sql = getDb();
-    const rows = await sql`SELECT * FROM "User" WHERE email = ${email} LIMIT 1`;
+    const rows = await sql`SELECT id, email, name, role, "passwordHash" FROM "User" WHERE email = ${email} LIMIT 1`;
     const user = rows[0] as UserRow | undefined;
 
     if (!user) {
+      await recordAttempt(ip);
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
+      await recordAttempt(ip);
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     // Successful login — clear rate limit counter
-    clearRateLimit(ip);
+    await clearAttempts(ip);
 
     const token = await createToken({ id: user.id, email: user.email, name: user.name, role: user.role });
 
