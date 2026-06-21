@@ -279,7 +279,7 @@ export default function ContactPage() {
                     "We review your brief within 24 hours",
                     "We match a template to your business",
                     "You get a preview before anything goes live",
-                    "Launch in 2–5 business days",
+                    "Launch in 24 hours",
                   ].map((s, i) => (
                     <li
                       key={i}

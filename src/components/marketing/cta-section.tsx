@@ -82,7 +82,7 @@ export default function CTASection() {
               transition={{ delay: 0.3 }}
               className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-blue-50"
             >
-              {["No long-term contracts", "UK-based support", "No hidden fees", "Live in 2–5 business days"].map((item, i) => (
+              {["No long-term contracts", "UK-based support", "No hidden fees", "Live in 24 hours"].map((item, i) => (
                 <span key={i} className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-white" />
                   {item}
