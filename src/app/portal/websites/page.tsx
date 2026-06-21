@@ -492,7 +492,15 @@ export default function WebsitesPage() {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ siteId: site.id }),
           });
-          if (res.ok) await fetchSites();
+          if (res.ok) {
+            await fetchSites();
+            // Auto-check DNS/SSL after a short delay so the status updates immediately
+            setTimeout(async () => {
+              await fetch(`/api/deploy/dns-status?siteId=${site.id}`);
+              await fetchSites();
+              setDnsSite(site);
+            }, 3000);
+          }
         },
       });
       return;
