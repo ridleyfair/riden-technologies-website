@@ -15,7 +15,8 @@ function getSecret(): Uint8Array {
   } catch {
     // local dev
   }
-  secret ??= process.env.AUTH_SECRET ?? "dev-secret-change-in-production";
+  secret ??= process.env.AUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET environment variable is not set");
   return new TextEncoder().encode(secret);
 }
 

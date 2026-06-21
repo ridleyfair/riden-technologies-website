@@ -1,0 +1,1419 @@
+{
+  "target": "London plumbers",
+  "options": {
+    "industry": "plumbers",
+    "location": "London",
+    "maxPlaces": 10,
+    "minScore": 45,
+    "limit": 5,
+    "import": true
+  },
+  "leads": [
+    {
+      "name": "Kenley Plumbers",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7424 542122",
+      "normalizedPhone": "+447424542122",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 6,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kenley%20Plumbers&query_place_id=ChIJZeSnymWX76IRGE6jIdEy2WA",
+      "raw": {
+        "title": "Kenley Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7424 542122",
+        "phoneUnformatted": "+447424542122",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3668546,
+          "lng": -0.1257369
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJZeSnymWX76IRGE6jIdEy2WA",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0xa2ef9765caa7e465:0x60d932d121a34e18",
+        "cid": "6978664971381198360",
+        "reviewsCount": 6,
+        "imagesCount": 13,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Kenley%20Plumbers&query_place_id=ChIJZeSnymWX76IRGE6jIdEy2WA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 16,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHgz76MaeR8QDC8mEc9HBNGuBl3faDmbi6NywiBMrq-erkEeGH-1hEF3XpOCOFHkG_Olpr1-0XBRMNeiHbMuwr-KG2bIhXdHzIMbbjpQOrAPrKn6NuOkK8AYy6U_9fcIOGKqP-KHaQEIBOB=w408-h544-k-no",
+        "kgmid": "/g/11x7hhx0xt"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Plumb London",
+      "category": "Plumber",
+      "address": "Dale Rd, Purley CR8 2EF, United Kingdom",
+      "city": "Purley",
+      "phone": "+44 20 8099 8170",
+      "normalizedPhone": "+442080998170",
+      "website": null,
+      "websiteHost": null,
+      "rating": 1,
+      "reviews": 1,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Plumb%20London&query_place_id=ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+      "raw": {
+        "title": "Plumb London",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Dale Rd, Purley CR8 2EF, United Kingdom",
+        "neighborhood": null,
+        "street": "Dale Rd",
+        "city": "Purley",
+        "postalCode": "CR8 2EF",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 20 8099 8170",
+        "phoneUnformatted": "+442080998170",
+        "claimThisBusiness": true,
+        "location": {
+          "lat": 51.3337799,
+          "lng": -0.1134111
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 1,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x4875fdec53619775:0x5faff9e442ccea",
+        "cid": "26933610598812906",
+        "reviewsCount": 1,
+        "imagesCount": 1,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Plumb%20London&query_place_id=ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 17,
+        "isAdvertisement": false,
+        "imageUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ndC-c8ufbChSdfqzRWuspA&cb_client=search.gws-prod.gps&w=408&h=240&yaw=43.297585&pitch=0&thumbfov=100",
+        "kgmid": "/g/11x9gb3wx"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "My London Plumbers Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7988 756241",
+      "normalizedPhone": "+447988756241",
+      "website": "http://www.mylondonplumbers.co.uk/",
+      "websiteHost": "mylondonplumbers.co.uk",
+      "rating": 5,
+      "reviews": 177,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=My%20London%20Plumbers%20Ltd&query_place_id=ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+      "raw": {
+        "title": "My London Plumbers Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "http://www.mylondonplumbers.co.uk/",
+        "phone": "+44 7988 756241",
+        "phoneUnformatted": "+447988756241",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4137222,
+          "lng": -0.2205029
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+        "categories": [
+          "Plumber",
+          "Service establishment",
+          "Gasfitter"
+        ],
+        "fid": "0x4876077723598be5:0x647b6df84e26407a",
+        "cid": "7240501739158651002",
+        "reviewsCount": 177,
+        "imagesCount": 348,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.750Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "English": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Cash-only": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=My%20London%20Plumbers%20Ltd&query_place_id=ChIJ5YtZI3cHdkgRekAmTvhte2Q",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 3,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEX7SI5HZagxs1M6j5dYO3KmczVOJwI1usUY_t7ZTIOrx_q9QS4hRXPLFRDCRliPKuF5ec89c2eVDgiZKvDAaqPREL6VRhssHUlT4c95nYE49n1EfO-BSCdY5PinKP72u1W23FL=w408-h272-k-no",
+        "kgmid": "/g/11j3qr3925"
+      },
+      "opportunityScore": 31,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Heat in London ltd",
+      "category": "Plumber",
+      "address": "12 Sackville Gardens, East Grinstead RH19 2AH, United Kingdom",
+      "city": "East Grinstead",
+      "phone": "+44 20 8004 5353",
+      "normalizedPhone": "+442080045353",
+      "website": "http://heatinlondon.co.uk/?utm_source=gmb&utm_medium=organic&utm_campaign=gmb_profile_click",
+      "websiteHost": "heatinlondon.co.uk",
+      "rating": 5,
+      "reviews": 95,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Heat%20in%20London%20ltd&query_place_id=ChIJoeE0xEr_dUgRk0XVOPzIs7k",
+      "raw": {
+        "title": "Heat in London ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "12 Sackville Gardens, East Grinstead RH19 2AH, United Kingdom",
+        "neighborhood": null,
+        "street": "12 Sackville Gardens",
+        "city": "East Grinstead",
+        "postalCode": "RH19 2AH",
+        "state": null,
+        "countryCode": "GB",
+        "website": "http://heatinlondon.co.uk/?utm_source=gmb&utm_medium=organic&utm_campaign=gmb_profile_click",
+        "phone": "+44 20 8004 5353",
+        "phoneUnformatted": "+442080045353",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3451845,
+          "lng": -0.0441244
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJoeE0xEr_dUgRk0XVOPzIs7k",
+        "categories": [
+          "Plumber",
+          "Heating contractor"
+        ],
+        "fid": "0x4875ff4ac434e1a1:0xb9b3c8fc38d54593",
+        "cid": "13381259903458690451",
+        "reviewsCount": 95,
+        "imagesCount": 65,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.748Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "8 AM to 6:30 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "8 AM to 6:30 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "8 AM to 6:30 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "8 AM to 6:30 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "8 AM to 5:30 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "9 AM to 2 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Heat%20in%20London%20ltd&query_place_id=ChIJoeE0xEr_dUgRk0XVOPzIs7k",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 1,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHmwMFkIFNafdZ4A1tK2P2ltxn0XRtckEQPJNneUu5Cr7G_VnMZWWpwNbz3xsVJJB0iL6QmYdR_2WUlGpsolejVmZz9QeVzKLo_bRLtI8mv8ve1UWTEmneLHvgWB0OkeyEj5Sc=w408-h544-k-no",
+        "kgmid": "/g/11mvwr9w7m"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Drainage & Plumbing Ltd",
+      "category": "Plumber",
+      "address": "Brighton Rd, Purley CR8 2BA, United Kingdom",
+      "city": "Purley",
+      "phone": "+44 7771 200075",
+      "normalizedPhone": "+447771200075",
+      "website": "https://www.drainage-plumbing.co.uk/?utm_source=google&utm_medium=organic&utm_campaign=gbp_main_listing",
+      "websiteHost": "drainage-plumbing.co.uk",
+      "rating": 5,
+      "reviews": 140,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Drainage%20%26%20Plumbing%20Ltd&query_place_id=ChIJCxvJ1kb9dUgRSiT7OD3SiD8",
+      "raw": {
+        "title": "Drainage & Plumbing Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Brighton Rd, Purley CR8 2BA, United Kingdom",
+        "neighborhood": null,
+        "street": "Brighton Rd",
+        "city": "Purley",
+        "postalCode": "CR8 2BA",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.drainage-plumbing.co.uk/?utm_source=google&utm_medium=organic&utm_campaign=gbp_main_listing",
+        "phone": "+44 7771 200075",
+        "phoneUnformatted": "+447771200075",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3451088,
+          "lng": -0.1048032
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJCxvJ1kb9dUgRSiT7OD3SiD8",
+        "categories": [
+          "Plumber",
+          "Drainage service"
+        ],
+        "fid": "0x4875fd46d6c91b0b:0x3f88d23d38fb244a",
+        "cid": "4578140181612930122",
+        "reviewsCount": 140,
+        "imagesCount": 121,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": true
+            },
+            {
+              "Onsite services": true
+            },
+            {
+              "American Sign Language": true
+            }
+          ],
+          "Accessibility": [
+            {
+              "Wheelchair accessible restroom": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Drainage%20%26%20Plumbing%20Ltd&query_place_id=ChIJCxvJ1kb9dUgRSiT7OD3SiD8",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 14,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAEBM7kxVh-_MflB9Z9Huy49y90zeAmMRfandhe83sZRdPa-BAwjfmi7CteyTzMnvVRAg9ZL7a4FleCaKaqQ6JvPGflzqDrYpv6-e_Wzrn4tqJdz9Rx6By68vv_itTtZvLMkKFge=w426-h240-k-no",
+        "kgmid": "/g/11vrz3y49w"
+      },
+      "opportunityScore": 25,
+      "reasons": [
+        "strong reputation, worth premium pitch",
+        "phone available"
+      ]
+    },
+    {
+      "name": "SPC Plumbing and Heating Ltd",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7983 562284",
+      "normalizedPhone": "+447983562284",
+      "website": "http://www.spcplumbingandheating.co.uk/",
+      "websiteHost": "spcplumbingandheating.co.uk",
+      "rating": 4.3,
+      "reviews": 4,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=SPC%20Plumbing%20and%20Heating%20Ltd&query_place_id=ChIJkQo5rWz9dUgRAKasFb3hLwo",
+      "raw": {
+        "title": "SPC Plumbing and Heating Ltd",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "http://www.spcplumbingandheating.co.uk/",
+        "phone": "+44 7983 562284",
+        "phoneUnformatted": "+447983562284",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3816846,
+          "lng": -0.2574655
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.3,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJkQo5rWz9dUgRAKasFb3hLwo",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0x4875fd6cad390a91:0xa2fe1bd15aca600",
+        "cid": "734053466513384960",
+        "reviewsCount": 4,
+        "imagesCount": 5,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=SPC%20Plumbing%20and%20Heating%20Ltd&query_place_id=ChIJkQo5rWz9dUgRAKasFb3hLwo",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 19,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHFs9GvMASRbJ0oTJmR2fc82WJ6I1tD8dejgJiFuh-Vb3sVVLp9vsr4SAE8xgBFbNzeinhcGPnNg5g9R7WO3FKBPUwRiLZhrspEe_U6TBo1NwpV2CRRzYn3HsEZ553azn9mrnzkIA=w408-h544-k-no",
+        "kgmid": "/g/1tflrgyf"
+      },
+      "opportunityScore": 21,
+      "reasons": [
+        "slow website response",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Bellmore Plumbing & Heating - Plumbers Coulsdon",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7498 499221",
+      "normalizedPhone": "+447498499221",
+      "website": "https://www.bellmoreplumbing.co.uk/",
+      "websiteHost": "bellmoreplumbing.co.uk",
+      "rating": 5,
+      "reviews": 37,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Bellmore%20Plumbing%20%26%20Heating%20-%20Plumbers%20Coulsdon&query_place_id=ChIJOTtw4tPrfQQRkaIuslYyBZs",
+      "raw": {
+        "title": "Bellmore Plumbing & Heating - Plumbers Coulsdon",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "https://www.bellmoreplumbing.co.uk/",
+        "phone": "+44 7498 499221",
+        "phoneUnformatted": "+447498499221",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3260514,
+          "lng": -0.0752206
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJOTtw4tPrfQQRkaIuslYyBZs",
+        "categories": [
+          "Plumber",
+          "Service establishment",
+          "Heating contractor",
+          "Gas engineer"
+        ],
+        "fid": "0x47debd3e2703b39:0x9b053256b22ea291",
+        "cid": "11170389798700360337",
+        "reviewsCount": 37,
+        "imagesCount": 15,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.750Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "8 AM to 5 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "9 AM to 12 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Closed"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Crowd": [
+            {
+              "LGBTQ+ friendly": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Bellmore%20Plumbing%20%26%20Heating%20-%20Plumbers%20Coulsdon&query_place_id=ChIJOTtw4tPrfQQRkaIuslYyBZs",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 4,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAFGt5ZPIE1zElONon7k_UVCr1XKqcW_a7qOcHkLRB0bz10106fcpIVhl4Clx6ae994uCgNi7hqWW32w_6XPHPWx_rWRJ947WphEQ5kzNrVPcgxhh7Mf3yyuzF5H0o73iH35l_1E7w=w408-h569-k-no",
+        "kgmid": "/g/11xdgztknn"
+      },
+      "opportunityScore": 13,
+      "reasons": [
+        "slow website response",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Waterseal Plumbing and Heating Limited",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 20 3807 3095",
+      "normalizedPhone": "+442038073095",
+      "website": "https://www.waterseal-plumbingandheating.co.uk/",
+      "websiteHost": "waterseal-plumbingandheating.co.uk",
+      "rating": 4.4,
+      "reviews": 225,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Waterseal%20Plumbing%20and%20Heating%20Limited&query_place_id=ChIJwXMcBpQGdkgRBjelm8sRc98",
+      "raw": {
+        "title": "Waterseal Plumbing and Heating Limited",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "website": "https://www.waterseal-plumbingandheating.co.uk/",
+        "phone": "+44 20 3807 3095",
+        "phoneUnformatted": "+442038073095",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3999936,
+          "lng": -0.1154604
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.4,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJwXMcBpQGdkgRBjelm8sRc98",
+        "categories": [
+          "Plumber",
+          "Boiler supplier",
+          "Drainage service",
+          "Service establishment",
+          "Heating contractor"
+        ],
+        "fid": "0x48760694061c73c1:0xdf7311cb9ba53706",
+        "cid": "16101232658966984454",
+        "reviewsCount": 225,
+        "imagesCount": 50,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.750Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Thursday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Friday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Saturday",
+            "hours": "7 AM to 10 PM"
+          },
+          {
+            "day": "Sunday",
+            "hours": "7 AM to 10 PM"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Online estimates": false
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Waterseal%20Plumbing%20and%20Heating%20Limited&query_place_id=ChIJwXMcBpQGdkgRBjelm8sRc98",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 2,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAH52SlYByYKb9cdk8O6qr5K-zQwPuLLSbTG8ZhPRIxCkITjNCKEJBSsPfNXrIGGufUuPdvHU4o2BRXjfY91TtmQn8K4DQmzs4SbeaGXajWm4Y4Ca4Y3OCClr5EMt9KDrS61WJXhYMLiHdI=w408-h263-k-no",
+        "kgmid": "/g/11r9169rv"
+      },
+      "opportunityScore": 11,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Drake Plumbing & Heating",
+      "category": "Heating contractor",
+      "address": "53 Penwortham Rd, South Croydon CR2 0QU, United Kingdom",
+      "city": "South Croydon",
+      "phone": "+44 7933 161601",
+      "normalizedPhone": "+447933161601",
+      "website": "https://drakeplumbingandheating.com/",
+      "websiteHost": "drakeplumbingandheating.com",
+      "rating": 4.8,
+      "reviews": 21,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Drake%20Plumbing%20%26%20Heating&query_place_id=ChIJ4yzJwf79dUgRREXBvP8blys",
+      "raw": {
+        "title": "Drake Plumbing & Heating",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Heating contractor",
+        "address": "53 Penwortham Rd, South Croydon CR2 0QU, United Kingdom",
+        "neighborhood": null,
+        "street": "53 Penwortham Rd",
+        "city": "South Croydon",
+        "postalCode": "CR2 0QU",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://drakeplumbingandheating.com/",
+        "phone": "+44 7933 161601",
+        "phoneUnformatted": "+447933161601",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3431607,
+          "lng": -0.0976074
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4.8,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ4yzJwf79dUgRREXBvP8blys",
+        "categories": [
+          "Heating contractor",
+          "Contractor"
+        ],
+        "fid": "0x4875fdfec1c92ce3:0x2b971bffbcc14544",
+        "cid": "3141010050311603524",
+        "reviewsCount": 21,
+        "imagesCount": 2,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.751Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Drake%20Plumbing%20%26%20Heating&query_place_id=ChIJ4yzJwf79dUgRREXBvP8blys",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 12,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGvgu10l9XkVi6hWDaPffqfxcbHfnYGLgLBR-J0iyutEjkNiZgwr-AK8jfNgmLn0giTvHFJoVyHB_Ls0apLX1Nl5dBXKATYOWLZ0-dU4NDUm67NF1f8iNJcCEGUkcFO3UHF3oSV=w408-h250-k-no",
+        "kgmid": "/g/11cjpmmk4t"
+      },
+      "opportunityScore": 11,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Pimlico Plumbers",
+      "category": "Plumber",
+      "address": "Pimlico House, 1 Sail St, London SE11 6NQ, United Kingdom",
+      "city": "London",
+      "phone": "+44 20 8108 0808",
+      "normalizedPhone": "+442081080808",
+      "website": "https://www.pimlicoplumbers.com/",
+      "websiteHost": "pimlicoplumbers.com",
+      "rating": 4,
+      "reviews": 6081,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Pimlico%20Plumbers&query_place_id=ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+      "raw": {
+        "title": "Pimlico Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Pimlico House, 1 Sail St, London SE11 6NQ, United Kingdom",
+        "neighborhood": null,
+        "street": "Pimlico House, 1 Sail St",
+        "city": "London",
+        "postalCode": "SE11 6NQ",
+        "state": null,
+        "countryCode": "GB",
+        "website": "https://www.pimlicoplumbers.com/",
+        "phone": "+44 20 8108 0808",
+        "phoneUnformatted": "+442081080808",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.4946311,
+          "lng": -0.115964
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 4,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+        "categories": [
+          "Plumber",
+          "Appliance repair service",
+          "Carpenter",
+          "Contractor",
+          "Drainage service",
+          "Electrician",
+          "Heating contractor",
+          "Roofing contractor"
+        ],
+        "fid": "0x487604bfe981a7d5:0x5c52ea845400c21e",
+        "cid": "6652637453645562398",
+        "reviewsCount": 6081,
+        "imagesCount": 202,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Service options": [
+            {
+              "Onsite services": true
+            }
+          ],
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ],
+          "Payments": [
+            {
+              "Credit cards": true
+            },
+            {
+              "NFC mobile payments": true
+            },
+            {
+              "Credit cards": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Pimlico%20Plumbers&query_place_id=ChIJ1aeB6b8EdkgRHsIAVITqUlw",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 20,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAGAtAXiE7f84Gyg6DcqxtMhZYAbmt9ov-8ygJ0gSLzupzyzWt_C_Je5guOsSpIzoQdqthrvf-_R4xeXNyvslhCtZbsHHjH4T4KvFVyiK-lcNxB2GV7vNSW5oRwaXicdZGjgTkt8z6x37J_p=w408-h272-k-no",
+        "kgmid": "/g/1tr1711v"
+      },
+      "opportunityScore": 11,
+      "reasons": [
+        "limited proof/portfolio signal",
+        "phone available"
+      ]
+    }
+  ],
+  "selected": [
+    {
+      "name": "Kenley Plumbers",
+      "category": "Plumber",
+      "address": null,
+      "city": "London",
+      "phone": "+44 7424 542122",
+      "normalizedPhone": "+447424542122",
+      "website": null,
+      "websiteHost": null,
+      "rating": 5,
+      "reviews": 6,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kenley%20Plumbers&query_place_id=ChIJZeSnymWX76IRGE6jIdEy2WA",
+      "raw": {
+        "title": "Kenley Plumbers",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": null,
+        "neighborhood": null,
+        "street": null,
+        "city": null,
+        "postalCode": null,
+        "state": null,
+        "countryCode": null,
+        "phone": "+44 7424 542122",
+        "phoneUnformatted": "+447424542122",
+        "claimThisBusiness": false,
+        "location": {
+          "lat": 51.3668546,
+          "lng": -0.1257369
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 5,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJZeSnymWX76IRGE6jIdEy2WA",
+        "categories": [
+          "Plumber",
+          "Service establishment"
+        ],
+        "fid": "0xa2ef9765caa7e465:0x60d932d121a34e18",
+        "cid": "6978664971381198360",
+        "reviewsCount": 6,
+        "imagesCount": 13,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [
+          {
+            "day": "Monday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Tuesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Wednesday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Thursday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Friday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Saturday",
+            "hours": "Open 24 hours"
+          },
+          {
+            "day": "Sunday",
+            "hours": "Open 24 hours"
+          }
+        ],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Kenley%20Plumbers&query_place_id=ChIJZeSnymWX76IRGE6jIdEy2WA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 16,
+        "isAdvertisement": false,
+        "imageUrl": "https://lh3.googleusercontent.com/gps-cs-s/APNQkAHgz76MaeR8QDC8mEc9HBNGuBl3faDmbi6NywiBMrq-erkEeGH-1hEF3XpOCOFHkG_Olpr1-0XBRMNeiHbMuwr-KG2bIhXdHzIMbbjpQOrAPrKn6NuOkK8AYy6U_9fcIOGKqP-KHaQEIBOB=w408-h544-k-no",
+        "kgmid": "/g/11x7hhx0xt"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    },
+    {
+      "name": "Plumb London",
+      "category": "Plumber",
+      "address": "Dale Rd, Purley CR8 2EF, United Kingdom",
+      "city": "Purley",
+      "phone": "+44 20 8099 8170",
+      "normalizedPhone": "+442080998170",
+      "website": null,
+      "websiteHost": null,
+      "rating": 1,
+      "reviews": 1,
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Plumb%20London&query_place_id=ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+      "raw": {
+        "title": "Plumb London",
+        "subTitle": null,
+        "description": null,
+        "price": null,
+        "categoryName": "Plumber",
+        "address": "Dale Rd, Purley CR8 2EF, United Kingdom",
+        "neighborhood": null,
+        "street": "Dale Rd",
+        "city": "Purley",
+        "postalCode": "CR8 2EF",
+        "state": null,
+        "countryCode": "GB",
+        "phone": "+44 20 8099 8170",
+        "phoneUnformatted": "+442080998170",
+        "claimThisBusiness": true,
+        "location": {
+          "lat": 51.3337799,
+          "lng": -0.1134111
+        },
+        "locatedIn": null,
+        "floor": null,
+        "plusCode": null,
+        "menu": null,
+        "servicesLink": null,
+        "totalScore": 1,
+        "permanentlyClosed": false,
+        "temporarilyClosed": false,
+        "placeId": "ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+        "categories": [
+          "Plumber"
+        ],
+        "fid": "0x4875fdec53619775:0x5faff9e442ccea",
+        "cid": "26933610598812906",
+        "reviewsCount": 1,
+        "imagesCount": 1,
+        "imageCategories": [],
+        "scrapedAt": "2026-06-20T08:00:44.752Z",
+        "reserveTableUrl": null,
+        "googleFoodUrl": null,
+        "hotelStars": null,
+        "hotelDescription": null,
+        "checkInDate": null,
+        "checkOutDate": null,
+        "hotelAds": [],
+        "popularTimesLiveText": null,
+        "popularTimesLivePercent": null,
+        "popularTimesHistogram": {},
+        "openingHours": [],
+        "peopleAlsoSearch": [],
+        "placesTags": [],
+        "reviewsTags": [],
+        "additionalInfo": {
+          "Offerings": [
+            {
+              "Repair services": true
+            }
+          ]
+        },
+        "gasPrices": [],
+        "url": "https://www.google.com/maps/search/?api=1&query=Plumb%20London&query_place_id=ChIJdZdhU-z9dUgR6sxC5PmvXwA",
+        "searchPageUrl": "https://www.google.com/maps/search/plumbers%20London/@51.31885544538459,-0.08825054999999998,13z?hl=en",
+        "searchString": "plumbers London",
+        "language": "en",
+        "rank": 17,
+        "isAdvertisement": false,
+        "imageUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ndC-c8ufbChSdfqzRWuspA&cb_client=search.gws-prod.gps&w=408&h=240&yaw=43.297585&pitch=0&thumbfov=100",
+        "kgmid": "/g/11x9gb3wx"
+      },
+      "opportunityScore": 53,
+      "reasons": [
+        "no website listed",
+        "low review volume",
+        "phone available"
+      ]
+    }
+  ],
+  "importResults": [
+    {
+      "status": "duplicate",
+      "id": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+      "duplicate": {
+        "id": "cfedec64-0d20-48ca-aa1c-5835265e4ac9",
+        "name": "Kenley Plumbers",
+        "phone": "+44 7424 542122"
+      }
+    },
+    {
+      "status": "duplicate",
+      "id": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+      "duplicate": {
+        "id": "c718d1b4-f9ec-4c83-bfc8-921993b869ef",
+        "name": "Plumb London",
+        "phone": "+44 20 8099 8170"
+      }
+    }
+  ]
+}
