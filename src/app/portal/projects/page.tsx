@@ -1470,16 +1470,46 @@ function ProjectDetailModal({
     setAutoGoogleImporting(true);
     setGoogleMaps((s) => ({ ...s, error: "" }));
     try {
-      const res = await fetch(`/api/projects/${project.id}/import-google-business`, {
+      // Start the Apify run (returns immediately)
+      const startRes = await fetch(`/api/projects/${project.id}/import-google-business`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ placeUrl: googleMaps.query.includes("google") ? googleMaps.query : undefined }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setGoogleMaps((s) => ({ ...s, error: data.error ?? "Google Business import failed." }));
+      const startData = await startRes.json();
+      if (!startRes.ok) {
+        setGoogleMaps((s) => ({ ...s, error: startData.error ?? "Google Business import failed." }));
+        setAutoGoogleImporting(false);
         return;
       }
+
+      const { runId, placeUrl: resolvedUrl } = startData as { runId: string; placeUrl: string };
+
+      // Poll until done (each GET is a single status check, no long-running worker)
+      const deadline = Date.now() + 120_000;
+      let data: Record<string, unknown> | null = null;
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        const pollRes = await fetch(
+          `/api/projects/${project.id}/import-google-business?runId=${encodeURIComponent(runId)}&placeUrl=${encodeURIComponent(resolvedUrl ?? "")}`,
+        );
+        const pollData = await pollRes.json() as Record<string, unknown>;
+        if (!pollRes.ok) {
+          setGoogleMaps((s) => ({ ...s, error: (pollData.error as string) ?? "Google Business import failed." }));
+          setAutoGoogleImporting(false);
+          return;
+        }
+        if (pollData.status === "running") continue;
+        data = pollData;
+        break;
+      }
+
+      if (!data || data.status !== "done") {
+        setGoogleMaps((s) => ({ ...s, error: "Google Business import timed out. Please try again." }));
+        setAutoGoogleImporting(false);
+        return;
+      }
+
       const updated = data.project as Project;
       setProject(updated);
       onUpdate(updated);
@@ -1530,7 +1560,7 @@ function ProjectDetailModal({
           }
         }
       } catch {}
-      setGoogleMaps((s) => ({ ...s, query: data.placeUrl ?? s.query, error: "" }));
+      setGoogleMaps((s) => ({ ...s, query: (data.placeUrl as string | undefined) ?? s.query, error: "" }));
     } catch {
       setGoogleMaps((s) => ({ ...s, error: "Network error importing Google Business data." }));
     } finally {

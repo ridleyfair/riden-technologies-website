@@ -61,7 +61,7 @@ export async function resolveGoogleMapsUrl({
   throw new Error("No Google Maps URL found for this project. Import the Possible Client with maps_url or pass placeUrl.");
 }
 
-export async function runGoogleBusinessScrape(placeUrl: string) {
+export async function startGoogleBusinessScrape(placeUrl: string): Promise<string> {
   const token = getEnv("APIFY_API_TOKEN");
   if (!token) throw new Error("APIFY_API_TOKEN not configured");
 
@@ -83,25 +83,49 @@ export async function runGoogleBusinessScrape(placeUrl: string) {
 
   if (!startRes.ok) throw new Error(`Apify start error: ${await startRes.text()}`);
   const startData = await startRes.json();
-  const runId = startData.data.id as string;
+  return startData.data.id as string;
+}
+
+export async function checkGoogleBusinessRun(runId: string): Promise<
+  { status: "running" } |
+  { status: "done"; item: Record<string, unknown> } |
+  { status: "failed"; reason: string }
+> {
+  const token = getEnv("APIFY_API_TOKEN");
+  if (!token) return { status: "failed", reason: "APIFY_API_TOKEN not configured" };
+
+  const runRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${token}`);
+  if (!runRes.ok) return { status: "failed", reason: `Apify status error: ${await runRes.text()}` };
+
+  const runData = await runRes.json();
+  const apifyStatus = runData.data.status as string;
+
+  if (["FAILED", "ABORTED", "TIMED-OUT"].includes(apifyStatus)) {
+    return { status: "failed", reason: `Google Business scrape ${apifyStatus}` };
+  }
+
+  if (apifyStatus !== "SUCCEEDED") return { status: "running" };
+
+  const datasetId = runData.data.defaultDatasetId as string;
+  const itemsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${token}&format=json`);
+  if (!itemsRes.ok) return { status: "failed", reason: `Apify dataset error: ${await itemsRes.text()}` };
+
+  const items = await itemsRes.json();
+  const item = Array.isArray(items) ? items[0] : null;
+  if (!item) return { status: "failed", reason: "Scrape succeeded but returned no items" };
+
+  return { status: "done", item };
+}
+
+export async function runGoogleBusinessScrape(placeUrl: string) {
+  const runId = await startGoogleBusinessScrape(placeUrl);
 
   const deadline = Date.now() + 90_000;
   while (Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 3000));
-    const runRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${token}`);
-    if (!runRes.ok) throw new Error(`Apify status error: ${await runRes.text()}`);
-    const runData = await runRes.json();
-    const status = runData.data.status as string;
-    if (status === "SUCCEEDED") {
-      const datasetId = runData.data.defaultDatasetId as string;
-      const itemsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${token}&format=json`);
-      if (!itemsRes.ok) throw new Error(`Apify dataset error: ${await itemsRes.text()}`);
-      const items = await itemsRes.json();
-      const item = Array.isArray(items) ? items[0] : null;
-      if (!item) throw new Error("Google Business scrape succeeded but returned no items");
-      return { runId, item };
-    }
-    if (["FAILED", "ABORTED", "TIMED-OUT"].includes(status)) throw new Error(`Google Business scrape ${status}`);
+    const result = await checkGoogleBusinessRun(runId);
+    if (result.status === "done") return { runId, item: result.item };
+    if (result.status === "failed") throw new Error(result.reason);
   }
 
   throw new Error("Google Business scrape timed out before completion");
