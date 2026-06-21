@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ExternalLink, ArrowRight, MapPin, Layout, MonitorSmartphone, ArrowUpRight } from "lucide-react";
 import { PORTFOLIO_ITEMS, type PortfolioItem } from "@/lib/portfolio";
+import { ScaledFrame } from "@/components/marketing/visuals/device-mocks";
 
 const accentMap: Record<
   PortfolioItem["accent"],
@@ -51,6 +52,27 @@ const fadeUp = {
 function PreviewTile({ item }: { item: PortfolioItem }) {
   const accent = accentMap[item.accent];
 
+  // Live iframe preview for sites with a URL — scaled to fill the 16:10 card
+  if (item.url) {
+    return (
+      <ScaledFrame width={1440} className="absolute inset-0">
+        <iframe
+          src={item.url}
+          scrolling="no"
+          tabIndex={-1}
+          title={`${item.name} website preview`}
+          style={{
+            width: "1440px",
+            height: "900px",
+            border: "none",
+            pointerEvents: "none",
+            display: "block",
+          }}
+        />
+      </ScaledFrame>
+    );
+  }
+
   if (item.image) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -70,7 +92,7 @@ function PreviewTile({ item }: { item: PortfolioItem }) {
         <span className="w-2 h-2 rounded-full bg-slate-300" />
         <span className="w-2 h-2 rounded-full bg-slate-300" />
         <span className="ml-2 text-[10px] text-slate-400 truncate">
-          {item.url ? item.url.replace(/^https?:\/\//, "") : "your-business.co.uk"}
+          your-business.co.uk
         </span>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4 text-center">
