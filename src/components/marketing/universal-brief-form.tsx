@@ -348,6 +348,7 @@ type FormState = {
   checkatradeProfile: string;
   description: string;
   pairs: BeforeAfterPair[];
+  customPhotoCategories: string[];
 };
 
 const EMPTY: FormState = {
@@ -370,6 +371,7 @@ const EMPTY: FormState = {
   checkatradeProfile: "",
   description: "",
   pairs: [],
+  customPhotoCategories: [],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -800,16 +802,20 @@ function UploadSlot({
   );
 }
 
+const PHOTOS_MIN = 5; // 5 pairs = 10 individual photos
+
 function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
 
-  // Categories driven by selected services; fall back to trade defaults
-  const categories = form.services.length > 0 ? form.services : trade.photoCategories;
+  // Categories: selected services first, then trade defaults, then user's custom categories
+  const presetCategories = form.services.length > 0 ? form.services : trade.photoCategories;
+  const allCategories = [...presetCategories, ...form.customPhotoCategories.filter(c => !presetCategories.includes(c))];
 
-  const [category, setCategory] = useState(categories[0] ?? "");
+  const [category, setCategory] = useState(allCategories[0] ?? "");
   const [before, setBefore] = useState<PhotoSlot | null>(null);
   const [after, setAfter] = useState<PhotoSlot | null>(null);
   const [uploadingSlot, setUploadingSlot] = useState<"before" | "after" | null>(null);
+  const [customCatInput, setCustomCatInput] = useState("");
 
   async function handleFile(file: File, slot: "before" | "after") {
     setUploadingSlot(slot);
@@ -820,13 +826,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
 
   function addPair() {
     if (!before || !after) return;
-    const pair: BeforeAfterPair = {
-      id: crypto.randomUUID(),
-      category,
-      before,
-      after,
-    };
-    set({ pairs: [...form.pairs, pair] });
+    set({ pairs: [...form.pairs, { id: crypto.randomUUID(), category, before, after }] });
     setBefore(null);
     setAfter(null);
   }
@@ -835,24 +835,79 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
     set({ pairs: form.pairs.filter(p => p.id !== id) });
   }
 
+  function addCustomCategory() {
+    const trimmed = customCatInput.trim();
+    if (!trimmed || allCategories.includes(trimmed)) return;
+    set({ customPhotoCategories: [...form.customPhotoCategories, trimmed] });
+    setCategory(trimmed);
+    setCustomCatInput("");
+  }
+
   const canAdd = Boolean(before && after);
+  const pairsCount = form.pairs.length;
+  const meetsMinimum = pairsCount >= PHOTOS_MIN;
+  const photosTotal = pairsCount * 2;
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Before & after photos</h2>
-      <p className="text-slate-400 mb-6">Upload a before and after photo for each job. Both are required to add a card.</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Before &amp; after photos</h2>
+      <p className="text-slate-400 mb-2">Upload a before and after photo for each job. Both are required to add a card.</p>
+
+      {/* Progress indicator */}
+      <div className={`flex items-center justify-between text-xs mb-6 px-3 py-2 rounded-lg border ${meetsMinimum ? "border-green-500/30 bg-green-500/10 text-green-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"}`}>
+        <span>{meetsMinimum ? `${pairsCount} cards added — minimum met` : `Minimum 5 before/after cards required (10 photos)`}</span>
+        <span className="font-semibold">{pairsCount} / {PHOTOS_MIN}</span>
+      </div>
 
       <div className="space-y-5">
-        {/* Category — from selected services */}
-        <Field label="Job type">
+        {/* Category selector */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">Job type / category</label>
           <select
             className={inputCls}
             value={category}
             onChange={e => setCategory(e.target.value)}
           >
-            {categories.map(c => <option key={c}>{c}</option>)}
+            {allCategories.map(c => <option key={c}>{c}</option>)}
           </select>
-        </Field>
+          {/* Add custom category */}
+          <div className="flex gap-2 mt-2">
+            <input
+              className={`${inputCls} flex-1 text-sm py-2`}
+              placeholder="Add your own category"
+              value={customCatInput}
+              onChange={e => setCustomCatInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomCategory(); } }}
+            />
+            <button
+              type="button"
+              onClick={addCustomCategory}
+              disabled={!customCatInput.trim()}
+              className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex-shrink-0"
+            >
+              Add
+            </button>
+          </div>
+          {form.customPhotoCategories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {form.customPhotoCategories.map(c => (
+                <span key={c} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs">
+                  {c}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      set({ customPhotoCategories: form.customPhotoCategories.filter(x => x !== c) });
+                      if (category === c) setCategory(allCategories.find(x => x !== c) ?? "");
+                    }}
+                    className="text-blue-400 hover:text-white transition-colors"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Before / After upload slots */}
         <div className="grid grid-cols-2 gap-3">
@@ -885,7 +940,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
         {/* Added pairs */}
         {form.pairs.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm font-medium text-slate-300">{form.pairs.length} card{form.pairs.length !== 1 ? "s" : ""} added</div>
+            <div className="text-sm font-medium text-slate-300">{photosTotal} photo{photosTotal !== 1 ? "s" : ""} across {pairsCount} card{pairsCount !== 1 ? "s" : ""}</div>
             {form.pairs.map(pair => (
               <div key={pair.id} className="rounded-xl border border-slate-700 overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-800">
@@ -910,10 +965,6 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
             ))}
           </div>
         )}
-
-        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 text-sm text-slate-400">
-          No photos yet? No problem. Skip this step and we can pull photos from your Google Business profile or Checkatrade page.
-        </div>
       </div>
     </div>
   );
@@ -971,6 +1022,7 @@ export default function UniversalBriefForm() {
     if (step === "trade") return Boolean(form.tradeGroup);
     if (step === "business") return Boolean(form.businessName && form.phone && form.email && form.city);
     if (step === "services") return form.services.length > 0 && form.description.length >= DESC_MIN;
+    if (step === "photos") return form.pairs.length >= PHOTOS_MIN;
     return true;
   }
 
