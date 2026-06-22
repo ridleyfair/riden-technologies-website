@@ -30,22 +30,49 @@ const TRADES: TradeConfig[] = [
     services: [
       "24/7 emergency call-outs",
       "Gas leak detection & repair",
+      "Gas safety inspections",
+      "Landlord gas safety certificate",
+      "Carbon monoxide testing",
+      "Gas cooker installation",
+      "Gas fire installation",
+      "Boiler installation",
       "Boiler emergency repair",
+      "Boiler service & maintenance",
+      "Annual boiler service",
+      "Boiler replacement",
+      "Boiler controls upgrade",
+      "System power flush",
+      "Central heating installation",
+      "Radiator installation & repair",
+      "Underfloor heating installation",
+      "Thermostat & controls installation",
+      "Heat pump installation",
+      "Emergency heating restoration",
       "Burst pipe repair",
+      "Water leak detection",
+      "Emergency tap repair",
+      "Overflowing toilet repair",
+      "Frozen pipe repair",
       "Drain unblocking",
       "CCTV drain surveys",
-      "Emergency heating restoration",
-      "Central heating installation",
-      "Boiler installation",
-      "Gas safety inspections",
+      "High pressure drain jetting",
+      "Drain lining & relining",
+      "Drain excavation & repair",
+      "Septic tank emptying",
+      "Emergency lock opening",
+      "Lock replacement & upgrade",
+      "Key cutting",
+      "UPVC door repair",
+      "Window lock repair",
+      "Security assessment",
     ],
     subTradeServices: {
-      "Gas engineer":       ["Gas leak detection & repair", "Gas safety inspections", "Boiler installation", "Boiler emergency repair", "Central heating installation", "Emergency heating restoration", "24/7 emergency call-outs"],
-      "Emergency plumber":  ["24/7 emergency call-outs", "Burst pipe repair", "Drain unblocking", "CCTV drain surveys"],
-      "Drain specialist":   ["Drain unblocking", "CCTV drain surveys", "24/7 emergency call-outs"],
-      "Heating engineer":   ["Central heating installation", "Boiler installation", "Emergency heating restoration", "Gas safety inspections", "24/7 emergency call-outs"],
-      "Boiler specialist":  ["Boiler installation", "Boiler emergency repair", "Gas safety inspections", "Emergency heating restoration", "24/7 emergency call-outs"],
-      "Locksmith":          ["24/7 emergency call-outs"],
+      "Gas engineer":      ["24/7 emergency call-outs", "Gas leak detection & repair", "Gas safety inspections", "Landlord gas safety certificate", "Carbon monoxide testing", "Gas cooker installation", "Gas fire installation", "Boiler installation", "Boiler emergency repair", "Boiler service & maintenance", "Central heating installation", "Emergency heating restoration"],
+      "Emergency plumber": ["24/7 emergency call-outs", "Burst pipe repair", "Water leak detection", "Emergency tap repair", "Overflowing toilet repair", "Frozen pipe repair", "Drain unblocking", "CCTV drain surveys"],
+      "Drain specialist":  ["Drain unblocking", "CCTV drain surveys", "High pressure drain jetting", "Drain lining & relining", "Drain excavation & repair", "Septic tank emptying", "24/7 emergency call-outs"],
+      "Heating engineer":  ["Central heating installation", "Boiler installation", "Boiler service & maintenance", "Radiator installation & repair", "Underfloor heating installation", "Thermostat & controls installation", "Heat pump installation", "Emergency heating restoration", "System power flush", "24/7 emergency call-outs"],
+      "Boiler specialist": ["Boiler installation", "Boiler emergency repair", "Boiler service & maintenance", "Annual boiler service", "Boiler replacement", "Boiler controls upgrade", "System power flush", "Gas safety inspections", "Emergency heating restoration", "24/7 emergency call-outs"],
+      "Locksmith":         ["Emergency lock opening", "Lock replacement & upgrade", "Key cutting", "UPVC door repair", "Window lock repair", "Security assessment", "24/7 emergency call-outs"],
     },
     accreditations: ["Gas Safe registered", "OFTEC registered", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader"],
     photoCategories: ["Emergency callouts", "Boiler installations", "Heating systems", "Drain work", "Before & after"],
@@ -62,29 +89,67 @@ const TRADES: TradeConfig[] = [
     ],
     services: [
       "Bathroom installation",
+      "En-suite installation",
+      "Wet room installation",
+      "Walk-in shower installation",
+      "Freestanding bath installation",
+      "Toilet installation",
+      "Basin & sink installation",
       "Kitchen plumbing",
+      "Outside tap fitting",
       "Leak detection & repair",
+      "Pipe lagging",
+      "Stopcock replacement",
+      "Water softener installation",
       "Drain unblocking",
       "Full rewire",
       "Consumer unit upgrade",
       "EV charger installation",
       "Smart home / lighting",
+      "Socket & switch installation",
+      "Outdoor & security lighting",
+      "CCTV installation",
+      "Fire alarm installation",
+      "PAT testing",
+      "Bathroom electrics",
+      "LED lighting upgrade",
+      "Solar panel connection",
       "Extensions & conversions",
       "Loft conversions",
+      "Dormer loft conversion",
+      "Hip-to-gable conversion",
+      "Garage conversion",
+      "Basement conversion",
+      "New builds & refurbishments",
+      "Structural work",
+      "Brickwork & pointing",
+      "Damp proofing",
+      "Groundwork",
       "Roof replacement & repair",
       "Flat roofing",
-      "New builds & refurbishments",
+      "Guttering & fascias",
+      "Velux / skylight installation",
+      "Chimney repairs",
+      "Lead work",
+      "EPDM rubber roofing",
+      "GRP fibreglass roofing",
+      "Kitchen installation",
+      "Worktop fitting",
+      "Appliance installation",
+      "Kitchen cabinet fitting",
+      "Island unit installation",
+      "Tiling",
     ],
     subTradeServices: {
-      "Plumber":                    ["Bathroom installation", "Kitchen plumbing", "Leak detection & repair", "Drain unblocking"],
-      "Electrician":                ["Full rewire", "Consumer unit upgrade", "EV charger installation", "Smart home / lighting"],
-      "Builder":                    ["Extensions & conversions", "Loft conversions", "New builds & refurbishments", "Roof replacement & repair", "Flat roofing"],
-      "General contractor":         [], // show all
-      "Roofer":                     ["Roof replacement & repair", "Flat roofing"],
-      "Kitchen fitter":             ["Kitchen plumbing", "New builds & refurbishments"],
-      "Bathroom fitter":            ["Bathroom installation", "Leak detection & repair"],
-      "Loft conversion specialist": ["Loft conversions", "Extensions & conversions"],
-      "Drain specialist":           ["Drain unblocking", "Leak detection & repair"],
+      "Plumber":                    ["Bathroom installation", "En-suite installation", "Wet room installation", "Walk-in shower installation", "Freestanding bath installation", "Toilet installation", "Basin & sink installation", "Kitchen plumbing", "Outside tap fitting", "Leak detection & repair", "Pipe lagging", "Stopcock replacement", "Water softener installation", "Drain unblocking"],
+      "Electrician":                ["Full rewire", "Consumer unit upgrade", "EV charger installation", "Smart home / lighting", "Socket & switch installation", "Outdoor & security lighting", "CCTV installation", "Fire alarm installation", "PAT testing", "Bathroom electrics", "LED lighting upgrade", "Solar panel connection"],
+      "Builder":                    ["Extensions & conversions", "Loft conversions", "Garage conversion", "Basement conversion", "New builds & refurbishments", "Structural work", "Brickwork & pointing", "Damp proofing", "Groundwork", "Roof replacement & repair", "Flat roofing"],
+      "General contractor":         [],
+      "Roofer":                     ["Roof replacement & repair", "Flat roofing", "Guttering & fascias", "Velux / skylight installation", "Chimney repairs", "Lead work", "EPDM rubber roofing", "GRP fibreglass roofing"],
+      "Kitchen fitter":             ["Kitchen installation", "Worktop fitting", "Appliance installation", "Kitchen cabinet fitting", "Island unit installation", "Kitchen plumbing", "Tiling"],
+      "Bathroom fitter":            ["Bathroom installation", "En-suite installation", "Wet room installation", "Walk-in shower installation", "Freestanding bath installation", "Tiling", "Toilet installation", "Basin & sink installation", "Leak detection & repair"],
+      "Loft conversion specialist": ["Loft conversions", "Dormer loft conversion", "Hip-to-gable conversion", "Extensions & conversions", "Structural work", "Velux / skylight installation"],
+      "Drain specialist":           ["Drain unblocking", "Leak detection & repair", "Pipe lagging"],
     },
     accreditations: ["Gas Safe registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
     photoCategories: ["Before & after", "Bathroom & kitchen", "Electrical work", "Extensions & builds", "Completed projects"],
@@ -98,17 +163,37 @@ const TRADES: TradeConfig[] = [
     subTrades: ["Landscaper", "Gardener", "Driveway & paving specialist", "Tree surgeon", "Fencing contractor", "Artificial grass installer"],
     services: [
       "Garden design & landscaping",
-      "Lawn installation & care",
-      "Driveway installation",
-      "Patio & decking",
-      "Fencing & gates",
-      "Tree surgery",
-      "Hedge trimming",
+      "Planting & soft landscaping",
+      "Lawn installation & turfing",
+      "Lawn care & maintenance",
       "Garden maintenance",
-      "Artificial grass",
-      "Irrigation systems",
-      "Outdoor lighting",
+      "Garden clearance",
+      "Driveway installation",
       "Block paving",
+      "Resin bound driveway",
+      "Tarmac driveway",
+      "Concrete driveway",
+      "Patio installation",
+      "Decking installation",
+      "Composite decking",
+      "Raised decking",
+      "Fencing installation",
+      "Gates & automated gates",
+      "Retaining walls",
+      "Garden walling",
+      "Steps & pathways",
+      "Tree surgery",
+      "Tree removal",
+      "Hedge trimming & shaping",
+      "Stump removal & grinding",
+      "Artificial grass installation",
+      "Irrigation & water features",
+      "Pond design & installation",
+      "Outdoor lighting",
+      "Raised beds & vegetable gardens",
+      "Garden rooms & summer houses",
+      "Pressure washing",
+      "Jet washing",
     ],
     accreditations: ["Arborist certified", "Marshalls approved", "ICB certified", "Checkatrade member", "TrustMark registered"],
     photoCategories: ["Before & after", "Garden designs", "Driveways & paving", "Decking & patios", "Completed projects"],
@@ -124,15 +209,34 @@ const TRADES: TradeConfig[] = [
       "Interior painting",
       "Exterior painting",
       "Wallpapering",
+      "Feature wall installation",
+      "Furniture & cabinet painting",
+      "Kitchen painting",
+      "Staircase painting",
+      "Commercial decorating",
+      "New build decoration",
+      "Property maintenance painting",
+      "Spray painting",
       "Full plastering",
       "Skim coating",
       "Rendering",
-      "Tiling",
-      "Floor fitting",
-      "Window & door fitting",
+      "External rendering",
+      "Pebbledash removal",
+      "Venetian plaster",
+      "Microcement coating",
       "Coving & cornicing",
-      "Staircase painting",
-      "Commercial decorating",
+      "Tiling",
+      "Wet room tiling",
+      "Kitchen splashback tiling",
+      "Floor tiling",
+      "Floor fitting",
+      "Laminate flooring",
+      "Engineered wood flooring",
+      "Luxury vinyl tile (LVT)",
+      "Carpet fitting",
+      "Window fitting",
+      "Door hanging & fitting",
+      "Skirting & architrave fitting",
     ],
     accreditations: ["Dulux Select Decorator", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader", "PCA member"],
     photoCategories: ["Before & after", "Interior work", "Exterior work", "Commercial projects", "Plastering & rendering"],
@@ -329,10 +433,21 @@ const DESC_MIN = 200;
 
 function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
+  const [customInput, setCustomInput] = useState("");
 
   // Filter services by sub-trade when a mapping exists; empty array means show all
   const subMap = trade.subTradeServices?.[form.subTrade];
   const visibleServices = subMap && subMap.length > 0 ? subMap : trade.services;
+
+  // Custom services = selected items not in the preset list
+  const customServices = form.services.filter(s => !trade.services.includes(s));
+
+  function addCustomService() {
+    const trimmed = customInput.trim();
+    if (!trimmed || form.services.includes(trimmed)) return;
+    set({ services: [...form.services, trimmed] });
+    setCustomInput("");
+  }
 
   const descLen = form.description.length;
   const descOk  = descLen >= DESC_MIN;
@@ -373,8 +488,9 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
           )}
         </div>
 
-        <Field label="Services you offer">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-3">Services you offer</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {visibleServices.map(s => (
               <CheckPill
                 key={s}
@@ -384,7 +500,44 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
               />
             ))}
           </div>
-        </Field>
+
+          {/* Custom services added by user */}
+          {customServices.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-700">
+              {customServices.map(s => (
+                <span key={s} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 text-sm">
+                  {s}
+                  <button
+                    type="button"
+                    onClick={() => set({ services: form.services.filter(x => x !== s) })}
+                    className="text-blue-400 hover:text-white transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Add custom service */}
+          <div className="flex gap-2 mt-3">
+            <input
+              className={`${inputCls} flex-1`}
+              placeholder="Add a service not listed above…"
+              value={customInput}
+              onChange={e => setCustomInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomService(); } }}
+            />
+            <button
+              type="button"
+              onClick={addCustomService}
+              disabled={!customInput.trim()}
+              className="px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex-shrink-0"
+            >
+              Add
+            </button>
+          </div>
+        </div>
 
         <Field label="Areas you cover">
           <input
