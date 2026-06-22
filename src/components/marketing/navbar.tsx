@@ -48,22 +48,23 @@ export default function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Logo — white on dark pages, black on light pages */}
-        <Link href="/" className="flex items-center group flex-shrink-0">
-          <div
-            style={{
-              width: "min(240px, 55vw)",
-              height: "60px",
-              backgroundImage: useLightScheme
-                ? "url(/images/RidenLogo.png)"
-                : "url(/images/blackridenlogo.png)",
-              backgroundSize: "contain",
-              backgroundPosition: "left center",
-              backgroundRepeat: "no-repeat",
-            }}
-            aria-label="Riden Technologies"
-          />
-        </Link>
+        {/* Logo — hidden on dark-bg pages (e.g. /start), white/black elsewhere */}
+        {!darkBg && (
+          <Link href="/" className="flex items-center group flex-shrink-0">
+            <div
+              style={{
+                width: "min(240px, 55vw)",
+                height: "60px",
+                backgroundImage: "url(/images/blackridenlogo.png)",
+                backgroundSize: "contain",
+                backgroundPosition: "left center",
+                backgroundRepeat: "no-repeat",
+              }}
+              aria-label="Riden Technologies"
+            />
+          </Link>
+        )}
+        {darkBg && <div />}
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1">
