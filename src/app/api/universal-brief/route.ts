@@ -143,34 +143,35 @@ export async function POST(req: NextRequest) {
     const albumList = albums ?? [];
     const pairList  = pairs ?? [];
 
-    const projectAlbums = [
-      ...albumList.map((album, idx) => ({
-        id: `album_${idx + 1}`,
-        title: album.name,
-        category: album.name,
-        type: "gallery",
-        photos: album.photos.map((p, i) => ({ id: `a${idx}_p${i}`, url: p.url, filename: p.filename, alt: `${album.name} photo`, displayOrder: i })),
-        displayOrder: idx,
-        enabled: true,
-        coverImageUrl: album.photos[0]?.url ?? "",
-      })),
-      ...pairList.map((pair, idx) => ({
-        id: `pair_${idx + 1}`,
-        title: pair.category,
-        category: pair.category,
-        type: "before-after",
-        before: pair.before,
-        after: pair.after,
-        displayOrder: albumList.length + idx,
-        enabled: true,
-      })),
-    ];
+    // Gallery albums — portal expects photos[] on every ProjectAlbum
+    const projectAlbums = albumList.map((album, idx) => ({
+      id: `album_${idx + 1}`,
+      title: album.name,
+      category: album.name,
+      photos: album.photos.map((p, i) => ({ id: `a${idx}_p${i}`, url: p.url, alt: `${album.name} photo`, displayOrder: i })),
+      displayOrder: idx,
+      enabled: true,
+      coverImageUrl: album.photos[0]?.url ?? "",
+    }));
+
+    // Before-after pairs stored separately in portal's expected format
+    const beforeAfterPairs = pairList.map((pair, idx) => ({
+      id: pair.id ?? `pair_${idx + 1}`,
+      title: pair.category,
+      category: pair.category,
+      beforeUrl: pair.before.url,
+      afterUrl: pair.after.url,
+      displayOrder: idx,
+      enabled: true,
+    }));
+
     const photosJson = JSON.stringify({
       gallery: [
         ...albumList.flatMap(a => a.photos.map(p => p.url)),
         ...pairList.flatMap(p => [p.before.url, p.after.url]),
       ],
       projectAlbums,
+      beforeAfterPairs,
       logoUrl: logoUrl ?? null,
       logoFilename: logoFilename ?? null,
     });
