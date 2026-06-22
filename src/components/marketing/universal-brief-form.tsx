@@ -718,24 +718,6 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
             {["Less than 1 year","1-2 years","3-5 years","6-10 years","10-20 years","20+ years"].map(v => <option key={v}>{v}</option>)}
           </select>
         </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Google rating">
-            <select className={inputCls} value={form.googleRating} onChange={e => set({ googleRating: e.target.value })}>
-              <option value="">Not sure / none</option>
-              {["5.0","4.9","4.8","4.7","4.6","4.5","4.4","4.3","4.2","4.0"].map(v => <option key={v}>{v}</option>)}
-            </select>
-          </Field>
-          <Field label="Number of Google reviews">
-            <input
-              className={inputCls}
-              type="number"
-              min="0"
-              placeholder="e.g. 47"
-              value={form.googleReviewCount}
-              onChange={e => set({ googleReviewCount: e.target.value })}
-            />
-          </Field>
-        </div>
         <Field label="Checkatrade profile URL (if you have one)">
           <input
             className={inputCls}
