@@ -13,6 +13,8 @@ type TradeConfig = {
   emoji: string;
   subTrades: string[];
   services: string[];
+  /** Maps sub-trade name → the subset of services to show. Missing key = show all. */
+  subTradeServices?: Record<string, string[]>;
   accreditations: string[];
   photoCategories: string[];
   templateId: string;
@@ -37,6 +39,14 @@ const TRADES: TradeConfig[] = [
       "Boiler installation",
       "Gas safety inspections",
     ],
+    subTradeServices: {
+      "Gas engineer":       ["Gas leak detection & repair", "Gas safety inspections", "Boiler installation", "Boiler emergency repair", "Central heating installation", "Emergency heating restoration", "24/7 emergency call-outs"],
+      "Emergency plumber":  ["24/7 emergency call-outs", "Burst pipe repair", "Drain unblocking", "CCTV drain surveys"],
+      "Drain specialist":   ["Drain unblocking", "CCTV drain surveys", "24/7 emergency call-outs"],
+      "Heating engineer":   ["Central heating installation", "Boiler installation", "Emergency heating restoration", "Gas safety inspections", "24/7 emergency call-outs"],
+      "Boiler specialist":  ["Boiler installation", "Boiler emergency repair", "Gas safety inspections", "Emergency heating restoration", "24/7 emergency call-outs"],
+      "Locksmith":          ["24/7 emergency call-outs"],
+    },
     accreditations: ["Gas Safe registered", "OFTEC registered", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader"],
     photoCategories: ["Emergency callouts", "Boiler installations", "Heating systems", "Drain work", "Before & after"],
     templateId: "emergency-trade",
@@ -65,6 +75,17 @@ const TRADES: TradeConfig[] = [
       "Flat roofing",
       "New builds & refurbishments",
     ],
+    subTradeServices: {
+      "Plumber":                    ["Bathroom installation", "Kitchen plumbing", "Leak detection & repair", "Drain unblocking"],
+      "Electrician":                ["Full rewire", "Consumer unit upgrade", "EV charger installation", "Smart home / lighting"],
+      "Builder":                    ["Extensions & conversions", "Loft conversions", "New builds & refurbishments", "Roof replacement & repair", "Flat roofing"],
+      "General contractor":         [], // show all
+      "Roofer":                     ["Roof replacement & repair", "Flat roofing"],
+      "Kitchen fitter":             ["Kitchen plumbing", "New builds & refurbishments"],
+      "Bathroom fitter":            ["Bathroom installation", "Leak detection & repair"],
+      "Loft conversion specialist": ["Loft conversions", "Extensions & conversions"],
+      "Drain specialist":           ["Drain unblocking", "Leak detection & repair"],
+    },
     accreditations: ["Gas Safe registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
     photoCategories: ["Before & after", "Bathroom & kitchen", "Electrical work", "Extensions & builds", "Completed projects"],
     templateId: "reno-showcase",
@@ -272,7 +293,7 @@ function StepBusiness({ form, set }: { form: FormState; set: (f: Partial<FormSta
       <p className="text-slate-400 mb-6">Basic info that goes on your website.</p>
       <div className="space-y-4">
         <Field label="Business name" required>
-          <select className={inputCls} value={form.subTrade} onChange={e => set({ subTrade: e.target.value })}>
+          <select className={inputCls} value={form.subTrade} onChange={e => set({ subTrade: e.target.value, services: [] })}>
             <option value="">Select your specific trade…</option>
             {trade.subTrades.map(s => <option key={s}>{s}</option>)}
           </select>
@@ -304,8 +325,18 @@ function StepBusiness({ form, set }: { form: FormState; set: (f: Partial<FormSta
   );
 }
 
+const DESC_MIN = 200;
+
 function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
+
+  // Filter services by sub-trade when a mapping exists; empty array means show all
+  const subMap = trade.subTradeServices?.[form.subTrade];
+  const visibleServices = subMap && subMap.length > 0 ? subMap : trade.services;
+
+  const descLen = form.description.length;
+  const descOk  = descLen >= DESC_MIN;
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2">Your services</h2>
@@ -344,7 +375,7 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
 
         <Field label="Services you offer">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-            {trade.services.map(s => (
+            {visibleServices.map(s => (
               <CheckPill
                 key={s}
                 label={s}
@@ -379,11 +410,15 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
 
         <Field label="Tell us a bit about your business">
           <textarea
-            className={`${inputCls} h-28 resize-none`}
-            placeholder="How long have you been trading? What makes you different? Any specialisms?"
+            className={`${inputCls} h-28 resize-none ${!descOk && descLen > 0 ? "border-amber-500/60" : ""}`}
+            placeholder="How long have you been trading? What makes you different? Any specialisms? What area do you cover? Tell us anything that helps us write your website copy."
             value={form.description}
             onChange={e => set({ description: e.target.value })}
           />
+          <div className={`flex justify-between text-xs mt-1 ${descOk ? "text-green-400" : descLen > 0 ? "text-amber-400" : "text-slate-500"}`}>
+            <span>{descOk ? "✓ Great, that’s enough detail" : `Minimum ${DESC_MIN} characters — helps us write better copy`}</span>
+            <span>{descLen} / {DESC_MIN}</span>
+          </div>
         </Field>
       </div>
     </div>
@@ -609,7 +644,7 @@ export default function UniversalBriefForm() {
   function canAdvance(): boolean {
     if (step === "trade") return Boolean(form.tradeGroup);
     if (step === "business") return Boolean(form.businessName && form.phone && form.email && form.city);
-    if (step === "services") return form.services.length > 0;
+    if (step === "services") return form.services.length > 0 && form.description.length >= DESC_MIN;
     return true;
   }
 
