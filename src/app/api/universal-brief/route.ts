@@ -68,6 +68,8 @@ export async function POST(req: NextRequest) {
       logoUrl,
       logoFilename,
       wantsCustomLogo,
+      domainName,
+      domainExtension,
     } = body as {
       tradeGroup: string;
       subTrade: string;
@@ -92,6 +94,8 @@ export async function POST(req: NextRequest) {
       logoUrl?: string;
       logoFilename?: string;
       wantsCustomLogo?: boolean;
+      domainName?: string;
+      domainExtension?: string;
     };
 
     if (!businessName || !phone || !email || !tradeGroup) {
@@ -131,6 +135,7 @@ export async function POST(req: NextRequest) {
       checkatradeProfile ? `Checkatrade: ${checkatradeProfile}` : null,
       wantsCustomLogo ? `Custom logo design requested: £19.99` : null,
       logoUrl ? `Logo uploaded: ${logoFilename ?? logoUrl}` : null,
+      (domainName || domainExtension) ? `Requested domain: www.${domainName ?? ""}${domainExtension ?? ".co.uk"}` : null,
       `IP:${ip}`,
     ].filter(Boolean).join("\n");
 

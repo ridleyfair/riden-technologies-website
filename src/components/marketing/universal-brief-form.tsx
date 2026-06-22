@@ -352,6 +352,8 @@ type FormState = {
   googleRating: string;
   googleReviewCount: string;
   checkatradeProfile: string;
+  domainName: string;
+  domainExtension: string;
   description: string;
   logoUrl: string;
   logoFilename: string;
@@ -379,6 +381,8 @@ const EMPTY: FormState = {
   googleRating: "",
   googleReviewCount: "",
   checkatradeProfile: "",
+  domainName: "",
+  domainExtension: ".co.uk",
   description: "",
   logoUrl: "",
   logoFilename: "",
@@ -729,19 +733,75 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
   );
 }
 
+const DOMAIN_EXTENSIONS = [".co.uk", ".com", ".net", ".org"];
+
+function slugifyDomain(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 40);
+}
+
 function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
+  const suggestedSlug = slugifyDomain(form.businessName);
+  const domainValue = form.domainName || suggestedSlug;
+  const fullDomain = `${domainValue}${form.domainExtension}`;
+
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Reviews & trust signals</h2>
-      <p className="text-slate-400 mb-6">These show on your website to build trust with new customers.</p>
-      <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-white mb-2">Domain &amp; credentials</h2>
+      <p className="text-slate-400 mb-6">Choose your website address and add any trade credentials.</p>
+      <div className="space-y-5">
+
+        {/* ── Domain picker ─────────────────────────────────────────── */}
+        <div>
+          <div className="text-sm font-semibold text-slate-200 mb-3">Your website address</div>
+
+          {/* Extension selector */}
+          <div className="flex gap-2 mb-3">
+            {DOMAIN_EXTENSIONS.map(ext => (
+              <button
+                key={ext}
+                type="button"
+                onClick={() => set({ domainExtension: ext })}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold border-2 transition-all ${
+                  form.domainExtension === ext
+                    ? "border-blue-500 bg-blue-500/15 text-blue-300"
+                    : "border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500"
+                }`}
+              >
+                {ext}
+              </button>
+            ))}
+          </div>
+
+          {/* Domain name input */}
+          <div className="flex items-center rounded-xl border-2 border-slate-700 bg-slate-800/50 focus-within:border-blue-500 transition-colors overflow-hidden">
+            <span className="pl-4 text-slate-500 text-sm select-none whitespace-nowrap">www.</span>
+            <input
+              className="flex-1 bg-transparent py-3 px-1 text-white text-sm outline-none placeholder:text-slate-600"
+              placeholder={suggestedSlug || "yourbusiness"}
+              value={form.domainName}
+              onChange={e => set({ domainName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40) })}
+            />
+            <span className="pr-4 text-slate-400 text-sm font-medium select-none whitespace-nowrap">{form.domainExtension}</span>
+          </div>
+
+          {/* Preview */}
+          <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/60">
+            <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+            <span className="text-xs text-slate-400">Your site will be live at </span>
+            <span className="text-xs font-semibold text-white truncate">www.{fullDomain}</span>
+          </div>
+        </div>
+
+        {/* ── Years in business ─────────────────────────────────────── */}
         <Field label="Years in business">
           <select className={inputCls} value={form.yearsTrading} onChange={e => set({ yearsTrading: e.target.value })}>
             <option value="">Select</option>
             {["Less than 1 year","1-2 years","3-5 years","6-10 years","10-20 years","20+ years"].map(v => <option key={v}>{v}</option>)}
           </select>
         </Field>
-        <Field label="Checkatrade profile URL (if you have one)">
+
+        {/* ── Checkatrade ───────────────────────────────────────────── */}
+        <Field label="Checkatrade profile URL (optional)">
           <input
             className={inputCls}
             type="url"
@@ -752,7 +812,7 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
         </Field>
 
         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 text-sm text-slate-400">
-          Don&apos;t worry if you don&apos;t have these yet. We can always add them later once your website is live.
+          Don&apos;t worry if you don&apos;t have a domain yet. We will register it for you and have your site live within 24 hours.
         </div>
       </div>
     </div>
