@@ -7,6 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Pages that have a dark background — navbar uses white logo + light links when unscrolled
+const DARK_BG_PATHS = ["/start"];
+
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Examples", href: "/#examples" },
@@ -20,6 +23,10 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const pathname = usePathname();
+
+  const darkBg = DARK_BG_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"));
+  // When on a dark page and not yet scrolled, invert the colour scheme
+  const useLightScheme = darkBg && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -41,13 +48,15 @@ export default function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo — white on dark pages, black on light pages */}
         <Link href="/" className="flex items-center group flex-shrink-0">
           <div
             style={{
               width: "min(240px, 55vw)",
               height: "60px",
-              backgroundImage: "url(/images/blackridenlogo.png)",
+              backgroundImage: useLightScheme
+                ? "url(/images/RidenLogo.png)"
+                : "url(/images/blackridenlogo.png)",
               backgroundSize: "contain",
               backgroundPosition: "left center",
               backgroundRepeat: "no-repeat",
@@ -64,9 +73,11 @@ export default function Navbar() {
               href={link.href}
               className={cn(
                 "px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                pathname === link.href
-                  ? "text-slate-900 bg-slate-100"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                useLightScheme
+                  ? "text-slate-300 hover:text-white hover:bg-white/10"
+                  : pathname === link.href
+                    ? "text-slate-900 bg-slate-100"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
               )}
             >
               {link.label}
@@ -89,7 +100,12 @@ export default function Navbar() {
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           aria-label="Toggle menu"
-          className="md:hidden p-2 rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          className={cn(
+            "md:hidden p-2 rounded-lg transition-colors",
+            useLightScheme
+              ? "text-slate-300 hover:text-white hover:bg-white/10"
+              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+          )}
         >
           {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
