@@ -321,9 +321,9 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
             <button
               type="button"
               onClick={() => set({ emergencyCallouts: !form.emergencyCallouts, emergencyPhone: form.emergencyCallouts ? "" : form.emergencyPhone })}
-              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${form.emergencyCallouts ? "bg-blue-500" : "bg-slate-600"}`}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 overflow-hidden ${form.emergencyCallouts ? "bg-blue-500" : "bg-slate-600"}`}
             >
-              <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.emergencyCallouts ? "translate-x-6" : "translate-x-1"}`} />
+              <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.emergencyCallouts ? "translate-x-5" : "translate-x-0"}`} />
             </button>
           </div>
           {form.emergencyCallouts && (
