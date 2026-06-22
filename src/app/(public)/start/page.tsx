@@ -27,7 +27,7 @@ export default function StartPage() {
             Get your trade website
           </h1>
           <p className="text-slate-400 text-base max-w-sm mx-auto">
-            Fill in your brief below and we'll build a professional website
+            Fill in your brief below and we&apos;ll build a professional website
             tailored to your trade — ready to go live today.
           </p>
         </div>

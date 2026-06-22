@@ -231,8 +231,8 @@ const inputCls = "w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py
 function StepTrade({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">What's your trade?</h2>
-      <p className="text-slate-400 mb-6">We'll tailor the questions to get your website brief exactly right.</p>
+      <h2 className="text-2xl font-bold text-white mb-2">What&apos;s your trade?</h2>
+      <p className="text-slate-400 mb-6">We&apos;ll tailor the questions to get your website brief exactly right.</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {TRADES.map((trade) => (
           <button
@@ -412,7 +412,7 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
         </Field>
 
         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 text-sm text-slate-400">
-          💡 Don't worry if you don't have these yet — we can always add them later once your website is live.
+          💡 Don&apos;t worry if you don&apos;t have these yet — we can always add them later once your website is live.
         </div>
       </div>
     </div>
@@ -454,7 +454,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2">Work photos</h2>
-      <p className="text-slate-400 mb-6">Upload your best photos — we'll organise them into albums on your website automatically.</p>
+      <p className="text-slate-400 mb-6">Upload your best photos — we&apos;ll organise them into albums on your website automatically.</p>
 
       <div className="space-y-4">
         <Field label="Photo category">
@@ -547,8 +547,8 @@ function StepSuccess({ businessName }: { businessName: string }) {
       </div>
       <h2 className="text-2xl font-bold text-white mb-3">Brief received!</h2>
       <p className="text-slate-400 max-w-sm mx-auto">
-        We've got everything we need for <span className="text-white font-medium">{businessName}</span>.
-        We'll have a preview of your website ready within 24 hours.
+        We&apos;ve got everything we need for <span className="text-white font-medium">{businessName}</span>.
+        We&apos;ll have a preview of your website ready within 24 hours.
       </p>
       <div className="mt-8 p-5 bg-slate-800 rounded-2xl border border-slate-700 text-left max-w-sm mx-auto">
         <div className="text-sm font-semibold text-white mb-3">What happens next</div>
