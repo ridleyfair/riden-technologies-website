@@ -321,6 +321,12 @@ const TRADES: TradeConfig[] = [
 
 type PhotoSlot = { url: string; filename: string };
 
+type PhotoAlbum = {
+  id: string;
+  name: string;
+  photos: PhotoSlot[];
+};
+
 type BeforeAfterPair = {
   id: string;
   category: string;
@@ -347,6 +353,7 @@ type FormState = {
   googleReviewCount: string;
   checkatradeProfile: string;
   description: string;
+  albums: PhotoAlbum[];
   pairs: BeforeAfterPair[];
   customPhotoCategories: string[];
 };
@@ -370,6 +377,7 @@ const EMPTY: FormState = {
   googleReviewCount: "",
   checkatradeProfile: "",
   description: "",
+  albums: [],
   pairs: [],
   customPhotoCategories: [],
 };
@@ -802,22 +810,67 @@ function UploadSlot({
   );
 }
 
-const PHOTOS_MIN = 5; // 5 pairs = 10 individual photos
+const PHOTOS_MIN = 5;
 
 function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
 
-  // Categories: selected services first, then trade defaults, then user's custom categories
-  const presetCategories = form.services.length > 0 ? form.services : trade.photoCategories;
-  const allCategories = [...presetCategories, ...form.customPhotoCategories.filter(c => !presetCategories.includes(c))];
+  // ── Album state ──────────────────────────────────────────────────────────
+  const [albumNameInput, setAlbumNameInput]   = useState("");
+  const [activeAlbumId, setActiveAlbumId]     = useState<string | null>(null);
+  const [uploadingAlbum, setUploadingAlbum]   = useState(false);
+  const albumFileRef = useRef<HTMLInputElement>(null);
 
-  const [category, setCategory] = useState(allCategories[0] ?? "");
-  const [before, setBefore] = useState<PhotoSlot | null>(null);
-  const [after, setAfter] = useState<PhotoSlot | null>(null);
-  const [uploadingSlot, setUploadingSlot] = useState<"before" | "after" | null>(null);
-  const [customCatInput, setCustomCatInput] = useState("");
+  // Suggested album names from selected services + trade defaults
+  const suggestedAlbumNames = form.services.length > 0 ? form.services : trade.photoCategories;
 
-  async function handleFile(file: File, slot: "before" | "after") {
+  function createAlbum(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const id = crypto.randomUUID();
+    set({ albums: [...form.albums, { id, name: trimmed, photos: [] }] });
+    setActiveAlbumId(id);
+    setAlbumNameInput("");
+  }
+
+  async function addPhotosToAlbum(files: FileList | null, albumId: string) {
+    if (!files?.length) return;
+    setUploadingAlbum(true);
+    const newPhotos: PhotoSlot[] = [];
+    for (const file of Array.from(files)) {
+      const result = await uploadPhoto(file);
+      if (result) newPhotos.push(result);
+    }
+    set({
+      albums: form.albums.map(a =>
+        a.id === albumId ? { ...a, photos: [...a.photos, ...newPhotos] } : a
+      ),
+    });
+    setUploadingAlbum(false);
+    if (albumFileRef.current) albumFileRef.current.value = "";
+  }
+
+  function removePhotoFromAlbum(albumId: string, photoIdx: number) {
+    set({
+      albums: form.albums.map(a =>
+        a.id === albumId ? { ...a, photos: a.photos.filter((_, i) => i !== photoIdx) } : a
+      ),
+    });
+  }
+
+  function removeAlbum(albumId: string) {
+    set({ albums: form.albums.filter(a => a.id !== albumId) });
+    if (activeAlbumId === albumId) setActiveAlbumId(null);
+  }
+
+  // ── Before/After state ───────────────────────────────────────────────────
+  const [showPairs, setShowPairs]             = useState(false);
+  const [before, setBefore]                   = useState<PhotoSlot | null>(null);
+  const [after, setAfter]                     = useState<PhotoSlot | null>(null);
+  const [uploadingSlot, setUploadingSlot]     = useState<"before" | "after" | null>(null);
+  const [pairCategory, setPairCategory]       = useState(suggestedAlbumNames[0] ?? "");
+
+  async function handlePairFile(file: File, slot: "before" | "after") {
     setUploadingSlot(slot);
     const result = await uploadPhoto(file);
     if (result) { slot === "before" ? setBefore(result) : setAfter(result); }
@@ -826,145 +879,224 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
 
   function addPair() {
     if (!before || !after) return;
-    set({ pairs: [...form.pairs, { id: crypto.randomUUID(), category, before, after }] });
+    set({ pairs: [...form.pairs, { id: crypto.randomUUID(), category: pairCategory, before, after }] });
     setBefore(null);
     setAfter(null);
   }
 
-  function removePair(id: string) {
-    set({ pairs: form.pairs.filter(p => p.id !== id) });
-  }
-
-  function addCustomCategory() {
-    const trimmed = customCatInput.trim();
-    if (!trimmed || allCategories.includes(trimmed)) return;
-    set({ customPhotoCategories: [...form.customPhotoCategories, trimmed] });
-    setCategory(trimmed);
-    setCustomCatInput("");
-  }
-
-  const canAdd = Boolean(before && after);
-  const pairsCount = form.pairs.length;
-  const meetsMinimum = pairsCount >= PHOTOS_MIN;
-  const photosTotal = pairsCount * 2;
+  // ── Totals ───────────────────────────────────────────────────────────────
+  const albumPhotoCount = form.albums.reduce((n, a) => n + a.photos.length, 0);
+  const totalPhotos     = albumPhotoCount + form.pairs.length * 2;
+  const meetsMin        = totalPhotos >= PHOTOS_MIN;
+  const progressPct     = Math.min(100, (totalPhotos / PHOTOS_MIN) * 100);
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Before &amp; after photos</h2>
-      <p className="text-slate-400 mb-2">Upload a before and after photo for each job. Both are required to add a card.</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Work photos</h2>
+      <p className="text-slate-400 mb-4">Create photo albums for your work. Minimum {PHOTOS_MIN} photos required.</p>
 
-      {/* Progress indicator */}
-      <div className={`flex items-center justify-between text-xs mb-6 px-3 py-2 rounded-lg border ${meetsMinimum ? "border-green-500/30 bg-green-500/10 text-green-400" : "border-amber-500/30 bg-amber-500/10 text-amber-400"}`}>
-        <span>{meetsMinimum ? `${pairsCount} cards added — minimum met` : `Minimum 5 before/after cards required (10 photos)`}</span>
-        <span className="font-semibold">{pairsCount} / {PHOTOS_MIN}</span>
+      {/* Progress */}
+      <div className="mb-6">
+        <div className="flex justify-between text-xs mb-1.5">
+          <span className={meetsMin ? "text-green-400 font-medium" : "text-slate-400"}>
+            {meetsMin ? `${totalPhotos} photos added` : `${totalPhotos} of ${PHOTOS_MIN} required`}
+          </span>
+          {!meetsMin && <span className="text-slate-500">{PHOTOS_MIN - totalPhotos} more to go</span>}
+        </div>
+        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <motion.div
+            className={`h-full rounded-full ${meetsMin ? "bg-green-500" : "bg-blue-500"}`}
+            animate={{ width: `${progressPct}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
       </div>
 
-      <div className="space-y-5">
-        {/* Category selector */}
+      <div className="space-y-6">
+        {/* ── Albums ────────────────────────────────────────────────────── */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1.5">Job type / category</label>
-          <select
-            className={inputCls}
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-          >
-            {allCategories.map(c => <option key={c}>{c}</option>)}
-          </select>
-          {/* Add custom category */}
-          <div className="flex gap-2 mt-2">
-            <input
-              className={`${inputCls} flex-1 text-sm py-2`}
-              placeholder="Add your own category"
-              value={customCatInput}
-              onChange={e => setCustomCatInput(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomCategory(); } }}
-            />
-            <button
-              type="button"
-              onClick={addCustomCategory}
-              disabled={!customCatInput.trim()}
-              className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex-shrink-0"
-            >
-              Add
-            </button>
-          </div>
-          {form.customPhotoCategories.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {form.customPhotoCategories.map(c => (
-                <span key={c} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs">
-                  {c}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      set({ customPhotoCategories: form.customPhotoCategories.filter(x => x !== c) });
-                      if (category === c) setCategory(allCategories.find(x => x !== c) ?? "");
-                    }}
-                    className="text-blue-400 hover:text-white transition-colors"
-                  >
-                    <X size={10} />
-                  </button>
-                </span>
+          <div className="text-sm font-semibold text-slate-200 mb-3">Photo albums</div>
+
+          {/* Suggested album names */}
+          {suggestedAlbumNames.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {suggestedAlbumNames.slice(0, 8).map(name => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => createAlbum(name)}
+                  disabled={form.albums.some(a => a.name === name)}
+                  className="px-2.5 py-1 rounded-lg text-xs border border-slate-600 text-slate-400 hover:border-blue-500 hover:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  + {name}
+                </button>
               ))}
             </div>
           )}
-        </div>
 
-        {/* Before / After upload slots */}
-        <div className="grid grid-cols-2 gap-3">
-          <UploadSlot
-            label="Before"
-            photo={before}
-            uploading={uploadingSlot === "before"}
-            onFile={f => handleFile(f, "before")}
-            onClear={() => setBefore(null)}
-          />
-          <UploadSlot
-            label="After"
-            photo={after}
-            uploading={uploadingSlot === "after"}
-            onFile={f => handleFile(f, "after")}
-            onClear={() => setAfter(null)}
-          />
-        </div>
+          {/* Custom album name input */}
+          <div className="flex gap-2 mb-4">
+            <input
+              className={`${inputCls} flex-1`}
+              placeholder="Album name (e.g. Bathroom renovations)"
+              value={albumNameInput}
+              onChange={e => setAlbumNameInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); createAlbum(albumNameInput); } }}
+            />
+            <button
+              type="button"
+              onClick={() => createAlbum(albumNameInput)}
+              disabled={!albumNameInput.trim()}
+              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex-shrink-0"
+            >
+              Create
+            </button>
+          </div>
 
-        <button
-          type="button"
-          onClick={addPair}
-          disabled={!canAdd}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-blue-500/40 text-blue-400 text-sm font-medium hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-        >
-          <CheckCircle2 size={16} />
-          Add before &amp; after card
-        </button>
+          {/* Album list */}
+          {form.albums.length === 0 && (
+            <div className="text-center py-6 rounded-xl border border-dashed border-slate-700 text-slate-500 text-sm">
+              No albums yet. Create one above or pick a suggested name.
+            </div>
+          )}
 
-        {/* Added pairs */}
-        {form.pairs.length > 0 && (
           <div className="space-y-3">
-            <div className="text-sm font-medium text-slate-300">{photosTotal} photo{photosTotal !== 1 ? "s" : ""} across {pairsCount} card{pairsCount !== 1 ? "s" : ""}</div>
-            {form.pairs.map(pair => (
-              <div key={pair.id} className="rounded-xl border border-slate-700 overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 bg-slate-800">
-                  <span className="text-xs font-medium text-slate-300 truncate">{pair.category}</span>
-                  <button type="button" onClick={() => removePair(pair.id)} className="text-slate-500 hover:text-red-400 transition-colors ml-2 flex-shrink-0">
-                    <X size={14} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2">
-                  <div className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={pair.before.url} alt="Before" className="w-full aspect-[4/3] object-cover" />
-                    <div className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white font-medium">Before</div>
+            {form.albums.map(album => (
+              <div key={album.id} className="rounded-xl border border-slate-700 overflow-hidden">
+                {/* Album header */}
+                <button
+                  type="button"
+                  onClick={() => setActiveAlbumId(activeAlbumId === album.id ? null : album.id)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-750 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white">{album.name}</span>
+                    <span className="text-xs text-slate-400">{album.photos.length} photo{album.photos.length !== 1 ? "s" : ""}</span>
                   </div>
-                  <div className="relative border-l border-slate-700">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={pair.after.url} alt="After" className="w-full aspect-[4/3] object-cover" />
-                    <div className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white font-medium">After</div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); removeAlbum(album.id); }}
+                      className="text-slate-500 hover:text-red-400 transition-colors p-1"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                </div>
+                </button>
+
+                {/* Album photo grid + upload */}
+                {activeAlbumId === album.id && (
+                  <div className="p-3 bg-slate-900">
+                    {album.photos.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        {album.photos.map((photo, i) => (
+                          <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-800">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={photo.url} alt={photo.filename} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removePhotoFromAlbum(album.id, i)}
+                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={10} className="text-white" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div
+                      onClick={() => { setActiveAlbumId(album.id); albumFileRef.current?.click(); }}
+                      className="border-2 border-dashed border-slate-600 hover:border-slate-400 rounded-xl p-4 text-center cursor-pointer transition-colors"
+                    >
+                      <input
+                        ref={albumFileRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={e => addPhotosToAlbum(e.target.files, album.id)}
+                      />
+                      {uploadingAlbum ? (
+                        <Loader2 size={18} className="animate-spin text-slate-400 mx-auto" />
+                      ) : (
+                        <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+                          <Upload size={16} />
+                          <span>Add photos to this album</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        {/* ── Before / After (optional) ─────────────────────────────────── */}
+        <div className="rounded-xl border border-slate-700 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowPairs(p => !p)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-slate-800 hover:bg-slate-750 transition-colors text-left"
+          >
+            <div>
+              <div className="text-sm font-medium text-slate-200">Before &amp; after photos <span className="text-slate-500 font-normal text-xs ml-1">Optional</span></div>
+              <div className="text-xs text-slate-400 mt-0.5">{form.pairs.length > 0 ? `${form.pairs.length} pair${form.pairs.length !== 1 ? "s" : ""} added` : "Add side-by-side job comparisons"}</div>
+            </div>
+            <span className="text-slate-400 text-xs">{showPairs ? "Hide" : "Show"}</span>
+          </button>
+
+          {showPairs && (
+            <div className="p-4 space-y-4 bg-slate-900">
+              {/* Category for the pair */}
+              <select className={inputCls} value={pairCategory} onChange={e => setPairCategory(e.target.value)}>
+                {suggestedAlbumNames.map(c => <option key={c}>{c}</option>)}
+              </select>
+
+              <div className="grid grid-cols-2 gap-3">
+                <UploadSlot label="Before" photo={before} uploading={uploadingSlot === "before"} onFile={f => handlePairFile(f, "before")} onClear={() => setBefore(null)} />
+                <UploadSlot label="After"  photo={after}  uploading={uploadingSlot === "after"}  onFile={f => handlePairFile(f, "after")}  onClear={() => setAfter(null)}  />
+              </div>
+
+              <button
+                type="button"
+                onClick={addPair}
+                disabled={!before || !after}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-blue-500/40 text-blue-400 text-sm font-medium hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <CheckCircle2 size={15} />
+                Add before &amp; after card
+              </button>
+
+              {form.pairs.length > 0 && (
+                <div className="space-y-2">
+                  {form.pairs.map(pair => (
+                    <div key={pair.id} className="rounded-xl border border-slate-700 overflow-hidden">
+                      <div className="flex items-center justify-between px-3 py-2 bg-slate-800">
+                        <span className="text-xs font-medium text-slate-300 truncate">{pair.category}</span>
+                        <button type="button" onClick={() => set({ pairs: form.pairs.filter(p => p.id !== pair.id) })} className="text-slate-500 hover:text-red-400 transition-colors ml-2">
+                          <X size={13} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2">
+                        <div className="relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={pair.before.url} alt="Before" className="w-full aspect-[4/3] object-cover" />
+                          <div className="absolute bottom-1 left-1 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white">Before</div>
+                        </div>
+                        <div className="relative border-l border-slate-700">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={pair.after.url} alt="After" className="w-full aspect-[4/3] object-cover" />
+                          <div className="absolute bottom-1 left-1 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white">After</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1022,7 +1154,10 @@ export default function UniversalBriefForm() {
     if (step === "trade") return Boolean(form.tradeGroup);
     if (step === "business") return Boolean(form.businessName && form.phone && form.email && form.city);
     if (step === "services") return form.services.length > 0 && form.description.length >= DESC_MIN;
-    if (step === "photos") return form.pairs.length >= PHOTOS_MIN;
+    if (step === "photos") {
+      const albumCount = form.albums.reduce((n, a) => n + a.photos.length, 0);
+      return albumCount + form.pairs.length * 2 >= PHOTOS_MIN;
+    }
     return true;
   }
 

@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       googleReviewCount,
       checkatradeProfile,
       description,
+      albums,
       pairs,
     } = body as {
       tradeGroup: string;
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
       googleReviewCount?: string;
       checkatradeProfile?: string;
       description?: string;
+      albums?: Array<{ id: string; name: string; photos: Array<{ url: string; filename: string }> }>;
       pairs?: Array<{ id: string; category: string; before: { url: string; filename: string }; after: { url: string; filename: string } }>;
     };
 
@@ -121,21 +123,38 @@ export async function POST(req: NextRequest) {
       `IP:${ip}`,
     ].filter(Boolean).join("\n");
 
-    // Build photosJson from before/after pairs
-    const pairList = pairs ?? [];
-    const photoAlbums = pairList.map((pair, idx) => ({
-      id: `pair_${idx + 1}`,
-      title: pair.category,
-      category: pair.category,
-      type: "before-after",
-      before: pair.before,
-      after: pair.after,
-      displayOrder: idx,
-      enabled: true,
-    }));
+    // Build photosJson — regular albums first, then before/after pairs
+    const albumList = albums ?? [];
+    const pairList  = pairs ?? [];
+
+    const projectAlbums = [
+      ...albumList.map((album, idx) => ({
+        id: `album_${idx + 1}`,
+        title: album.name,
+        category: album.name,
+        type: "gallery",
+        photos: album.photos.map((p, i) => ({ id: `a${idx}_p${i}`, url: p.url, filename: p.filename, alt: `${album.name} photo`, displayOrder: i })),
+        displayOrder: idx,
+        enabled: true,
+        coverImageUrl: album.photos[0]?.url ?? "",
+      })),
+      ...pairList.map((pair, idx) => ({
+        id: `pair_${idx + 1}`,
+        title: pair.category,
+        category: pair.category,
+        type: "before-after",
+        before: pair.before,
+        after: pair.after,
+        displayOrder: albumList.length + idx,
+        enabled: true,
+      })),
+    ];
     const photosJson = JSON.stringify({
-      gallery: pairList.flatMap(p => [p.before.url, p.after.url]),
-      projectAlbums: photoAlbums,
+      gallery: [
+        ...albumList.flatMap(a => a.photos.map(p => p.url)),
+        ...pairList.flatMap(p => [p.before.url, p.after.url]),
+      ],
+      projectAlbums,
     });
 
     // Review settings
