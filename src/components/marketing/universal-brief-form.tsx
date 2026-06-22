@@ -13,9 +13,11 @@ type TradeConfig = {
   emoji: string;
   subTrades: string[];
   services: string[];
-  /** Maps sub-trade name → the subset of services to show. Missing key = show all. */
+  /** Maps sub-trade name to the subset of services to show. Missing key = show all. */
   subTradeServices?: Record<string, string[]>;
   accreditations: string[];
+  /** Maps sub-trade name to the subset of accreditations to show. Missing key = show all. */
+  subTradeAccreditations?: Record<string, string[]>;
   photoCategories: string[];
   templateId: string;
 };
@@ -74,7 +76,30 @@ const TRADES: TradeConfig[] = [
       "Boiler specialist": ["Boiler installation", "Boiler emergency repair", "Boiler service & maintenance", "Annual boiler service", "Boiler replacement", "Boiler controls upgrade", "System power flush", "Gas safety inspections", "Emergency heating restoration", "24/7 emergency call-outs"],
       "Locksmith":         ["Emergency lock opening", "Lock replacement & upgrade", "Key cutting", "UPVC door repair", "Window lock repair", "Security assessment", "24/7 emergency call-outs"],
     },
-    accreditations: ["Gas Safe registered", "OFTEC registered", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader"],
+    accreditations: [
+      "Gas Safe registered",
+      "OFTEC registered",
+      "CIPHE member",
+      "APHC member",
+      "WaterSafe approved",
+      "NADC member",
+      "Worcester Bosch Accredited",
+      "Vaillant Advanced Installer",
+      "Ideal Installer Plus",
+      "MLA approved",
+      "SSAIB registered",
+      "DBS checked",
+      "TrustMark registered",
+      "Checkatrade member",
+    ],
+    subTradeAccreditations: {
+      "Gas engineer":      ["Gas Safe registered", "OFTEC registered", "CIPHE member", "TrustMark registered", "Checkatrade member"],
+      "Emergency plumber": ["APHC member", "WaterSafe approved", "TrustMark registered", "Checkatrade member"],
+      "Drain specialist":  ["NADC member", "TrustMark registered", "Checkatrade member"],
+      "Heating engineer":  ["Gas Safe registered", "OFTEC registered", "CIPHE member", "TrustMark registered", "Checkatrade member"],
+      "Boiler specialist": ["Gas Safe registered", "OFTEC registered", "Worcester Bosch Accredited", "Vaillant Advanced Installer", "Ideal Installer Plus", "Checkatrade member"],
+      "Locksmith":         ["MLA approved", "SSAIB registered", "DBS checked", "Checkatrade member"],
+    },
     photoCategories: ["Emergency callouts", "Boiler installations", "Heating systems", "Drain work", "Before & after"],
     templateId: "emergency-trade",
   },
@@ -151,7 +176,37 @@ const TRADES: TradeConfig[] = [
       "Loft conversion specialist": ["Loft conversions", "Dormer loft conversion", "Hip-to-gable conversion", "Extensions & conversions", "Structural work", "Velux / skylight installation"],
       "Drain specialist":           ["Drain unblocking", "Leak detection & repair", "Pipe lagging"],
     },
-    accreditations: ["Gas Safe registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
+    accreditations: [
+      "Gas Safe registered",
+      "APHC member",
+      "WaterSafe approved",
+      "CIPHE member",
+      "NICEIC approved",
+      "NAPIT registered",
+      "Part P certified",
+      "ELECSA registered",
+      "ECA member",
+      "FMB member",
+      "NHBC registered",
+      "LABC registered",
+      "NFRC member",
+      "CompetentRoofer registered",
+      "KBSA member",
+      "NADC member",
+      "TrustMark registered",
+      "Checkatrade member",
+    ],
+    subTradeAccreditations: {
+      "Plumber":                    ["APHC member", "WaterSafe approved", "CIPHE member", "Gas Safe registered", "TrustMark registered", "Checkatrade member"],
+      "Electrician":                ["NICEIC approved", "NAPIT registered", "Part P certified", "ELECSA registered", "ECA member", "Checkatrade member"],
+      "Builder":                    ["FMB member", "NHBC registered", "LABC registered", "TrustMark registered", "Checkatrade member"],
+      "General contractor":         [],
+      "Roofer":                     ["NFRC member", "CompetentRoofer registered", "TrustMark registered", "Checkatrade member"],
+      "Kitchen fitter":             ["KBSA member", "TrustMark registered", "Checkatrade member"],
+      "Bathroom fitter":            ["KBSA member", "CIPHE member", "TrustMark registered", "Checkatrade member"],
+      "Loft conversion specialist": ["FMB member", "NHBC registered", "TrustMark registered", "Checkatrade member"],
+      "Drain specialist":           ["NADC member", "WaterSafe approved", "Checkatrade member"],
+    },
     photoCategories: ["Before & after", "Bathroom & kitchen", "Electrical work", "Extensions & builds", "Completed projects"],
     templateId: "reno-showcase",
   },
@@ -195,7 +250,18 @@ const TRADES: TradeConfig[] = [
       "Pressure washing",
       "Jet washing",
     ],
-    accreditations: ["Arborist certified", "Marshalls approved", "ICB certified", "Checkatrade member", "TrustMark registered"],
+    accreditations: [
+      "APL member",
+      "BALI member",
+      "Marshalls approved",
+      "ICB certified",
+      "RHS qualified",
+      "NPTC certified",
+      "Arborist certified (AA)",
+      "ISA member",
+      "TrustMark registered",
+      "Checkatrade member",
+    ],
     photoCategories: ["Before & after", "Garden designs", "Driveways & paving", "Decking & patios", "Completed projects"],
     templateId: "outdoor-transform",
   },
@@ -238,7 +304,14 @@ const TRADES: TradeConfig[] = [
       "Door hanging & fitting",
       "Skirting & architrave fitting",
     ],
-    accreditations: ["Dulux Select Decorator", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader", "PCA member"],
+    accreditations: [
+      "Dulux Select Decorator",
+      "Painting and Decorating Association member",
+      "FPDC member",
+      "CTD accredited tiler",
+      "TrustMark registered",
+      "Checkatrade member",
+    ],
     photoCategories: ["Before & after", "Interior work", "Exterior work", "Commercial projects", "Plastering & rendering"],
     templateId: "finish-decor",
   },
@@ -398,7 +471,7 @@ function StepBusiness({ form, set }: { form: FormState; set: (f: Partial<FormSta
       <div className="space-y-4">
         <Field label="Business name" required>
           <select className={inputCls} value={form.subTrade} onChange={e => set({ subTrade: e.target.value, services: [] })}>
-            <option value="">Select your specific trade…</option>
+            <option value="">Select your specific trade</option>
             {trade.subTrades.map(s => <option key={s}>{s}</option>)}
           </select>
         </Field>
@@ -422,7 +495,7 @@ function StepBusiness({ form, set }: { form: FormState; set: (f: Partial<FormSta
           </Field>
         </div>
         <Field label="Existing website (if you have one)">
-          <input className={inputCls} type="url" placeholder="https://…" value={form.existingWebsite} onChange={e => set({ existingWebsite: e.target.value })} />
+          <input className={inputCls} type="url" placeholder="https://yoursite.com" value={form.existingWebsite} onChange={e => set({ existingWebsite: e.target.value })} />
         </Field>
       </div>
     </div>
@@ -430,6 +503,72 @@ function StepBusiness({ form, set }: { form: FormState; set: (f: Partial<FormSta
 }
 
 const DESC_MIN = 200;
+
+function AccreditationsField({ form, set, trade }: { form: FormState; set: (f: Partial<FormState>) => void; trade: TradeConfig }) {
+  const [customInput, setCustomInput] = useState("");
+
+  const subMap = trade.subTradeAccreditations?.[form.subTrade];
+  const visibleAccreditations = subMap && subMap.length > 0 ? subMap : trade.accreditations;
+  const customAccreditations = form.accreditations.filter(a => !trade.accreditations.includes(a));
+
+  function addCustom() {
+    const trimmed = customInput.trim();
+    if (!trimmed || form.accreditations.includes(trimmed)) return;
+    set({ accreditations: [...form.accreditations, trimmed] });
+    setCustomInput("");
+  }
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-300 mb-3">Accreditations and memberships</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {visibleAccreditations.map(a => (
+          <CheckPill
+            key={a}
+            label={a}
+            checked={form.accreditations.includes(a)}
+            onClick={() => set({ accreditations: toggle(form.accreditations, a) })}
+          />
+        ))}
+      </div>
+
+      {customAccreditations.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-700">
+          {customAccreditations.map(a => (
+            <span key={a} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-blue-300 text-sm">
+              {a}
+              <button
+                type="button"
+                onClick={() => set({ accreditations: form.accreditations.filter(x => x !== a) })}
+                className="text-blue-400 hover:text-white transition-colors"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-3">
+        <input
+          className={`${inputCls} flex-1`}
+          placeholder="Add an accreditation not listed above"
+          value={customInput}
+          onChange={e => setCustomInput(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
+        />
+        <button
+          type="button"
+          onClick={addCustom}
+          disabled={!customInput.trim()}
+          className="px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex-shrink-0"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
@@ -455,7 +594,7 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2">Your services</h2>
-      <p className="text-slate-400 mb-6">Tick everything you offer — this builds your services page automatically.</p>
+      <p className="text-slate-400 mb-6">Tick everything you offer. This builds your services page automatically.</p>
       <div className="space-y-6">
         {/* Emergency contact — shown for all trades */}
         <div className="rounded-xl border border-slate-700 bg-slate-800 overflow-hidden">
@@ -523,7 +662,7 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
           <div className="flex gap-2 mt-3">
             <input
               className={`${inputCls} flex-1`}
-              placeholder="Add a service not listed above…"
+              placeholder="Add a service not listed above"
               value={customInput}
               onChange={e => setCustomInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomService(); } }}
@@ -548,18 +687,7 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
           />
         </Field>
 
-        <Field label="Accreditations & memberships">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-            {trade.accreditations.map(a => (
-              <CheckPill
-                key={a}
-                label={a}
-                checked={form.accreditations.includes(a)}
-                onClick={() => set({ accreditations: toggle(form.accreditations, a) })}
-              />
-            ))}
-          </div>
-        </Field>
+        <AccreditationsField form={form} set={set} trade={trade} />
 
         <Field label="Tell us a bit about your business">
           <textarea
@@ -569,7 +697,7 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
             onChange={e => set({ description: e.target.value })}
           />
           <div className={`flex justify-between text-xs mt-1 ${descOk ? "text-green-400" : descLen > 0 ? "text-amber-400" : "text-slate-500"}`}>
-            <span>{descOk ? "✓ Great, that’s enough detail" : `Minimum ${DESC_MIN} characters — helps us write better copy`}</span>
+            <span>{descOk ? "Great, that’s enough detail" : `Minimum ${DESC_MIN} characters to help us write your copy`}</span>
             <span>{descLen} / {DESC_MIN}</span>
           </div>
         </Field>
@@ -586,8 +714,8 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
       <div className="space-y-4">
         <Field label="Years in business">
           <select className={inputCls} value={form.yearsTrading} onChange={e => set({ yearsTrading: e.target.value })}>
-            <option value="">Select…</option>
-            {["Less than 1 year","1–2 years","3–5 years","6–10 years","10–20 years","20+ years"].map(v => <option key={v}>{v}</option>)}
+            <option value="">Select</option>
+            {["Less than 1 year","1-2 years","3-5 years","6-10 years","10-20 years","20+ years"].map(v => <option key={v}>{v}</option>)}
           </select>
         </Field>
         <div className="grid grid-cols-2 gap-4">
@@ -612,14 +740,14 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
           <input
             className={inputCls}
             type="url"
-            placeholder="https://www.checkatrade.com/trades/…"
+            placeholder="https://www.checkatrade.com/trades/"
             value={form.checkatradeProfile}
             onChange={e => set({ checkatradeProfile: e.target.value })}
           />
         </Field>
 
         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 text-sm text-slate-400">
-          💡 Don&apos;t worry if you don&apos;t have these yet — we can always add them later once your website is live.
+          Don&apos;t worry if you don&apos;t have these yet. We can always add them later once your website is live.
         </div>
       </div>
     </div>
@@ -661,7 +789,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2">Work photos</h2>
-      <p className="text-slate-400 mb-6">Upload your best photos — we&apos;ll organise them into albums on your website automatically.</p>
+      <p className="text-slate-400 mb-6">Upload your best photos. We&apos;ll organise them into albums on your website automatically.</p>
 
       <div className="space-y-4">
         <Field label="Photo category">
@@ -701,7 +829,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
           {uploading ? (
             <div className="flex flex-col items-center gap-2 text-slate-400">
               <Loader2 size={28} className="animate-spin" />
-              <span className="text-sm">Uploading…</span>
+              <span className="text-sm">Uploading</span>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 text-slate-400">
@@ -739,7 +867,7 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
         )}
 
         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 text-sm text-slate-400">
-          💡 No photos yet? No problem — skip this step. We can pull photos from your Google Business profile or Checkatrade page.
+          No photos yet? No problem. Skip this step and we can pull photos from your Google Business profile or Checkatrade page.
         </div>
       </div>
     </div>
@@ -883,7 +1011,7 @@ export default function UniversalBriefForm() {
             disabled={submitting}
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-semibold transition-colors"
           >
-            {submitting ? <><Loader2 size={16} className="animate-spin" /> Sending brief…</> : "Submit website brief"}
+            {submitting ? <><Loader2 size={16} className="animate-spin" /> Sending brief</> : "Submit website brief"}
           </button>
         ) : (
           <button
