@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 
+const CONTACT_LIMIT = 3;
+const CONTACT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function getIp(req: NextRequest): string {
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    "unknown"
+  );
+}
+
 export async function POST(req: NextRequest) {
+  const ip = getIp(req);
+  try {
+    const sql = getDb();
+    const windowStart = new Date(Date.now() - CONTACT_WINDOW_MS);
+    const rows = await sql`
+      SELECT COUNT(*) AS count FROM "Lead"
+      WHERE source = 'website' AND notes ILIKE ${`%IP:${ip}%`} AND "createdAt" > ${windowStart}
+    `;
+    if (Number(rows[0]?.count ?? 0) >= CONTACT_LIMIT) {
+      return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
+    }
+  } catch { /* fail open */ }
+
   try {
     const body = await req.json();
     const {
@@ -69,7 +93,7 @@ export async function POST(req: NextRequest) {
         ${planLabel || null},
         ${brief},
         ${phone || null},
-        ${[brandColours && `Colours: ${brandColours}`, designStyle && `Style: ${designStyle}`].filter(Boolean).join(" | ") || null},
+        ${[brandColours && `Colours: ${brandColours}`, designStyle && `Style: ${designStyle}`, `IP:${ip}`].filter(Boolean).join(" | ") || null},
         'new', 'website', 0, ${now}, ${now}
       )
     `;
