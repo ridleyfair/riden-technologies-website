@@ -65,6 +65,9 @@ export async function POST(req: NextRequest) {
       description,
       albums,
       pairs,
+      logoUrl,
+      logoFilename,
+      wantsCustomLogo,
     } = body as {
       tradeGroup: string;
       subTrade: string;
@@ -86,6 +89,9 @@ export async function POST(req: NextRequest) {
       description?: string;
       albums?: Array<{ id: string; name: string; photos: Array<{ url: string; filename: string }> }>;
       pairs?: Array<{ id: string; category: string; before: { url: string; filename: string }; after: { url: string; filename: string } }>;
+      logoUrl?: string;
+      logoFilename?: string;
+      wantsCustomLogo?: boolean;
     };
 
     if (!businessName || !phone || !email || !tradeGroup) {
@@ -111,6 +117,9 @@ export async function POST(req: NextRequest) {
     ].filter(Boolean);
     const about = aboutParts.join(" ") || `${businessName} provides professional ${subTrade || tradeGroup} services${city ? ` in ${city}` : ""}.`;
 
+    // Budget: base £199 + optional logo design
+    const budget = 199 + (wantsCustomLogo ? 19.99 : 0);
+
     // Build notes
     const notes = [
       `Source: Universal Website Brief`,
@@ -120,6 +129,8 @@ export async function POST(req: NextRequest) {
       emergencyCallouts ? `Emergency callouts: YES${emergencyPhone ? ` — ${emergencyPhone}` : ""}` : null,
       googleRating ? `Google rating: ${googleRating} (${googleReviewCount ?? 0} reviews)` : null,
       checkatradeProfile ? `Checkatrade: ${checkatradeProfile}` : null,
+      wantsCustomLogo ? `Custom logo design requested: £19.99` : null,
+      logoUrl ? `Logo uploaded: ${logoFilename ?? logoUrl}` : null,
       `IP:${ip}`,
     ].filter(Boolean).join("\n");
 
@@ -155,6 +166,8 @@ export async function POST(req: NextRequest) {
         ...pairList.flatMap(p => [p.before.url, p.after.url]),
       ],
       projectAlbums,
+      logoUrl: logoUrl ?? null,
+      logoFilename: logoFilename ?? null,
     });
 
     // Review settings
@@ -211,7 +224,7 @@ export async function POST(req: NextRequest) {
         "createdAt", "updatedAt"
       ) VALUES (
         ${projectId}, ${businessName}, ${businessName},
-        ${"active"}, ${199}, ${0}, ${10}, ${notes},
+        ${"active"}, ${budget}, ${0}, ${10}, ${notes},
         ${phone}, ${email}, ${city || null}, ${postcode || null},
         ${industry}, ${servicesText || null}, ${about},
         ${accreditationsText || null},

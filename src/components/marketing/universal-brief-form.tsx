@@ -353,6 +353,9 @@ type FormState = {
   googleReviewCount: string;
   checkatradeProfile: string;
   description: string;
+  logoUrl: string;
+  logoFilename: string;
+  wantsCustomLogo: boolean;
   albums: PhotoAlbum[];
   pairs: BeforeAfterPair[];
   customPhotoCategories: string[];
@@ -377,6 +380,9 @@ const EMPTY: FormState = {
   googleReviewCount: "",
   checkatradeProfile: "",
   description: "",
+  logoUrl: "",
+  logoFilename: "",
+  wantsCustomLogo: false,
   albums: [],
   pairs: [],
   customPhotoCategories: [],
@@ -884,6 +890,18 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
     setAfter(null);
   }
 
+  // ── Logo upload ──────────────────────────────────────────────────────────
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoFileRef = useRef<HTMLInputElement>(null);
+
+  async function handleLogoFile(file: File) {
+    setUploadingLogo(true);
+    const result = await uploadPhoto(file);
+    if (result) set({ logoUrl: result.url, logoFilename: result.filename, wantsCustomLogo: false });
+    setUploadingLogo(false);
+    if (logoFileRef.current) logoFileRef.current.value = "";
+  }
+
   // ── Totals ───────────────────────────────────────────────────────────────
   const albumPhotoCount = form.albums.reduce((n, a) => n + a.photos.length, 0);
   const totalPhotos     = albumPhotoCount + form.pairs.length * 2;
@@ -913,6 +931,65 @@ function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState
       </div>
 
       <div className="space-y-6">
+        {/* ── Logo ──────────────────────────────────────────────────────────── */}
+        <div>
+          <div className="text-sm font-semibold text-slate-200 mb-3">Your logo</div>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Upload existing logo */}
+            <div
+              onClick={() => { if (!form.logoUrl) logoFileRef.current?.click(); }}
+              className={`rounded-xl border-2 transition-all ${form.logoUrl ? "border-blue-500 bg-blue-500/10" : "border-slate-700 bg-slate-800/50 hover:border-slate-500 cursor-pointer"}`}
+            >
+              <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleLogoFile(e.target.files[0]); }} />
+              {form.logoUrl ? (
+                <div className="relative p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.logoUrl} alt="Logo" className="w-full h-20 object-contain rounded-lg" />
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); set({ logoUrl: "", logoFilename: "" }); }}
+                    className="absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 rounded-full p-0.5 transition-colors"
+                  >
+                    <X size={11} className="text-white" />
+                  </button>
+                  <div className="text-xs text-center text-slate-400 mt-2 truncate">{form.logoFilename}</div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-2 p-5 h-full min-h-[100px]">
+                  {uploadingLogo ? <Loader2 size={20} className="animate-spin text-slate-400" /> : (
+                    <>
+                      <Upload size={20} className="text-slate-500" />
+                      <div className="text-center">
+                        <div className="text-sm font-medium text-slate-300">Upload your logo</div>
+                        <div className="text-xs text-slate-500 mt-0.5">PNG, SVG or JPG</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Custom logo option */}
+            <button
+              type="button"
+              onClick={() => set({ wantsCustomLogo: !form.wantsCustomLogo, logoUrl: form.wantsCustomLogo ? form.logoUrl : "", logoFilename: form.wantsCustomLogo ? form.logoFilename : "" })}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${form.wantsCustomLogo ? "border-amber-400 bg-amber-400/10" : "border-slate-700 bg-slate-800/50 hover:border-slate-500"}`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-2xl">✦</span>
+                {form.wantsCustomLogo && <CheckCircle2 size={18} className="text-amber-400 flex-shrink-0" />}
+              </div>
+              <div className="text-sm font-semibold text-white">Custom logo design</div>
+              <div className="text-xs text-slate-400 mt-0.5 mb-3">Professional logo created by our design team</div>
+              <div className="text-lg font-bold text-amber-400">£19.99 <span className="text-xs font-normal text-slate-400">one-time</span></div>
+            </button>
+          </div>
+          {form.wantsCustomLogo && (
+            <div className="mt-2 px-3 py-2 rounded-lg bg-amber-400/10 border border-amber-400/20 text-xs text-amber-300">
+              A custom logo design (£19.99) will be added to your order.
+            </div>
+          )}
+        </div>
         {/* ── Albums ────────────────────────────────────────────────────── */}
         <div>
           <div className="text-sm font-semibold text-slate-200 mb-3">Photo albums</div>
