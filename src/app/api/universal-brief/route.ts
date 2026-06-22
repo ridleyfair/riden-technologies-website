@@ -13,17 +13,15 @@ function getIp(req: NextRequest): string {
 }
 
 const TEMPLATE_MAP: Record<string, string> = {
-  emergency:  "emergency-trade",
-  reno:       "reno-showcase",
-  outdoor:    "outdoor-transform",
-  decor:      "finish-decor",
+  reno:    "reno-showcase",
+  outdoor: "outdoor-transform",
+  decor:   "finish-decor",
 };
 
 const INDUSTRY_MAP: Record<string, string> = {
-  emergency: "trades",
-  reno:      "trades",
-  outdoor:   "trades",
-  decor:     "trades",
+  reno:    "trades",
+  outdoor: "trades",
+  decor:   "trades",
 };
 
 export async function POST(req: NextRequest) {
@@ -56,6 +54,7 @@ export async function POST(req: NextRequest) {
       services,
       accreditations,
       emergencyCallouts,
+      emergencyPhone,
       serviceAreas,
       yearsTrading,
       googleRating,
@@ -75,6 +74,7 @@ export async function POST(req: NextRequest) {
       services: string[];
       accreditations: string[];
       emergencyCallouts?: boolean;
+      emergencyPhone?: string;
       serviceAreas?: string;
       yearsTrading?: string;
       googleRating?: string;
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     const aboutParts = [
       description?.trim(),
       yearsTrading ? `${businessName} has been trading for ${yearsTrading} years.` : null,
-      emergencyCallouts ? "We offer 24/7 emergency callouts." : null,
+      emergencyCallouts ? `We offer 24/7 emergency callouts.${emergencyPhone ? ` Emergency number: ${emergencyPhone}` : ""}` : null,
       serviceAreas ? `We cover ${serviceAreas}.` : null,
     ].filter(Boolean);
     const about = aboutParts.join(" ") || `${businessName} provides professional ${subTrade || tradeGroup} services${city ? ` in ${city}` : ""}.`;
@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
       `Trade: ${subTrade || tradeGroup}`,
       `Template: ${template}`,
       existingWebsite ? `Existing website: ${existingWebsite}` : "No existing website",
+      emergencyCallouts ? `Emergency callouts: YES${emergencyPhone ? ` — ${emergencyPhone}` : ""}` : null,
       googleRating ? `Google rating: ${googleRating} (${googleReviewCount ?? 0} reviews)` : null,
       checkatradeProfile ? `Checkatrade: ${checkatradeProfile}` : null,
       `IP:${ip}`,
@@ -184,7 +185,7 @@ export async function POST(req: NextRequest) {
         ${industry}, ${servicesText || null}, ${about},
         ${accreditationsText || null},
         ${photosJson},
-        ${emergencyCallouts ? "24/7 emergency callouts available" : null},
+        ${emergencyCallouts ? `24/7 emergency callouts${emergencyPhone ? ` — call ${emergencyPhone}` : ""}` : null},
         ${leadId}, ${"universal-brief"}, ${template},
         ${now}, ${now}
       )
@@ -244,10 +245,9 @@ function buildPhotoAlbums(
 
 function defaultCategory(tradeGroup: string): string {
   const map: Record<string, string> = {
-    emergency: "Completed Work",
-    reno:      "Project Photos",
-    outdoor:   "Completed Projects",
-    decor:     "Finished Work",
+    reno:    "Project Photos",
+    outdoor: "Completed Projects",
+    decor:   "Finished Work",
   };
   return map[tradeGroup] ?? "Work Photos";
 }

@@ -13,43 +13,28 @@ type TradeConfig = {
   subTrades: string[];
   services: string[];
   accreditations: string[];
-  showEmergency: boolean;
   photoCategories: string[];
   templateId: string;
 };
 
 const TRADES: TradeConfig[] = [
   {
-    group: "emergency",
-    label: "Gas & Heating Engineer",
-    emoji: "🔥",
-    subTrades: ["Gas engineer", "Heating engineer", "Boiler specialist", "Drain specialist", "Emergency plumber"],
-    services: [
-      "24/7 emergency call-outs",
-      "Boiler installation",
-      "Boiler service & repair",
-      "Central heating installation",
-      "Radiator installation & repair",
-      "Gas safety inspections",
-      "Gas leak detection",
-      "Drain unblocking",
-      "CCTV drain surveys",
-      "Underfloor heating",
-    ],
-    accreditations: ["Gas Safe registered", "OFTEC registered", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader"],
-    showEmergency: true,
-    photoCategories: ["Boiler installations", "Emergency callouts", "Heating systems", "Before & after"],
-    templateId: "emergency-trade",
-  },
-  {
     group: "reno",
-    label: "Plumber / Electrician / Builder",
+    label: "Plumber / Gas / Electrician / Builder",
     emoji: "🔧",
-    subTrades: ["Plumber", "Electrician", "Builder", "General contractor", "Roofer", "Kitchen fitter", "Bathroom fitter", "Loft conversion specialist"],
+    subTrades: [
+      "Plumber", "Gas engineer", "Heating engineer", "Boiler specialist",
+      "Electrician", "Builder", "General contractor", "Roofer",
+      "Kitchen fitter", "Bathroom fitter", "Loft conversion specialist", "Drain specialist",
+    ],
     services: [
       "Bathroom installation",
       "Kitchen plumbing",
+      "Boiler installation & repair",
+      "Central heating installation",
+      "Gas safety inspections",
       "Leak detection & repair",
+      "Drain unblocking",
       "Full rewire",
       "Consumer unit upgrade",
       "EV charger installation",
@@ -60,9 +45,8 @@ const TRADES: TradeConfig[] = [
       "Flat roofing",
       "New builds & refurbishments",
     ],
-    accreditations: ["Gas Safe registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
-    showEmergency: false,
-    photoCategories: ["Before & after", "Bathroom & kitchen", "Electrical work", "Extensions & builds", "Completed projects"],
+    accreditations: ["Gas Safe registered", "OFTEC registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
+    photoCategories: ["Before & after", "Bathroom & kitchen", "Boiler & heating", "Electrical work", "Extensions & builds", "Completed projects"],
     templateId: "reno-showcase",
   },
   {
@@ -85,7 +69,6 @@ const TRADES: TradeConfig[] = [
       "Block paving",
     ],
     accreditations: ["Arborist certified", "Marshalls approved", "ICB certified", "Checkatrade member", "TrustMark registered"],
-    showEmergency: false,
     photoCategories: ["Before & after", "Garden designs", "Driveways & paving", "Decking & patios", "Completed projects"],
     templateId: "outdoor-transform",
   },
@@ -109,7 +92,6 @@ const TRADES: TradeConfig[] = [
       "Commercial decorating",
     ],
     accreditations: ["Dulux Select Decorator", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader", "PCA member"],
-    showEmergency: false,
     photoCategories: ["Before & after", "Interior work", "Exterior work", "Commercial projects", "Plastering & rendering"],
     templateId: "finish-decor",
   },
@@ -131,6 +113,7 @@ type FormState = {
   services: string[];
   accreditations: string[];
   emergencyCallouts: boolean;
+  emergencyPhone: string;
   serviceAreas: string;
   yearsTrading: string;
   googleRating: string;
@@ -152,6 +135,7 @@ const EMPTY: FormState = {
   services: [],
   accreditations: [],
   emergencyCallouts: false,
+  emergencyPhone: "",
   serviceAreas: "",
   yearsTrading: "",
   googleRating: "",
@@ -305,21 +289,36 @@ function StepTradeQuestions({ form, set }: { form: FormState; set: (f: Partial<F
       <h2 className="text-2xl font-bold text-white mb-2">Your services</h2>
       <p className="text-slate-400 mb-6">Tick everything you offer — this builds your services page automatically.</p>
       <div className="space-y-6">
-        {trade.showEmergency && (
-          <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl border border-slate-700">
+        {/* Emergency contact — shown for all trades */}
+        <div className="rounded-xl border border-slate-700 bg-slate-800 overflow-hidden">
+          <div className="flex items-center justify-between p-4">
             <div>
-              <div className="font-medium text-white text-sm">24/7 emergency callouts?</div>
-              <div className="text-xs text-slate-400 mt-0.5">Shown prominently in your hero section</div>
+              <div className="font-medium text-white text-sm">Do you offer emergency callouts?</div>
+              <div className="text-xs text-slate-400 mt-0.5">We&apos;ll display a 24/7 emergency number prominently on your site</div>
             </div>
             <button
               type="button"
-              onClick={() => set({ emergencyCallouts: !form.emergencyCallouts })}
-              className={`relative w-11 h-6 rounded-full transition-colors ${form.emergencyCallouts ? "bg-blue-500" : "bg-slate-600"}`}
+              onClick={() => set({ emergencyCallouts: !form.emergencyCallouts, emergencyPhone: form.emergencyCallouts ? "" : form.emergencyPhone })}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${form.emergencyCallouts ? "bg-blue-500" : "bg-slate-600"}`}
             >
               <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.emergencyCallouts ? "translate-x-6" : "translate-x-1"}`} />
             </button>
           </div>
-        )}
+          {form.emergencyCallouts && (
+            <div className="px-4 pb-4 border-t border-slate-700 pt-3">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Emergency contact number <span className="text-red-400">*</span>
+              </label>
+              <input
+                className={inputCls}
+                type="tel"
+                placeholder="e.g. 07700 000000 (can be same as main number)"
+                value={form.emergencyPhone}
+                onChange={e => set({ emergencyPhone: e.target.value })}
+              />
+            </div>
+          )}
+        </div>
 
         <Field label="Services you offer">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
