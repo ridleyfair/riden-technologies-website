@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       googleReviewCount,
       checkatradeProfile,
       description,
-      photos,
+      pairs,
     } = body as {
       tradeGroup: string;
       subTrade: string;
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       googleReviewCount?: string;
       checkatradeProfile?: string;
       description?: string;
-      photos?: Array<{ url: string; category: string; filename: string }>;
+      pairs?: Array<{ id: string; category: string; before: { url: string; filename: string }; after: { url: string; filename: string } }>;
     };
 
     if (!businessName || !phone || !email || !tradeGroup) {
@@ -121,10 +121,20 @@ export async function POST(req: NextRequest) {
       `IP:${ip}`,
     ].filter(Boolean).join("\n");
 
-    // Build photosJson
-    const photoAlbums = buildPhotoAlbums(photos ?? [], tradeGroup);
+    // Build photosJson from before/after pairs
+    const pairList = pairs ?? [];
+    const photoAlbums = pairList.map((pair, idx) => ({
+      id: `pair_${idx + 1}`,
+      title: pair.category,
+      category: pair.category,
+      type: "before-after",
+      before: pair.before,
+      after: pair.after,
+      displayOrder: idx,
+      enabled: true,
+    }));
     const photosJson = JSON.stringify({
-      gallery: (photos ?? []).map(p => p.url),
+      gallery: pairList.flatMap(p => [p.before.url, p.after.url]),
       projectAlbums: photoAlbums,
     });
 
@@ -212,45 +222,3 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function buildPhotoAlbums(
-  photos: Array<{ url: string; category: string; filename: string }>,
-  tradeGroup: string,
-): unknown[] {
-  if (!photos.length) return [];
-
-  // Group photos by category
-  const groups = new Map<string, typeof photos>();
-  for (const photo of photos) {
-    const cat = photo.category || defaultCategory(tradeGroup);
-    const list = groups.get(cat) ?? [];
-    list.push(photo);
-    groups.set(cat, list);
-  }
-
-  return Array.from(groups.entries()).map(([category, groupPhotos], idx) => ({
-    id: `brief_album_${idx + 1}`,
-    title: category,
-    category,
-    description: `${category} photos uploaded by client.`,
-    photos: groupPhotos.map((p, i) => ({
-      id: `photo_${idx}_${i}`,
-      url: p.url,
-      filename: p.filename,
-      alt: `${category} photo`,
-      displayOrder: i,
-    })),
-    enabled: true,
-    displayOrder: idx,
-    coverImageUrl: groupPhotos[0]?.url ?? "",
-  }));
-}
-
-function defaultCategory(tradeGroup: string): string {
-  const map: Record<string, string> = {
-    emergency: "Completed Work",
-    reno:      "Project Photos",
-    outdoor:   "Completed Projects",
-    decor:     "Finished Work",
-  };
-  return map[tradeGroup] ?? "Work Photos";
-}

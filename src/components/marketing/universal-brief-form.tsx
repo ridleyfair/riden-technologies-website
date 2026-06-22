@@ -319,7 +319,14 @@ const TRADES: TradeConfig[] = [
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Photo = { url: string; category: string; filename: string };
+type PhotoSlot = { url: string; filename: string };
+
+type BeforeAfterPair = {
+  id: string;
+  category: string;
+  before: PhotoSlot;
+  after: PhotoSlot;
+};
 
 type FormState = {
   tradeGroup: string;
@@ -340,7 +347,7 @@ type FormState = {
   googleReviewCount: string;
   checkatradeProfile: string;
   description: string;
-  photos: Photo[];
+  pairs: BeforeAfterPair[];
 };
 
 const EMPTY: FormState = {
@@ -362,7 +369,7 @@ const EMPTY: FormState = {
   googleReviewCount: "",
   checkatradeProfile: "",
   description: "",
-  photos: [],
+  pairs: [],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -736,115 +743,171 @@ function StepTrust({ form, set }: { form: FormState; set: (f: Partial<FormState>
   );
 }
 
+async function uploadPhoto(file: File): Promise<PhotoSlot | null> {
+  if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) return null;
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/universal-brief/upload", { method: "POST", body: fd });
+    if (!res.ok) return null;
+    const data = await res.json() as { url: string };
+    return { url: data.url, filename: file.name };
+  } catch { return null; }
+}
+
+function UploadSlot({
+  label, photo, uploading, onFile, onClear,
+}: {
+  label: string;
+  photo: PhotoSlot | null;
+  uploading: boolean;
+  onFile: (file: File) => void;
+  onClear: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{label}</div>
+      {photo ? (
+        <div className="relative rounded-xl overflow-hidden bg-slate-800 aspect-[4/3]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.url} alt={label} className="w-full h-full object-cover" />
+          <button
+            type="button"
+            onClick={onClear}
+            className="absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 rounded-full p-1 transition-colors"
+          >
+            <X size={12} className="text-white" />
+          </button>
+        </div>
+      ) : (
+        <div
+          onClick={() => ref.current?.click()}
+          className="rounded-xl border-2 border-dashed border-slate-600 hover:border-slate-400 transition-colors cursor-pointer aspect-[4/3] flex flex-col items-center justify-center gap-2 bg-slate-800/40"
+        >
+          <input ref={ref} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) onFile(e.target.files[0]); e.target.value = ""; }} />
+          {uploading ? (
+            <Loader2 size={22} className="animate-spin text-slate-400" />
+          ) : (
+            <>
+              <Upload size={22} className="text-slate-500" />
+              <span className="text-xs text-slate-500">Tap to add {label.toLowerCase()} photo</span>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StepPhotos({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
   const trade = currentTrade(form)!;
-  const [uploading, setUploading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(trade.photoCategories[0]);
-  const fileRef = useRef<HTMLInputElement>(null);
 
-  const uploadFiles = useCallback(async (files: FileList | null) => {
-    if (!files?.length) return;
-    setUploading(true);
-    const newPhotos: Photo[] = [];
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith("image/")) continue;
-      if (file.size > 10 * 1024 * 1024) continue;
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/universal-brief/upload", { method: "POST", body: fd });
-        if (res.ok) {
-          const data = await res.json() as { url: string };
-          newPhotos.push({ url: data.url, category: selectedCategory, filename: file.name });
-        }
-      } catch { /* skip failed uploads */ }
-    }
-    set({ photos: [...form.photos, ...newPhotos] });
-    setUploading(false);
-  }, [form.photos, selectedCategory, set]);
+  // Categories driven by selected services; fall back to trade defaults
+  const categories = form.services.length > 0 ? form.services : trade.photoCategories;
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    uploadFiles(e.dataTransfer.files);
-  }, [uploadFiles]);
+  const [category, setCategory] = useState(categories[0] ?? "");
+  const [before, setBefore] = useState<PhotoSlot | null>(null);
+  const [after, setAfter] = useState<PhotoSlot | null>(null);
+  const [uploadingSlot, setUploadingSlot] = useState<"before" | "after" | null>(null);
+
+  async function handleFile(file: File, slot: "before" | "after") {
+    setUploadingSlot(slot);
+    const result = await uploadPhoto(file);
+    if (result) { slot === "before" ? setBefore(result) : setAfter(result); }
+    setUploadingSlot(null);
+  }
+
+  function addPair() {
+    if (!before || !after) return;
+    const pair: BeforeAfterPair = {
+      id: crypto.randomUUID(),
+      category,
+      before,
+      after,
+    };
+    set({ pairs: [...form.pairs, pair] });
+    setBefore(null);
+    setAfter(null);
+  }
+
+  function removePair(id: string) {
+    set({ pairs: form.pairs.filter(p => p.id !== id) });
+  }
+
+  const canAdd = Boolean(before && after);
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-white mb-2">Work photos</h2>
-      <p className="text-slate-400 mb-6">Upload your best photos. We&apos;ll organise them into albums on your website automatically.</p>
+      <h2 className="text-2xl font-bold text-white mb-2">Before & after photos</h2>
+      <p className="text-slate-400 mb-6">Upload a before and after photo for each job. Both are required to add a card.</p>
 
-      <div className="space-y-4">
-        <Field label="Photo category">
-          <div className="flex flex-wrap gap-2">
-            {trade.photoCategories.map(cat => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${
-                  selectedCategory === cat
-                    ? "border-blue-500 bg-blue-500/10 text-white"
-                    : "border-slate-600 text-slate-400 hover:border-slate-400"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-500 mt-1.5">Select a category, then upload photos for it</p>
+      <div className="space-y-5">
+        {/* Category — from selected services */}
+        <Field label="Job type">
+          <select
+            className={inputCls}
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+          >
+            {categories.map(c => <option key={c}>{c}</option>)}
+          </select>
         </Field>
 
-        <div
-          onDrop={onDrop}
-          onDragOver={e => e.preventDefault()}
-          onClick={() => fileRef.current?.click()}
-          className="border-2 border-dashed border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-slate-400 transition-colors"
-        >
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={e => uploadFiles(e.target.files)}
+        {/* Before / After upload slots */}
+        <div className="grid grid-cols-2 gap-3">
+          <UploadSlot
+            label="Before"
+            photo={before}
+            uploading={uploadingSlot === "before"}
+            onFile={f => handleFile(f, "before")}
+            onClear={() => setBefore(null)}
           />
-          {uploading ? (
-            <div className="flex flex-col items-center gap-2 text-slate-400">
-              <Loader2 size={28} className="animate-spin" />
-              <span className="text-sm">Uploading</span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-slate-400">
-              <Upload size={28} />
-              <div className="text-sm font-medium text-slate-300">Drop photos here or click to browse</div>
-              <div className="text-xs">JPG, PNG, WEBP · max 10 MB each</div>
-            </div>
-          )}
+          <UploadSlot
+            label="After"
+            photo={after}
+            uploading={uploadingSlot === "after"}
+            onFile={f => handleFile(f, "after")}
+            onClear={() => setAfter(null)}
+          />
         </div>
 
-        {form.photos.length > 0 && (
-          <div>
-            <div className="text-sm font-medium text-slate-300 mb-2">{form.photos.length} photo{form.photos.length !== 1 ? "s" : ""} uploaded</div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {form.photos.map((photo, i) => (
-                <div key={i} className="relative group aspect-square rounded-lg overflow-hidden bg-slate-800">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo.url} alt={photo.filename} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-1">
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); set({ photos: form.photos.filter((_, j) => j !== i) }); }}
-                      className="bg-red-500 rounded-full p-0.5"
-                    >
-                      <X size={12} className="text-white" />
-                    </button>
+        <button
+          type="button"
+          onClick={addPair}
+          disabled={!canAdd}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-blue-500/40 text-blue-400 text-sm font-medium hover:border-blue-500 hover:bg-blue-500/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <CheckCircle2 size={16} />
+          Add before &amp; after card
+        </button>
+
+        {/* Added pairs */}
+        {form.pairs.length > 0 && (
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-slate-300">{form.pairs.length} card{form.pairs.length !== 1 ? "s" : ""} added</div>
+            {form.pairs.map(pair => (
+              <div key={pair.id} className="rounded-xl border border-slate-700 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-800">
+                  <span className="text-xs font-medium text-slate-300 truncate">{pair.category}</span>
+                  <button type="button" onClick={() => removePair(pair.id)} className="text-slate-500 hover:text-red-400 transition-colors ml-2 flex-shrink-0">
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2">
+                  <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={pair.before.url} alt="Before" className="w-full aspect-[4/3] object-cover" />
+                    <div className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white font-medium">Before</div>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5 text-[10px] text-white truncate">
-                    {photo.category}
+                  <div className="relative border-l border-slate-700">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={pair.after.url} alt="After" className="w-full aspect-[4/3] object-cover" />
+                    <div className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/70 px-1.5 py-0.5 rounded text-white font-medium">After</div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
 
