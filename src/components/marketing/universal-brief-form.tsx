@@ -9,6 +9,7 @@ import { CheckCircle2, Upload, X, ChevronRight, ChevronLeft, Loader2 } from "luc
 type TradeConfig = {
   group: string;
   label: string;
+  description: string;
   emoji: string;
   subTrades: string[];
   services: string[];
@@ -19,20 +20,39 @@ type TradeConfig = {
 
 const TRADES: TradeConfig[] = [
   {
+    group: "emergency",
+    label: "Emergency Services",
+    description: "24/7 gas leaks, boiler breakdowns, burst pipes & drain emergencies",
+    emoji: "🚨",
+    subTrades: ["Gas engineer", "Emergency plumber", "Drain specialist", "Heating engineer", "Boiler specialist", "Locksmith"],
+    services: [
+      "24/7 emergency call-outs",
+      "Gas leak detection & repair",
+      "Boiler emergency repair",
+      "Burst pipe repair",
+      "Drain unblocking",
+      "CCTV drain surveys",
+      "Emergency heating restoration",
+      "Central heating installation",
+      "Boiler installation",
+      "Gas safety inspections",
+    ],
+    accreditations: ["Gas Safe registered", "OFTEC registered", "Checkatrade member", "TrustMark registered", "Which? Trusted Trader"],
+    photoCategories: ["Emergency callouts", "Boiler installations", "Heating systems", "Drain work", "Before & after"],
+    templateId: "emergency-trade",
+  },
+  {
     group: "reno",
-    label: "Plumber / Gas / Electrician / Builder",
+    label: "Plumber / Electrician / Builder",
+    description: "Bathrooms, kitchens, rewires, extensions, roofing & more",
     emoji: "🔧",
     subTrades: [
-      "Plumber", "Gas engineer", "Heating engineer", "Boiler specialist",
-      "Electrician", "Builder", "General contractor", "Roofer",
+      "Plumber", "Electrician", "Builder", "General contractor", "Roofer",
       "Kitchen fitter", "Bathroom fitter", "Loft conversion specialist", "Drain specialist",
     ],
     services: [
       "Bathroom installation",
       "Kitchen plumbing",
-      "Boiler installation & repair",
-      "Central heating installation",
-      "Gas safety inspections",
       "Leak detection & repair",
       "Drain unblocking",
       "Full rewire",
@@ -45,13 +65,14 @@ const TRADES: TradeConfig[] = [
       "Flat roofing",
       "New builds & refurbishments",
     ],
-    accreditations: ["Gas Safe registered", "OFTEC registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
-    photoCategories: ["Before & after", "Bathroom & kitchen", "Boiler & heating", "Electrical work", "Extensions & builds", "Completed projects"],
+    accreditations: ["Gas Safe registered", "NICEIC approved", "Part P certified", "FMB member", "NFRC member", "Checkatrade member", "TrustMark registered"],
+    photoCategories: ["Before & after", "Bathroom & kitchen", "Electrical work", "Extensions & builds", "Completed projects"],
     templateId: "reno-showcase",
   },
   {
     group: "outdoor",
     label: "Landscaper / Gardener / Driveways",
+    description: "Gardens, patios, driveways, fencing & outdoor transformations",
     emoji: "🌿",
     subTrades: ["Landscaper", "Gardener", "Driveway & paving specialist", "Tree surgeon", "Fencing contractor", "Artificial grass installer"],
     services: [
@@ -75,6 +96,7 @@ const TRADES: TradeConfig[] = [
   {
     group: "decor",
     label: "Painter / Decorator / Plasterer",
+    description: "Interior & exterior painting, plastering, tiling & finishing",
     emoji: "🎨",
     subTrades: ["Painter & decorator", "Plasterer", "Skim & render specialist", "Floor fitter", "Tiler", "Window fitter"],
     services: [
@@ -230,7 +252,7 @@ function StepTrade({ form, set }: { form: FormState; set: (f: Partial<FormState>
             <span className="text-3xl flex-shrink-0">{trade.emoji}</span>
             <div>
               <div className="font-semibold text-white leading-tight">{trade.label}</div>
-              <div className="text-xs text-slate-400 mt-1">{trade.subTrades.slice(0, 3).join(" · ")}</div>
+              <div className="text-xs text-slate-400 mt-1 leading-relaxed">{trade.description}</div>
             </div>
             {form.tradeGroup === trade.group && (
               <CheckCircle2 size={20} className="text-blue-400 ml-auto flex-shrink-0" />

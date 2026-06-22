@@ -13,15 +13,17 @@ function getIp(req: NextRequest): string {
 }
 
 const TEMPLATE_MAP: Record<string, string> = {
-  reno:    "reno-showcase",
-  outdoor: "outdoor-transform",
-  decor:   "finish-decor",
+  emergency: "emergency-trade",
+  reno:      "reno-showcase",
+  outdoor:   "outdoor-transform",
+  decor:     "finish-decor",
 };
 
 const INDUSTRY_MAP: Record<string, string> = {
-  reno:    "trades",
-  outdoor: "trades",
-  decor:   "trades",
+  emergency: "trades",
+  reno:      "trades",
+  outdoor:   "trades",
+  decor:     "trades",
 };
 
 export async function POST(req: NextRequest) {
@@ -245,9 +247,10 @@ function buildPhotoAlbums(
 
 function defaultCategory(tradeGroup: string): string {
   const map: Record<string, string> = {
-    reno:    "Project Photos",
-    outdoor: "Completed Projects",
-    decor:   "Finished Work",
+    emergency: "Completed Work",
+    reno:      "Project Photos",
+    outdoor:   "Completed Projects",
+    decor:     "Finished Work",
   };
   return map[tradeGroup] ?? "Work Photos";
 }
