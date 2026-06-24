@@ -131,7 +131,7 @@ export default function ProcessScrollStory() {
 
     const applyAll = () => {
       setEnhanced(!mqMotion.matches);
-      const mobile = window.innerWidth < 1024;
+      const mobile = window.innerWidth < 1280;
       isMobileRef.current = mobile;
       setIsMobile(mobile);
     };
@@ -140,7 +140,7 @@ export default function ProcessScrollStory() {
     mqMotion.addEventListener("change", applyAll);
 
     const onResize = () => {
-      const mobile = window.innerWidth < 1024;
+      const mobile = window.innerWidth < 1280;
       isMobileRef.current = mobile;
       setIsMobile(mobile);
     };
