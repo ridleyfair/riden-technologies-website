@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Plus, X, RefreshCw, CheckCircle, AlertTriangle,
   ExternalLink, Phone, Globe, MapPin, Star, Flame, Loader2,
-  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail,
+  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail, Download,
 } from "lucide-react";
 import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { cn } from "@/lib/utils";
@@ -580,6 +580,9 @@ export default function PossibleClientsView() {
   const [emailScanMsg,   setEmailScanMsg]   = useState<string | null>(null);
   const [emailScanProgress, setEmailScanProgress] = useState<{ done: number; total: number } | null>(null);
 
+  // Export
+  const [exportLoading, setExportLoading] = useState(false);
+
   // Toast
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -910,6 +913,60 @@ export default function PossibleClientsView() {
     [showToast]
   );
 
+  const handleExportWhatsAppNumbers = useCallback(async () => {
+    setExportLoading(true);
+    try {
+      const CHUNK = 200;
+      const fetchPage = async (p: number): Promise<Business[]> => {
+        const params = new URLSearchParams({ has_website: "false", page: String(p), page_size: String(CHUNK) });
+        const res = await fetch(`/api/possible-clients?${params}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.items ?? [];
+      };
+
+      const first = await fetch(`/api/possible-clients?has_website=false&page=1&page_size=${CHUNK}`);
+      if (!first.ok) { showToast("Export failed — could not load businesses", "error"); return; }
+      const firstData = await first.json();
+      const totalCount: number = firstData.total ?? 0;
+      let allItems: Business[] = firstData.items ?? [];
+
+      const totalPages = Math.ceil(totalCount / CHUNK);
+      if (totalPages > 1) {
+        const rest = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, i) => fetchPage(i + 2))
+        );
+        for (const page of rest) allItems = allItems.concat(page);
+      }
+
+      const eligible = allItems.filter(
+        (b) =>
+          b.phone &&
+          !b.website &&
+          (b.lead_score?.lead_tier === "hot" || b.lead_score?.lead_tier === "warm")
+      );
+
+      if (eligible.length === 0) {
+        showToast("No warm/hot leads with phone numbers found", "error");
+        return;
+      }
+
+      const lines = eligible.map((b) => b.phone!.replace(/\s+/g, "")).join("\n");
+      const blob = new Blob([lines], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `whatsapp-numbers-${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${eligible.length} warm/hot numbers`, "success");
+    } catch {
+      showToast("Export failed", "error");
+    } finally {
+      setExportLoading(false);
+    }
+  }, [showToast]);
+
   // ── Derived data ─────────────────────────────────────────────────────────────
 
   let visibleBusinesses = businesses;
@@ -967,6 +1024,15 @@ export default function PossibleClientsView() {
               {checkingAll ? "Checking…" : `Check Checkatrade (${uncheckedCount})`}
             </button>
           )}
+          <button
+            onClick={handleExportWhatsAppNumbers}
+            disabled={exportLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-700/80 hover:bg-green-600 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export warm/hot leads with no website as a .txt file for WhatsApp broadcast"
+          >
+            {exportLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {exportLoading ? "Exporting…" : "Export WA Numbers"}
+          </button>
           <button
             onClick={() => setScrapeModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"

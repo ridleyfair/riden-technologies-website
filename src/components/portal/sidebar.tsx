@@ -10,8 +10,6 @@ import {
   UserPlus,
   FolderKanban,
   Globe,
-  Calendar,
-  CalendarCheck,
   Zap,
   BarChart3,
   FileText,
@@ -39,8 +37,6 @@ const navItems = [
       { label: "Possible Clients", href: "/portal/possible-clients", icon: Flame },
       { label: "Leads", href: "/portal/leads", icon: UserPlus },
       { label: "Clients", href: "/portal/clients", icon: Users },
-      { label: "Bookings", href: "/portal/bookings", icon: Calendar },
-      { label: "Booking Requests", href: "/portal/booking-requests", icon: CalendarCheck },
     ],
   },
   {
