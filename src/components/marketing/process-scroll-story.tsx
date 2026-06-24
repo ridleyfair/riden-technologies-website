@@ -116,30 +116,47 @@ export default function ProcessScrollStory() {
   const [progress, setProgress] = useState(0);
   const [enhanced, setEnhanced] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Ref so the scroll handler always reads the current value without stale closures
+  const isMobileRef = useRef(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
+  // Single effect so enhanced + isMobile update in the same React batch,
+  // preventing the brief flash of the 510vh desktop section on mobile.
   useEffect(() => {
     const mqMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => setEnhanced(!mqMotion.matches);
-    apply();
-    mqMotion.addEventListener("change", apply);
+
+    const applyAll = () => {
+      setEnhanced(!mqMotion.matches);
+      const mobile = window.innerWidth < 1024;
+      isMobileRef.current = mobile;
+      setIsMobile(mobile);
+    };
+
+    applyAll();
+    mqMotion.addEventListener("change", applyAll);
+
+    const onResize = () => {
+      const mobile = window.innerWidth < 1024;
+      isMobileRef.current = mobile;
+      setIsMobile(mobile);
+    };
+    window.addEventListener("resize", onResize);
+
     return () => {
-      mqMotion.removeEventListener("change", apply);
+      mqMotion.removeEventListener("change", applyAll);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
+  // Guard: when mobile stepper is active, sectionRef is unattached so
+  // useScroll falls back to window scroll — skip updates to avoid
+  // the displayed stage changing as the user scrolls the page.
   useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (isMobileRef.current) return;
     setProgress(v);
     const i = Math.min(stages.length - 1, Math.max(0, Math.floor(v * stages.length)));
     setActive(i);
