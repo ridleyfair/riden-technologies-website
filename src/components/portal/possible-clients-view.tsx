@@ -917,26 +917,24 @@ export default function PossibleClientsView() {
     setExportLoading(true);
     try {
       const CHUNK = 200;
-      const fetchPage = async (p: number): Promise<Business[]> => {
+      const fetchPage = async (p: number): Promise<{ items: Business[]; total?: number }> => {
         const params = new URLSearchParams({ has_website: "false", page: String(p), page_size: String(CHUNK) });
         const res = await fetch(`/api/possible-clients?${params}`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.items ?? [];
+        if (!res.ok) return { items: [] };
+        return res.json();
       };
 
-      const first = await fetch(`/api/possible-clients?has_website=false&page=1&page_size=${CHUNK}`);
-      if (!first.ok) { showToast("Export failed — could not load businesses", "error"); return; }
-      const firstData = await first.json();
+      const firstData = await fetchPage(1);
+      if (!firstData.items) { showToast("Export failed — could not load businesses", "error"); return; }
       const totalCount: number = firstData.total ?? 0;
-      let allItems: Business[] = firstData.items ?? [];
+      let allItems: Business[] = firstData.items;
 
       const totalPages = Math.ceil(totalCount / CHUNK);
       if (totalPages > 1) {
         const rest = await Promise.all(
           Array.from({ length: totalPages - 1 }, (_, i) => fetchPage(i + 2))
         );
-        for (const page of rest) allItems = allItems.concat(page);
+        for (const page of rest) allItems = allItems.concat(page.items);
       }
 
       const eligible = allItems.filter(
@@ -957,8 +955,10 @@ export default function PossibleClientsView() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `whatsapp-numbers-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
       showToast(`Exported ${eligible.length} warm/hot numbers`, "success");
     } catch {
       showToast("Export failed", "error");
