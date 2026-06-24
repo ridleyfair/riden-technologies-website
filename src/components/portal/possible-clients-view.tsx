@@ -560,6 +560,7 @@ export default function PossibleClientsView() {
   const [hasCheckatradeFilter, setHasCheckatradeFilter] = useState(false);
   const [hotLeadsOnly, setHotLeadsOnly] = useState(false);
   const [industryFilter, setIndustryFilter] = useState<"" | "trades" | "beauty">("");
+  const [phoneSearch, setPhoneSearch] = useState("");
 
   // Scrape
   const [scrapeModal, setScrapeModal] = useState(false);
@@ -949,7 +950,11 @@ export default function PossibleClientsView() {
         return;
       }
 
-      const lines = eligible.map((b) => b.phone!.replace(/\s+/g, "")).join("\n");
+      const seen = new Set<string>();
+      const uniquePhones = eligible
+        .map((b) => b.phone!.replace(/\s+/g, ""))
+        .filter((p) => { if (seen.has(p)) return false; seen.add(p); return true; });
+      const lines = uniquePhones.join("\n");
       const blob = new Blob([lines], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -959,7 +964,7 @@ export default function PossibleClientsView() {
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-      showToast(`Exported ${eligible.length} warm/hot numbers`, "success");
+      showToast(`Exported ${uniquePhones.length} unique warm/hot numbers`, "success");
     } catch {
       showToast("Export failed", "error");
     } finally {
@@ -974,6 +979,10 @@ export default function PossibleClientsView() {
   if (hasCheckatradeFilter)   visibleBusinesses = visibleBusinesses.filter((b) => enrichments[b.id]?.has_checkatrade);
   if (hotLeadsOnly)           visibleBusinesses = visibleBusinesses.filter((b) => !b.website && enrichments[b.id]?.has_checkatrade);
   if (industryFilter)         visibleBusinesses = visibleBusinesses.filter((b) => getIndustryType(b.category) === industryFilter);
+  if (phoneSearch) {
+    const needle = phoneSearch.replace(/\s+/g, "");
+    visibleBusinesses = visibleBusinesses.filter((b) => b.phone?.replace(/\s+/g, "").includes(needle));
+  }
 
   const totalPages    = Math.ceil(total / PAGE_SIZE);
   const checkatradeCount = Object.values(enrichments).filter((e) => e.has_checkatrade).length;
@@ -1148,6 +1157,19 @@ export default function PossibleClientsView() {
               value={category}
               onChange={(e) => { setCategory(e.target.value); setPage(1); setShowAll(false); }}
               className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+            />
+          </div>
+          <div className="relative flex-1 min-w-[160px]">
+            <Phone size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by phone..."
+              value={phoneSearch}
+              onChange={(e) => {
+                setPhoneSearch(e.target.value);
+                if (e.target.value) setShowAll(true);
+              }}
+              className="w-full pl-8 pr-3 py-2 bg-riden-muted border border-riden-border rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-green-500/50"
             />
           </div>
           <select
