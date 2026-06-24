@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Plus, X, RefreshCw, CheckCircle, AlertTriangle,
   ExternalLink, Phone, Globe, MapPin, Star, Flame, Loader2,
-  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail, Download,
+  WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail, Download, MessageSquare,
 } from "lucide-react";
 import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { cn } from "@/lib/utils";
@@ -581,6 +581,11 @@ export default function PossibleClientsView() {
   const [emailScanMsg,   setEmailScanMsg]   = useState<string | null>(null);
   const [emailScanProgress, setEmailScanProgress] = useState<{ done: number; total: number } | null>(null);
 
+  // Contacted
+  const [contactedIds, setContactedIds] = useState<Set<string>>(new Set());
+  const [markingId, setMarkingId] = useState<string | null>(null);
+  const [hideContacted, setHideContacted] = useState(false);
+
   // Export
   const [exportLoading, setExportLoading] = useState(false);
 
@@ -688,6 +693,14 @@ export default function PossibleClientsView() {
   // avoids an infinite re-render loop while keeping all real filter/page deps.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, showAll, city, category, tier, noWebsiteOnly]);
+
+  // Load contacted IDs once on mount
+  useEffect(() => {
+    fetch("/api/possible-clients/contacted")
+      .then((r) => r.json())
+      .then((ids: string[]) => setContactedIds(new Set(ids)))
+      .catch(() => null);
+  }, []);
 
   // Poll active scrape job
   useEffect(() => {
@@ -914,6 +927,26 @@ export default function PossibleClientsView() {
     [showToast]
   );
 
+  const handleToggleContacted = useCallback(async (business: Business) => {
+    const already = contactedIds.has(business.id);
+    setMarkingId(business.id);
+    try {
+      const res = await fetch(`/api/possible-clients/${business.id}/mark-contacted`, {
+        method: already ? "DELETE" : "POST",
+      });
+      if (!res.ok) { showToast("Failed to update contacted status", "error"); return; }
+      setContactedIds((prev) => {
+        const next = new Set(prev);
+        if (already) next.delete(business.id); else next.add(business.id);
+        return next;
+      });
+    } catch {
+      showToast("Failed to update contacted status", "error");
+    } finally {
+      setMarkingId(null);
+    }
+  }, [contactedIds, showToast]);
+
   const handleExportWhatsAppNumbers = useCallback(async () => {
     setExportLoading(true);
     try {
@@ -942,6 +975,7 @@ export default function PossibleClientsView() {
         (b) =>
           b.phone &&
           !b.website &&
+          !contactedIds.has(b.id) &&
           (b.lead_score?.lead_tier === "hot" || b.lead_score?.lead_tier === "warm")
       );
 
@@ -970,7 +1004,7 @@ export default function PossibleClientsView() {
     } finally {
       setExportLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, contactedIds]);
 
   // ── Derived data ─────────────────────────────────────────────────────────────
 
@@ -983,6 +1017,7 @@ export default function PossibleClientsView() {
     const needle = phoneSearch.replace(/\s+/g, "");
     visibleBusinesses = visibleBusinesses.filter((b) => b.phone?.replace(/\s+/g, "").includes(needle));
   }
+  if (hideContacted) visibleBusinesses = visibleBusinesses.filter((b) => !contactedIds.has(b.id));
 
   const totalPages    = Math.ceil(total / PAGE_SIZE);
   const checkatradeCount = Object.values(enrichments).filter((e) => e.has_checkatrade).length;
@@ -1256,6 +1291,20 @@ export default function PossibleClientsView() {
             💅 Beauty
           </button>
           <button
+            onClick={() => setHideContacted((v) => !v)}
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium border transition-colors",
+              hideContacted
+                ? "bg-green-500/10 border-green-500/30 text-green-400"
+                : "bg-riden-muted border-riden-border text-slate-400 hover:text-white"
+            )}
+          >
+            <span className="flex items-center gap-1.5">
+              <MessageSquare size={13} />
+              Hide Contacted
+            </span>
+          </button>
+          <button
             onClick={() => fetchBusinesses(page)}
             className="p-2 rounded-lg bg-riden-muted border border-riden-border text-slate-400 hover:text-white transition-colors"
             title="Refresh"
@@ -1437,7 +1486,7 @@ export default function PossibleClientsView() {
 
                         {/* Actions */}
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             {/* Google Maps link */}
                             {b.maps_url && (
                               <a
@@ -1482,6 +1531,26 @@ export default function PossibleClientsView() {
                               title="Write outreach email"
                             >
                               <Mail size={13} />
+                            </button>
+
+                            {/* Mark contacted */}
+                            <button
+                              onClick={() => handleToggleContacted(b)}
+                              disabled={markingId === b.id}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 whitespace-nowrap",
+                                contactedIds.has(b.id)
+                                  ? "bg-green-500/10 border-green-500/20 text-green-400 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400"
+                                  : "bg-riden-muted border-riden-border text-slate-400 hover:text-white hover:border-green-500/40 hover:bg-green-500/10"
+                              )}
+                              title={contactedIds.has(b.id) ? "Click to unmark" : "Mark as contacted"}
+                            >
+                              {markingId === b.id ? (
+                                <Loader2 size={11} className="animate-spin" />
+                              ) : (
+                                <MessageSquare size={11} />
+                              )}
+                              {contactedIds.has(b.id) ? "Contacted" : "Not contacted"}
                             </button>
 
                             {/* Add to CRM */}
