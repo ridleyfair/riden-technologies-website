@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw, Trash2, X, AlertTriangle, CheckCircle, Eye } from "lucide-react";
+import { Search, Filter, Plus, TrendingUp, UserPlus, Star, MoreHorizontal, RefreshCw, Trash2, X, AlertTriangle, CheckCircle, Eye, Square, CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LeadModal from "@/components/portal/lead-modal";
@@ -105,6 +105,64 @@ function DeleteConfirmModal({
   );
 }
 
+function BulkDeleteConfirmModal({
+  count,
+  onConfirm,
+  onCancel,
+  loading,
+}: {
+  count: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.18 }}
+        className="relative w-full max-w-sm glass-card rounded-2xl border border-riden-border p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+            <Trash2 size={18} className="text-red-400" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-white">Delete {count} Lead{count !== 1 ? "s" : ""}</h3>
+            <p className="text-xs text-slate-500">This action cannot be undone</p>
+          </div>
+          <button onClick={onCancel} className="ml-auto p-1.5 rounded-lg hover:bg-riden-muted text-slate-500 hover:text-white transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+        <p className="text-sm text-slate-300 mb-6">
+          Are you sure you want to permanently delete <span className="text-white font-medium">{count} lead{count !== 1 ? "s" : ""}</span>? This cannot be undone.
+        </p>
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={loading}>Cancel</Button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Deleting..." : `Delete ${count} Lead${count !== 1 ? "s" : ""}`}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function LeadMenu({
   lead,
   onView,
@@ -159,6 +217,9 @@ export default function LeadsView() {
   const [viewLead, setViewLead] = useState<Lead | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
 
   const showToast = (msg: string, type: Toast["type"]) => {
@@ -210,6 +271,43 @@ export default function LeadsView() {
     }
   };
 
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const res = await fetch("/api/leads/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error();
+      setLeads((prev) => prev.filter((l) => !selectedIds.has(l.id)));
+      showToast(`${ids.length} lead${ids.length !== 1 ? "s" : ""} deleted.`, "success");
+      setSelectedIds(new Set());
+    } catch {
+      showToast("Failed to delete leads. Please try again.", "error");
+    } finally {
+      setBulkDeleting(false);
+      setShowBulkConfirm(false);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((l) => l.id)));
+    }
+  };
+
   const filtered = leads.filter((lead) => {
     const matchSearch =
       lead.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -255,6 +353,46 @@ export default function LeadsView() {
             onCancel={() => setDeleteTarget(null)}
             loading={deleting}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showBulkConfirm && (
+          <BulkDeleteConfirmModal
+            count={selectedIds.size}
+            onConfirm={confirmBulkDelete}
+            onCancel={() => setShowBulkConfirm(false)}
+            loading={bulkDeleting}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Floating bulk action bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 rounded-2xl bg-riden-surface border border-riden-border shadow-2xl"
+          >
+            <span className="text-sm text-white font-medium">{selectedIds.size} selected</span>
+            <div className="w-px h-4 bg-riden-border" />
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-slate-400 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
+            <button
+              onClick={() => setShowBulkConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-600/30 transition-colors"
+            >
+              <Trash2 size={12} />
+              Delete {selectedIds.size}
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -381,7 +519,14 @@ export default function LeadsView() {
         className="glass-card rounded-xl border border-riden-border hidden md:block"
       >
         <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-riden-border bg-riden-surface/50 text-xs font-medium text-slate-500 uppercase tracking-wider rounded-t-xl">
-          <div className="col-span-3">Name</div>
+          <div className="col-span-1 flex items-center">
+            <button onClick={toggleSelectAll} className="text-slate-500 hover:text-white transition-colors">
+              {selectedIds.size === filtered.length && filtered.length > 0
+                ? <CheckSquare size={15} className="text-blue-400" />
+                : <Square size={15} />}
+            </button>
+          </div>
+          <div className="col-span-2">Name</div>
           <div className="col-span-2">Company</div>
           <div className="col-span-2">Service</div>
           <div className="col-span-2">Status</div>
@@ -404,9 +549,14 @@ export default function LeadsView() {
               <div
                 key={lead.id}
                 onClick={() => setViewLead(lead)}
-                className="grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.04] transition-colors items-center cursor-pointer"
+                className={`grid grid-cols-12 gap-4 px-5 py-3.5 hover:bg-white/[0.04] transition-colors items-center cursor-pointer ${selectedIds.has(lead.id) ? "bg-blue-500/5" : ""}`}
               >
-                <div className="col-span-3 flex items-center gap-3">
+                <div className="col-span-1 flex items-center" onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}>
+                  {selectedIds.has(lead.id)
+                    ? <CheckSquare size={15} className="text-blue-400" />
+                    : <Square size={15} className="text-slate-600 hover:text-slate-400" />}
+                </div>
+                <div className="col-span-2 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
                     {lead.name[0].toUpperCase()}
                   </div>
@@ -491,7 +641,7 @@ export default function LeadsView() {
         ) : (
           <div className="divide-y divide-riden-border">
             {filtered.map((lead) => (
-              <div key={lead.id} onClick={() => setViewLead(lead)} className="p-4 hover:bg-white/[0.04] transition-colors cursor-pointer">
+              <div key={lead.id} onClick={() => setViewLead(lead)} className={`p-4 hover:bg-white/[0.04] transition-colors cursor-pointer ${selectedIds.has(lead.id) ? "bg-blue-500/5" : ""}`}>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
@@ -503,6 +653,11 @@ export default function LeadsView() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => toggleSelect(lead.id)} className="p-1">
+                      {selectedIds.has(lead.id)
+                        ? <CheckSquare size={15} className="text-blue-400" />
+                        : <Square size={15} className="text-slate-600" />}
+                    </button>
                     <Badge variant={statusColors[lead.status] ?? "secondary"} className="capitalize text-[10px]">
                       {lead.status}
                     </Badge>
