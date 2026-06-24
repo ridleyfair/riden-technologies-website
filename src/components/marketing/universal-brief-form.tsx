@@ -1396,7 +1396,7 @@ function StepSuccess({ businessName }: { businessName: string }) {
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-const STEPS = ["trade", "template", "business", "services", "trust", "photos"] as const;
+const STEPS = ["trade", "business", "services", "trust", "photos"] as const;
 type Step = typeof STEPS[number];
 
 export default function UniversalBriefForm() {
@@ -1413,7 +1413,6 @@ export default function UniversalBriefForm() {
 
   function canAdvance(): boolean {
     if (step === "trade") return Boolean(form.tradeGroup);
-    if (step === "template") return Boolean(form.selectedTemplate);
     if (step === "business") return Boolean(form.businessName && form.phone && form.email && form.city);
     if (step === "services") return form.services.length > 0 && form.description.length >= DESC_MIN;
     if (step === "photos") {
@@ -1472,9 +1471,8 @@ export default function UniversalBriefForm() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            {step === "trade"     && <StepTrade form={form} set={set} />}
-            {step === "template"  && <StepTemplate form={form} set={set} />}
-            {step === "business"  && <StepBusiness form={form} set={set} />}
+            {step === "trade"    && <StepTrade form={form} set={set} />}
+            {step === "business" && <StepBusiness form={form} set={set} />}
             {step === "services" && <StepTradeQuestions form={form} set={set} />}
             {step === "trust"    && <StepTrust form={form} set={set} />}
             {step === "photos"   && <StepPhotos form={form} set={set} />}
