@@ -5,9 +5,9 @@
 // panel crossfades between coded scenes (no AI, real text) as the user scrolls.
 // Reduced-motion and small screens get a clean stacked layout (no pinning).
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import {
   ClipboardList,
   LayoutTemplate,
@@ -21,6 +21,8 @@ import {
   Mail,
   Check,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { AiBackdrop } from "@/components/marketing/visuals/ai-backdrop";
@@ -113,6 +115,7 @@ export default function ProcessScrollStory() {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [enhanced, setEnhanced] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -127,6 +130,13 @@ export default function ProcessScrollStory() {
     return () => {
       mqMotion.removeEventListener("change", apply);
     };
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -168,6 +178,112 @@ export default function ProcessScrollStory() {
                 </motion.div>
               );
             })}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Mobile stepper (< lg): tap prev/next, no scroll hijacking ─────────────
+  if (enhanced && isMobile) {
+    return (
+      <section
+        id="how-it-works"
+        className="relative bg-gradient-to-b from-white to-[#f4f9ff] py-16 overflow-hidden"
+        aria-label="How Riden builds and manages your website"
+      >
+        <AiBackdrop name="mesh" opacity={0.32} />
+        <div className="relative z-10 mx-auto max-w-lg px-4">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-blue-700 ring-1 ring-blue-100">
+              How it works
+            </span>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+              From first chat to{" "}
+              <span className="gradient-text-brand">more enquiries</span>
+            </h2>
+          </div>
+
+          {/* Stage copy — crossfades between steps */}
+          <div className="relative min-h-[220px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25 }}
+              >
+                <StageCopy stage={stages[active]} large />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Scene visual */}
+          <div className="flex justify-center mt-4" style={{ zoom: 0.68 }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-md"
+              >
+                {stages[active].Scene && React.createElement(stages[active].Scene)}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Navigation: prev · dots · next */}
+          <div className="mt-8 flex items-center justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => setActive(a => Math.max(0, a - 1))}
+              disabled={active === 0}
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white shadow-sm text-slate-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Previous step"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              {stages.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === active
+                      ? "w-6 h-2 bg-blue-600"
+                      : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                  }`}
+                  aria-label={`Go to step ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActive(a => Math.min(stages.length - 1, a + 1))}
+              disabled={active === stages.length - 1}
+              className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white shadow-sm text-slate-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              aria-label="Next step"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Step counter */}
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <span className="text-sm font-bold tabular-nums text-slate-900">
+              {String(active + 1).padStart(2, "0")}
+            </span>
+            <span className="text-slate-300">/</span>
+            <span className="text-sm font-medium tabular-nums text-slate-400">
+              {String(stages.length).padStart(2, "0")}
+            </span>
           </div>
         </div>
       </section>
