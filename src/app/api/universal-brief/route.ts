@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
       wantsCustomLogo,
       domainName,
       domainExtension,
+      selectedTemplate,
     } = body as {
       tradeGroup: string;
       subTrade: string;
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
       wantsCustomLogo?: boolean;
       domainName?: string;
       domainExtension?: string;
+      selectedTemplate?: string;
     };
 
     if (!businessName || !phone || !email || !tradeGroup) {
@@ -107,7 +109,7 @@ export async function POST(req: NextRequest) {
     const leadId = crypto.randomUUID();
     const projectId = crypto.randomUUID();
 
-    const template = TEMPLATE_MAP[tradeGroup] ?? "modern-minimal";
+    const template = selectedTemplate || (TEMPLATE_MAP[tradeGroup] ?? "modern-minimal");
     const industry = INDUSTRY_MAP[tradeGroup] ?? "trades";
     const servicesText = Array.isArray(services) ? services.join("\n") : "";
     const accreditationsText = Array.isArray(accreditations) ? accreditations.join("\n") : "";

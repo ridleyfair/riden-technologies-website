@@ -4,6 +4,63 @@ import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Upload, X, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 
+// ─── Template config ─────────────────────────────────────────────────────────
+
+type TemplateInfo = {
+  label:       string;
+  description: string;
+  previewDemo: string;
+  emoji:       string;
+};
+
+const TEMPLATE_INFO: Record<string, TemplateInfo> = {
+  "outdoor-transform": {
+    label:       "Outdoor Transformations",
+    description: "Before/after led layout — built for landscaping, driveways and garden work",
+    previewDemo: "demo-outdoor",
+    emoji:       "🌿",
+  },
+  "emergency-trade": {
+    label:       "Emergency & Response",
+    description: "Call-now led with a 24/7 emergency bar — built for fast-response trades",
+    previewDemo: "demo-emergency",
+    emoji:       "🚨",
+  },
+  "reno-showcase": {
+    label:       "Renovation Showcase",
+    description: "Showroom-style gallery — built for kitchens, bathrooms and extensions",
+    previewDemo: "demo-reno",
+    emoji:       "🔧",
+  },
+  "finish-decor": {
+    label:       "Finish & Decorating",
+    description: "Portfolio-led with before/after — built for painters, plasterers and tilers",
+    previewDemo: "demo-finish",
+    emoji:       "🎨",
+  },
+  "modern-minimal": {
+    label:       "Modern Minimal",
+    description: "Clean, professional layout for any trade or service business",
+    previewDemo: "plumber",
+    emoji:       "✦",
+  },
+  "tradie-bold": {
+    label:       "Tradie Bold",
+    description: "High-contrast dark design built to stand out",
+    previewDemo: "electrician",
+    emoji:       "⚡",
+  },
+};
+
+const TRADE_TEMPLATE_OPTIONS: Record<string, string[]> = {
+  emergency: ["emergency-trade", "tradie-bold"],
+  reno:      ["reno-showcase",   "modern-minimal"],
+  outdoor:   ["outdoor-transform", "modern-minimal"],
+  decor:     ["finish-decor",    "modern-minimal"],
+};
+
+const SITES_BASE = "https://sites.ridentechnologies.com";
+
 // ─── Trade config ────────────────────────────────────────────────────────────
 
 type TradeConfig = {
@@ -358,6 +415,7 @@ type FormState = {
   logoUrl: string;
   logoFilename: string;
   wantsCustomLogo: boolean;
+  selectedTemplate: string;
   albums: PhotoAlbum[];
   pairs: BeforeAfterPair[];
   customPhotoCategories: string[];
@@ -387,6 +445,7 @@ const EMPTY: FormState = {
   logoUrl: "",
   logoFilename: "",
   wantsCustomLogo: false,
+  selectedTemplate: "",
   albums: [],
   pairs: [],
   customPhotoCategories: [],
@@ -467,7 +526,7 @@ function StepTrade({ form, set }: { form: FormState; set: (f: Partial<FormState>
           <button
             key={trade.group}
             type="button"
-            onClick={() => set({ tradeGroup: trade.group, subTrade: "", services: [], accreditations: [] })}
+            onClick={() => set({ tradeGroup: trade.group, subTrade: "", services: [], accreditations: [], selectedTemplate: trade.templateId })}
             className={`flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all ${
               form.tradeGroup === trade.group
                 ? "border-blue-500 bg-blue-500/10"
@@ -485,6 +544,71 @@ function StepTrade({ form, set }: { form: FormState; set: (f: Partial<FormState>
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function StepTemplate({ form, set }: { form: FormState; set: (f: Partial<FormState>) => void }) {
+  const trade = currentTrade(form)!;
+  const options = TRADE_TEMPLATE_OPTIONS[form.tradeGroup] ?? [trade.templateId];
+  const recommended = trade.templateId;
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-white mb-2">Choose your design</h2>
+      <p className="text-slate-400 mb-6">
+        Pick the website style that fits your business best. Open the preview links to see a live example before deciding.
+      </p>
+      <div className="space-y-3">
+        {options.map(templateId => {
+          const info = TEMPLATE_INFO[templateId];
+          if (!info) return null;
+          const isSelected = form.selectedTemplate === templateId;
+          const isRecommended = templateId === recommended;
+          const previewUrl = `${SITES_BASE}/preview/${info.previewDemo}`;
+
+          return (
+            <button
+              key={templateId}
+              type="button"
+              onClick={() => set({ selectedTemplate: templateId })}
+              className={`w-full flex items-start gap-4 p-5 rounded-2xl border-2 text-left transition-all ${
+                isSelected
+                  ? "border-blue-500 bg-blue-500/10"
+                  : "border-slate-700 bg-slate-800/50 hover:border-slate-500"
+              }`}
+            >
+              <span className="text-2xl flex-shrink-0 mt-0.5">{info.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="font-semibold text-white leading-tight">{info.label}</span>
+                  {isRecommended && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-medium">
+                      Recommended
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">{info.description}</p>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 mt-2.5 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Preview this design ↗
+                </a>
+              </div>
+              {isSelected && (
+                <CheckCircle2 size={20} className="text-blue-400 flex-shrink-0 mt-0.5" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-slate-500 mt-4 text-center">
+        Not sure? Go with the Recommended one — it&apos;s built specifically for your trade.
+      </p>
     </div>
   );
 }
@@ -1272,7 +1396,7 @@ function StepSuccess({ businessName }: { businessName: string }) {
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
-const STEPS = ["trade", "business", "services", "trust", "photos"] as const;
+const STEPS = ["trade", "template", "business", "services", "trust", "photos"] as const;
 type Step = typeof STEPS[number];
 
 export default function UniversalBriefForm() {
@@ -1289,6 +1413,7 @@ export default function UniversalBriefForm() {
 
   function canAdvance(): boolean {
     if (step === "trade") return Boolean(form.tradeGroup);
+    if (step === "template") return Boolean(form.selectedTemplate);
     if (step === "business") return Boolean(form.businessName && form.phone && form.email && form.city);
     if (step === "services") return form.services.length > 0 && form.description.length >= DESC_MIN;
     if (step === "photos") {
@@ -1347,8 +1472,9 @@ export default function UniversalBriefForm() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            {step === "trade"    && <StepTrade form={form} set={set} />}
-            {step === "business" && <StepBusiness form={form} set={set} />}
+            {step === "trade"     && <StepTrade form={form} set={set} />}
+            {step === "template"  && <StepTemplate form={form} set={set} />}
+            {step === "business"  && <StepBusiness form={form} set={set} />}
             {step === "services" && <StepTradeQuestions form={form} set={set} />}
             {step === "trust"    && <StepTrust form={form} set={set} />}
             {step === "photos"   && <StepPhotos form={form} set={set} />}
