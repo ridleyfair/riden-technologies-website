@@ -1070,7 +1070,9 @@ export default function PossibleClientsView() {
     const needle = phoneSearch.replace(/\s+/g, "");
     visibleBusinesses = visibleBusinesses.filter((b) => b.phone?.replace(/\s+/g, "").includes(needle));
   }
-  if (hideContacted) visibleBusinesses = visibleBusinesses.filter((b) => !contactedIds.has(b.id));
+  if (hideContacted) visibleBusinesses = visibleBusinesses.filter(
+    (b) => !contactedIds.has(b.id) && !(b.phone ? contactedPhones.has(b.phone.replace(/\s+/g, "")) : false)
+  );
 
   const totalPages    = Math.ceil(total / PAGE_SIZE);
   const checkatradeCount = Object.values(enrichments).filter((e) => e.has_checkatrade).length;
@@ -1478,6 +1480,9 @@ export default function PossibleClientsView() {
                       ? opportunityTier(enrichment.opportunity_score)
                       : null;
                     const isHotLead = !!enrichment?.has_checkatrade && !b.website;
+                    const isContacted =
+                      contactedIds.has(b.id) ||
+                      (b.phone ? contactedPhones.has(b.phone.replace(/\s+/g, "")) : false);
 
                     return (
                       <motion.tr
@@ -1655,18 +1660,18 @@ export default function PossibleClientsView() {
                               disabled={markingId === b.id}
                               className={cn(
                                 "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 whitespace-nowrap",
-                                contactedIds.has(b.id)
+                                isContacted
                                   ? "bg-green-500/10 border-green-500/20 text-green-400 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400"
                                   : "bg-riden-muted border-riden-border text-slate-400 hover:text-white hover:border-green-500/40 hover:bg-green-500/10"
                               )}
-                              title={contactedIds.has(b.id) ? "Click to unmark" : "Mark as contacted"}
+                              title={isContacted ? "Click to unmark" : "Mark as contacted"}
                             >
                               {markingId === b.id ? (
                                 <Loader2 size={11} className="animate-spin" />
                               ) : (
                                 <MessageSquare size={11} />
                               )}
-                              {contactedIds.has(b.id) ? "Contacted" : "Not contacted"}
+                              {isContacted ? "Contacted" : "Not contacted"}
                             </button>
 
                             {/* Add to CRM */}
