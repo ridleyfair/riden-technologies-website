@@ -6,6 +6,7 @@ import {
   Search, Plus, X, RefreshCw, CheckCircle, AlertTriangle,
   ExternalLink, Phone, Globe, MapPin, Star, Flame, Loader2,
   WifiOff, BadgeCheck, HelpCircle, ClipboardCopy, Zap, Mail, Download, MessageSquare,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import { buildWebsitePreviewEmail, openEmailCompose } from "@/lib/email-outreach";
 import { cn } from "@/lib/utils";
@@ -589,6 +590,13 @@ export default function PossibleClientsView() {
   // Export
   const [exportLoading, setExportLoading] = useState(false);
 
+  // Bulk contacted phones
+  const [contactedPhones, setContactedPhones] = useState<Set<string>>(new Set());
+  const [showBulkPanel, setShowBulkPanel] = useState(false);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkSavedCount, setBulkSavedCount] = useState<number | null>(null);
+
   // Toast
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -699,6 +707,14 @@ export default function PossibleClientsView() {
     fetch("/api/possible-clients/contacted")
       .then((r) => r.json())
       .then((ids: string[]) => setContactedIds(new Set(ids)))
+      .catch(() => null);
+  }, []);
+
+  // Load contacted phones once on mount
+  useEffect(() => {
+    fetch("/api/possible-clients/bulk-contacted")
+      .then((r) => r.json())
+      .then((phones: string[]) => setContactedPhones(new Set(phones)))
       .catch(() => null);
   }, []);
 
@@ -947,6 +963,42 @@ export default function PossibleClientsView() {
     }
   }, [contactedIds, showToast]);
 
+  const handleBulkMarkContacted = useCallback(async () => {
+    const phones = bulkInput
+      .split(/[\n,]+/)
+      .map((p) => p.replace(/\s+/g, "").trim())
+      .filter(Boolean);
+
+    if (phones.length === 0) {
+      showToast("No phone numbers found — paste one per line", "error");
+      return;
+    }
+
+    setBulkSaving(true);
+    setBulkSavedCount(null);
+    try {
+      const res = await fetch("/api/possible-clients/bulk-contacted", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phones }),
+      });
+      if (!res.ok) { showToast("Failed to save numbers", "error"); return; }
+      const { saved } = await res.json();
+      setContactedPhones((prev) => {
+        const next = new Set(prev);
+        for (const p of phones) next.add(p);
+        return next;
+      });
+      setBulkSavedCount(saved);
+      setBulkInput("");
+      showToast(`${phones.length} number${phones.length !== 1 ? "s" : ""} marked as contacted`, "success");
+    } catch {
+      showToast("Failed to save numbers", "error");
+    } finally {
+      setBulkSaving(false);
+    }
+  }, [bulkInput, showToast]);
+
   const handleExportWhatsAppNumbers = useCallback(async () => {
     setExportLoading(true);
     try {
@@ -976,6 +1028,7 @@ export default function PossibleClientsView() {
           b.phone &&
           !b.website &&
           !contactedIds.has(b.id) &&
+          !contactedPhones.has(b.phone!.replace(/\s+/g, "")) &&
           (b.lead_score?.lead_tier === "hot" || b.lead_score?.lead_tier === "warm")
       );
 
@@ -1004,7 +1057,7 @@ export default function PossibleClientsView() {
     } finally {
       setExportLoading(false);
     }
-  }, [showToast, contactedIds]);
+  }, [showToast, contactedIds, contactedPhones]);
 
   // ── Derived data ─────────────────────────────────────────────────────────────
 
@@ -1171,6 +1224,69 @@ export default function PossibleClientsView() {
             ))}
           </div>
         )}
+
+        {/* Bulk mark as contacted panel */}
+        <div className="glass-card rounded-xl border border-riden-border overflow-hidden">
+          <button
+            onClick={() => { setShowBulkPanel((v) => !v); setBulkSavedCount(null); }}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-riden-muted/40 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <MessageSquare size={14} className="text-green-400" />
+              <span>Bulk mark numbers as contacted</span>
+              {contactedPhones.size > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-xs bg-green-500/10 border border-green-500/20 text-green-400">
+                  {contactedPhones.size} saved
+                </span>
+              )}
+            </div>
+            {showBulkPanel ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+          </button>
+
+          <AnimatePresence>
+            {showBulkPanel && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="overflow-hidden"
+              >
+                <div className="px-4 pb-4 pt-1 space-y-3 border-t border-riden-border">
+                  <p className="text-xs text-slate-500">
+                    Paste phone numbers you have already messaged. Future exports will skip these numbers automatically.
+                    One per line, or comma-separated.
+                  </p>
+                  <textarea
+                    value={bulkInput}
+                    onChange={(e) => { setBulkInput(e.target.value); setBulkSavedCount(null); }}
+                    placeholder={"07712 345678\n07800 123456\n07934 567890"}
+                    rows={5}
+                    className="w-full bg-riden-muted border border-riden-border rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 font-mono resize-none"
+                  />
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs text-slate-500">
+                      {bulkInput.trim()
+                        ? `${bulkInput.split(/[\n,]+/).map((p) => p.trim()).filter(Boolean).length} number${bulkInput.split(/[\n,]+/).map((p) => p.trim()).filter(Boolean).length !== 1 ? "s" : ""} detected`
+                        : "Paste numbers above"}
+                      {bulkSavedCount !== null && (
+                        <span className="ml-3 text-green-400">Saved successfully.</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={handleBulkMarkContacted}
+                      disabled={bulkSaving || !bulkInput.trim()}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-green-700/80 hover:bg-green-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {bulkSaving ? <Loader2 size={13} className="animate-spin" /> : <MessageSquare size={13} />}
+                      {bulkSaving ? "Saving…" : "Mark as contacted"}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
