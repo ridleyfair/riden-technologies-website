@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 import { getDb } from "@/lib/db";
 
-const BATCH = 8;
-const FETCH_TIMEOUT_MS = 4000;
+const BATCH = 5;
+const FETCH_TIMEOUT_MS = 3000;
 
 function getScraperUrl() {
   let env: Record<string, string | undefined> = process.env as Record<string, string | undefined>;
@@ -97,10 +97,10 @@ export async function POST(req: NextRequest) {
   const unscanned: RailwayBusiness[] = [];
   try {
     let page = 1;
-    while (unscanned.length < BATCH && page <= 10) {
+    while (unscanned.length < BATCH && page <= 3) {
       const res = await fetch(
         `${scraperUrl}/api/v1/businesses?has_website=true&page_size=100&page=${page}`,
-        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(6000) }
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(5000) }
       );
       if (!res.ok) break;
       const data = await res.json() as { items?: RailwayBusiness[]; pages?: number };
@@ -139,18 +139,6 @@ export async function POST(req: NextRequest) {
         ON CONFLICT (business_id) DO UPDATE SET email = EXCLUDED.email, scanned_at = NOW()
       `;
     } catch { /* best-effort */ }
-
-    // Also try to save back to Railway (may not work but worth trying)
-    if (email) {
-      try {
-        await fetch(`${scraperUrl}/api/v1/businesses/${biz.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-          signal: AbortSignal.timeout(4000),
-        });
-      } catch { /* Railway PATCH not supported — local DB is the fallback */ }
-    }
 
     return { id: biz.id, name: biz.name, email, found: !!email };
   }));
