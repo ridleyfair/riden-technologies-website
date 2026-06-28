@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth, unauthorized } from "@/lib/api-auth";
 import { getDb } from "@/lib/db";
 
-const BATCH = 15;
-const FETCH_TIMEOUT_MS = 6000;
+const BATCH = 8;
+const FETCH_TIMEOUT_MS = 4000;
 
 function getScraperUrl() {
   let env: Record<string, string | undefined> = process.env as Record<string, string | undefined>;
@@ -46,7 +46,7 @@ function isSafeUrl(url: string): boolean {
 async function findEmailOnWebsite(website: string): Promise<string | null> {
   if (!isSafeUrl(website)) return null;
   const base = website.replace(/\/$/, "");
-  const urls = [base, `${base}/contact`, `${base}/contact-us`, `${base}/about`];
+  const urls = [base, `${base}/contact`];
 
   for (const url of urls) {
     try {
@@ -85,10 +85,10 @@ export async function POST(req: NextRequest) {
   const allWithWebsite: RailwayBusiness[] = [];
   try {
     let page = 1;
-    while (true) {
+    while (page <= 5) {
       const res = await fetch(
         `${scraperUrl}/api/v1/businesses?has_website=true&page_size=200&page=${page}`,
-        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(12000) }
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) }
       );
       if (!res.ok) break;
       const data = await res.json() as { items?: RailwayBusiness[]; pages?: number };
