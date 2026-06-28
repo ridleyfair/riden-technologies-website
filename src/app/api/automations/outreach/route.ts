@@ -74,94 +74,71 @@ type RailwayBusiness = {
 };
 
 // Fetch all hot, warm and cold leads from Railway, paginating through all results
-async function fetchWarmLeadsFromRailway(): Promise<RailwayBusiness[]> {
-  const scraperUrl = getScraperUrl();
-  const results: RailwayBusiness[] = [];
+const JUNK_EMAILS = ["wixpress.com","sentry-next","sentry.io","noreply","no-reply","donotreply","mailer-daemon","postmaster"];
 
+function isEligibleEmail(email: string | null | undefined): boolean {
+  const e = (email ?? "").trim().toLowerCase();
+  if (!e) return false;
+  if (JUNK_EMAILS.some((j) => e.includes(j))) return false;
+  const domain = e.split("@")[1] ?? "";
+  if (!domain.includes(".")) return false;
+  return true;
+}
+
+// Scan warm/hot Possible Clients (Railway) for eligible records and add to queue
+async function handleQueue(_req: NextRequest) {
+  const sql        = getDb();
+  const scraperUrl = getScraperUrl();
+  const BATCH      = 50;
+
+  // 1. Load excluded emails upfront so we can skip already-processed leads during fetch
+  let localEmails: Map<string, string> = new Map();
+  try {
+    const rows = await sql`SELECT business_id, email FROM "BusinessEmailScan" WHERE email IS NOT NULL`;
+    localEmails = new Map(rows.map((r) => [String(r.business_id), String(r.email)]));
+  } catch { /* table may not exist yet */ }
+
+  const existLeads = await sql`SELECT LOWER(email) AS email FROM "Lead" WHERE email IS NOT NULL`;
+  const leadEmails = new Set(existLeads.map((r) => String(r.email)));
+
+  const existingRecords = await sql`SELECT LOWER(business_email) AS email FROM "OutreachRecord" WHERE opt_out = FALSE`;
+  const outreachedEmails = new Set(existingRecords.map((r) => String(r.email)));
+
+  // 2. Fetch from Railway one page at a time, stopping as soon as we have BATCH eligible leads
+  const eligible: RailwayBusiness[] = [];
   for (const tier of ["hot", "warm", "cold"]) {
+    if (eligible.length >= BATCH) break;
     let page = 1;
-    while (true) {
+    while (eligible.length < BATCH && page <= 3) {
       try {
-        const params = new URLSearchParams({ lead_tier: tier, page_size: "200", page: String(page) });
+        const params = new URLSearchParams({ lead_tier: tier, page_size: "100", page: String(page) });
         const res    = await fetch(`${scraperUrl}/api/v1/businesses?${params}`, {
           headers: { Accept: "application/json" },
-          signal:  AbortSignal.timeout(15000),
+          signal:  AbortSignal.timeout(6000),
         });
         if (!res.ok) break;
         const data  = await res.json() as { items?: RailwayBusiness[]; pages?: number };
         const items = data.items ?? [];
-        results.push(...items);
-        if (items.length < 200 || page >= (data.pages ?? 1)) break;
+        for (const b of items) {
+          const email = b.email?.trim() ? b.email : (localEmails.get(b.id) ?? null);
+          const e     = (email ?? "").trim().toLowerCase();
+          if (!isEligibleEmail(e)) continue;
+          if (leadEmails.has(e) || outreachedEmails.has(e)) continue;
+          eligible.push({ ...b, email });
+          if (eligible.length >= BATCH) break;
+        }
+        if (items.length < 100 || page >= (data.pages ?? 1)) break;
         page++;
       } catch { break; }
     }
   }
 
-  return results;
-}
-
-// Scan warm/hot Possible Clients (Railway) for eligible records and add to queue
-async function handleQueue(_req: NextRequest) {
-  const sql = getDb();
-
-  // 1. Pull all hot, warm and cold leads from Railway
-  const allLeads = await fetchWarmLeadsFromRailway();
-
-  // 2. Merge in locally-scanned emails (from BusinessEmailScan) for businesses
-  //    that have no email in Railway but one was found by the website scanner
-  let localEmails: Map<string, string> = new Map();
-  try {
-    const rows = await sql`SELECT business_id, email FROM "BusinessEmailScan" WHERE email IS NOT NULL`;
-    localEmails = new Map(rows.map((r) => [String(r.business_id), String(r.email)]));
-  } catch { /* table may not exist yet — ignore */ }
-
-  const leadsWithEmail = allLeads.map((b) => ({
-    ...b,
-    email: b.email?.trim() ? b.email : (localEmails.get(b.id) ?? null),
-  }));
-
-  // 3. Filter to those with a plausible business email address
-  const JUNK = ["wixpress.com","sentry-next","sentry.io","noreply","no-reply","donotreply","mailer-daemon","postmaster"];
-  const withEmail = leadsWithEmail.filter((b) => {
-    const e = (b.email ?? "").trim().toLowerCase();
-    if (!e) return false;
-    if (JUNK.some((j) => e.includes(j))) return false;
-    const domain = e.split("@")[1] ?? "";
-    if (!domain.includes(".")) return false;
-    return true;
-  });
-
-  if (withEmail.length === 0) {
-    return NextResponse.json({ queued: 0, message: "No leads with an email address found. Run 'Scan for Emails' in Possible Clients first." });
-  }
-
-  // 3. Filter out emails already in Lead table (already converted)
-  const emailList  = withEmail.map((b) => b.email!.toLowerCase());
-  const existLeads = await sql`
-    SELECT LOWER(email) AS email FROM "Lead"
-    WHERE LOWER(email) = ANY(${emailList})
-  `;
-  const leadEmails = new Set(existLeads.map((r) => String(r.email)));
-
-  // 4. Filter out emails already in OutreachRecord (already queued / sent / etc.)
-  const existingRecords = await sql`
-    SELECT LOWER(business_email) AS email FROM "OutreachRecord" WHERE opt_out = FALSE
-  `;
-  const outreachedEmails = new Set(existingRecords.map((r) => String(r.email)));
-
-  const eligible = withEmail.filter((b) => {
-    const e = b.email!.toLowerCase();
-    return !leadEmails.has(e) && !outreachedEmails.has(e);
-  });
-
   if (eligible.length === 0) {
-    return NextResponse.json({ queued: 0, message: "All leads with email already have outreach records or Leads." });
+    return NextResponse.json({ queued: 0, message: "No leads with email already have outreach records or Leads." });
   }
 
-  // 5. Cap to 50 per run to avoid Cloudflare CPU limits — click Scan again for the next batch
-  const BATCH = 50;
-  const batch      = eligible.slice(0, BATCH);
-  const remaining  = Math.max(0, eligible.length - BATCH);
+  const batch     = eligible.slice(0, BATCH);
+  const remaining = Math.max(0, eligible.length - BATCH);
 
   // 6. Look up any matching GeneratedSites for preview URLs (match by business name)
   const names = batch.map((b) => b.name.toLowerCase());
