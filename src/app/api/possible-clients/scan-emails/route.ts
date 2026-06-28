@@ -81,35 +81,7 @@ export async function POST(req: NextRequest) {
   const sql        = getDb();
   const scraperUrl = getScraperUrl();
 
-  // 1. Fetch businesses with a website from Railway (paginate all)
-  const allWithWebsite: RailwayBusiness[] = [];
-  try {
-    let page = 1;
-    while (page <= 5) {
-      const res = await fetch(
-        `${scraperUrl}/api/v1/businesses?has_website=true&page_size=200&page=${page}`,
-        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) }
-      );
-      if (!res.ok) break;
-      const data = await res.json() as { items?: RailwayBusiness[]; pages?: number };
-      const items = data.items ?? [];
-      allWithWebsite.push(...items);
-      if (items.length < 200 || page >= (data.pages ?? 1)) break;
-      page++;
-    }
-  } catch (e) {
-    return NextResponse.json({ error: `Could not fetch businesses: ${String(e)}` }, { status: 502 });
-  }
-
-  // 2. Filter to businesses that have a website but no email in Railway
-  const noEmail = allWithWebsite.filter((b) => !b.email?.trim() && b.website?.trim());
-
-  if (noEmail.length === 0) {
-    return NextResponse.json({ found: 0, processed: 0, message: "All businesses with websites already have emails in Railway." });
-  }
-
-  // 3. Load already-scanned business IDs from local DB (so we skip them)
-  //    Auto-create the table if it doesn't exist yet
+  // 1. Load already-scanned business IDs first so we can skip them during fetch
   await sql`
     CREATE TABLE IF NOT EXISTS "BusinessEmailScan" (
       business_id  TEXT        PRIMARY KEY,
@@ -121,12 +93,34 @@ export async function POST(req: NextRequest) {
   const scannedRows = await sql`SELECT business_id FROM "BusinessEmailScan"`;
   const scanned     = new Set(scannedRows.map((r) => String(r.business_id)));
 
-  const unscanned = noEmail.filter((b) => !scanned.has(b.id));
+  // 2. Fetch one page at a time from Railway until we have enough unscanned businesses
+  const unscanned: RailwayBusiness[] = [];
+  try {
+    let page = 1;
+    while (unscanned.length < BATCH && page <= 10) {
+      const res = await fetch(
+        `${scraperUrl}/api/v1/businesses?has_website=true&page_size=100&page=${page}`,
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(6000) }
+      );
+      if (!res.ok) break;
+      const data = await res.json() as { items?: RailwayBusiness[]; pages?: number };
+      const items = (data.items ?? []) as RailwayBusiness[];
+      for (const b of items) {
+        if (!b.email?.trim() && b.website?.trim() && !scanned.has(b.id)) {
+          unscanned.push(b);
+        }
+      }
+      if (items.length < 100 || page >= (data.pages ?? 1)) break;
+      page++;
+    }
+  } catch (e) {
+    return NextResponse.json({ error: `Could not fetch businesses: ${String(e)}` }, { status: 502 });
+  }
 
   if (unscanned.length === 0) {
     return NextResponse.json({
       found: 0, processed: 0,
-      message: `All ${noEmail.length} businesses without emails have already been scanned. No new emails found across all sites.`,
+      message: "No unscanned businesses with websites found. All available sites have been checked.",
     });
   }
 
@@ -170,6 +164,6 @@ export async function POST(req: NextRequest) {
     results,
     message: remaining > 0
       ? `Found ${found} emails from ${batch.length} sites. ${remaining} more to scan — click again to continue.`
-      : `Scan complete. Found ${found} emails from ${batch.length} sites. All ${noEmail.length} sites have now been checked.`,
+      : `Scan complete. Found ${found} emails from ${batch.length} sites.`,
   });
 }
