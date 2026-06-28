@@ -48,7 +48,7 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
   const setupFee  = `£${tier.setupFee}`;
   const monthly   = `£${tier.monthlyFee}`;
 
-  const subject = `Free website demo for ${bizRef} — see exactly what it would look like`;
+  const subject = `We've built a website for your business, ${bizRef} — want to take a look?`;
 
   const seoBullet = `Local SEO so you appear for <em>${tradeNear}</em>` +
     (tradeLoc ? ` and <em>${tradeLoc}</em>` : "");
@@ -96,9 +96,9 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
 
       // HERO
       `<tr><td style="background:linear-gradient(135deg,${NAVY_MID} 0%,#1a3a5c 100%);padding:32px 40px 28px;">` +
-        `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${CYAN};">A personalised invitation from Riden</p>` +
+        `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${CYAN};">From Riden Technologies</p>` +
         `<h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:700;color:${WHITE};line-height:1.35;">` +
-          `We&rsquo;d love to show <em style="font-style:normal;color:${CYAN};">${bizRef}</em> exactly what a new website could look like` +
+          `We&rsquo;ve already built a website for your business, <em style="font-style:normal;color:${CYAN};">${bizRef}</em>` +
         `</h1>` +
       `</td></tr>` +
 
@@ -107,40 +107,18 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `<p style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.75;color:${TEXT_BODY};">${greeting}</p>` +
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `Hope you don&rsquo;t mind me reaching out &mdash; my name&rsquo;s Ridley, I run a small web development company called Riden Technologies based in the UK.` +
+          `My name&rsquo;s Ridley &mdash; I run Riden Technologies, a small web development company based in the UK. ` +
+          `We build websites for ${tradeRef}businesses and we&rsquo;ve already put one together for <strong style="color:${TEXT_DARK};">${bizRef}</strong>.` +
         `</p>` +
 
         `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `I came across <strong style="color:${TEXT_DARK};">${bizRef}</strong>${locRef} recently and I&rsquo;d love to put together a free custom demo of what a brand-new website could look like for your business. ` +
-          `We specialise in websites for ${tradeRef}businesses, and I genuinely think a well-built site could help ${bizRef} win a lot more local enquiries.` +
-        `</p>` +
-
-        `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `<strong style="color:${TEXT_DARK};">The demo is completely free to see &mdash; no obligation whatsoever.</strong> ` +
-          `If you like it and want to go live, it&rsquo;s ${setupFee} to build and launch on your own domain, then ${monthly}&nbsp;a&nbsp;month for hosting, updates and support. ` +
-          `But there&rsquo;s zero pressure &mdash; you just get to see exactly what it would look like first.` +
+          `<strong style="color:${TEXT_DARK};">Would you like me to send you the link to take a look?</strong> ` +
+          `It&rsquo;s completely free to view &mdash; no commitment, no obligation. ` +
+          `Just reply to this email and I&rsquo;ll send it straight over.` +
         `</p>` +
 
         `<p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `To make the demo specific to <strong style="color:${TEXT_DARK};">${bizRef}</strong>, we&rsquo;ve put together a short 2-minute brief form. ` +
-          `It helps us understand your services, branding, photos and requirements &mdash; then we get straight to work:` +
-        `</p>` +
-
-        // Primary CTA
-        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">` +
-          `<tr><td style="background:linear-gradient(135deg,${CYAN} 0%,${BLUE} 100%);border-radius:8px;box-shadow:0 4px 14px rgba(34,211,238,0.3);">` +
-            `<a href="${p.formUrl}" style="display:inline-block;padding:18px 40px;color:${WHITE};font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;text-decoration:none;letter-spacing:0.3px;white-space:nowrap;">` +
-              `Complete Your Free Website Brief &rarr;` +
-            `</a>` +
-          `</td></tr>` +
-        `</table>` +
-
-        `<p style="margin:0 0 16px;font-size:12px;color:${TEXT_MUTED};font-family:Arial,Helvetica,sans-serif;">` +
-          `Or paste into your browser: <a href="${p.formUrl}" style="color:${CYAN_DARK};word-break:break-all;">${p.formUrl}</a>` +
-        `</p>` +
-
-        `<p style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:15px;line-height:1.75;color:${TEXT_BODY};">` +
-          `Once you submit the brief, we&rsquo;ll handle everything from there:` +
+          `If you like it and want to get it live, it&rsquo;s ${setupFee} to launch on your own domain, then just ${monthly}&nbsp;a&nbsp;month &mdash; everything handled for you:` +
         `</p>` +
       `</td></tr>` +
 
@@ -176,13 +154,13 @@ export function buildOutreachEmailHtml(p: OutreachEmailInput): { subject: string
         `</table>` +
       `</td></tr>` +
 
-      // PHONE CALL OFFER
+      // REPLY NUDGE
       `<tr><td style="padding:0 40px 32px;">` +
         `<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#f8fafc;border:1px solid ${BORDER};border-radius:8px;">` +
           `<tr><td style="padding:18px 22px;">` +
-            `<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:${TEXT_DARK};">Prefer a quick call instead?</p>` +
+            `<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:${TEXT_DARK};">To see your website, just reply to this email.</p>` +
             `<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.65;color:${TEXT_BODY};">` +
-              `No problem at all &mdash; just reply directly to this email and we&rsquo;ll arrange a convenient 10-minute chat. Happy to answer any questions.` +
+              `I&rsquo;ll send the link straight over. Happy to jump on a quick call too if you&rsquo;d prefer &mdash; just say the word.` +
             `</p>` +
           `</td></tr>` +
         `</table>` +

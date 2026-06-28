@@ -34,7 +34,9 @@ export function buildWebsitePreviewEmail(params: OutreachEmailParams): OutreachE
   const setupFee = `£${tier.setupFee}`;
   const monthly = `£${tier.monthlyFee}`;
 
-  const subject = `Website preview for ${businessName}`;
+  const subject = previewUrl
+    ? `Your website preview — ${businessName}`
+    : `I've built a website for ${businessName}`;
 
   const body = previewUrl
     ? `Hi there,
@@ -57,13 +59,11 @@ Ridley
 Riden Technologies`
     : `Hi there,
 
-Hope you're well.
+I've already put together a website for your business, ${businessName} — would you like me to send you the link to take a look?
 
-I came across ${businessName}${location ? ` in ${location}` : ""} and noticed you had a strong local presence. I build modern websites for small businesses, especially trade and service companies that want more enquiries and a cleaner online presence.
+No commitment, completely free to view. If you like it, we can talk about getting it live. It's ${setupFee} to set up and just ${monthly} ongoing — everything handled for you.
 
-I'd love to put together a free preview for your business to show you what it could look like online — no obligation at all. Starts from ${setupFee} setup, then ${monthly}.
-
-If you're curious, just reply and I'll get something over to you.
+Just reply and I'll send it over.
 
 Kind regards,
 Ridley
